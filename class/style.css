@@ -1,0 +1,100 @@
+/* Style pour le fond avec l'image de montagne */
+.root-pane {
+    -fx-background-image: url("../asset/mountain-background.jpg");
+    -fx-background-size: cover;
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
+    /* Fallback avec dégradé bleu si l'image n'est pas trouvée */
+    -fx-background-color: linear-gradient(to bottom, #87ceeb, #4682b4);
+}
+
+/* Container principal du formulaire de connexion */
+.login-container {
+    -fx-background-color: rgba(255, 255, 255, 0.326);
+    -fx-background-radius: 8;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.25), 12, 0, 0, 3);
+    -fx-border-radius: 8;
+    -fx-border-color: rgba(255, 255, 255, 0.6);
+    -fx-border-width: 1;
+}
+
+/* Titre principal */
+.title {
+    -fx-text-fill: #ffffff;
+    -fx-font-family: "Arial", "Helvetica", sans-serif;
+    -fx-font-weight: bold;
+    -fx-font-size: 28px;
+}
+
+/* Sous-titre */
+.subtitle {
+    -fx-text-fill: #ffffff;
+    -fx-font-family: "Arial", "Helvetica", sans-serif;
+    -fx-font-size: 12px;
+    -fx-padding: 0 0 10 0;
+}
+
+/* Container du formulaire */
+.form-container {
+    -fx-background-color: white;
+    -fx-background-radius: 6;
+    -fx-border-color: #d0d0d0;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+}
+
+/* Labels des champs */
+.field-label {
+    -fx-text-fill: #4a4a4a;
+    -fx-font-family: "Arial", "Helvetica", sans-serif;
+    -fx-font-size: 11px;
+    -fx-font-weight: normal;
+}
+
+/* Champs de saisie */
+.input-field {
+    -fx-background-color: #f5f5f5;
+    -fx-border-color: #cccccc;
+    -fx-border-width: 1;
+    -fx-border-radius: 2;
+    -fx-background-radius: 2;
+    -fx-padding: 4 8 4 8;
+    -fx-font-size: 12px;
+    -fx-font-family: "Arial", "Helvetica", sans-serif;
+}
+
+.input-field:focused {
+    -fx-border-color: #4a90e2;
+    -fx-background-color: white;
+    -fx-effect: dropshadow(gaussian, rgba(74, 144, 226, 0.2), 2, 0, 0, 0);
+}
+
+/* Bouton de connexion */
+.connect-button {
+    -fx-background-color: linear-gradient(45deg, #3B484F, #49626D);
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-font-family: "Arial", "Helvetica", sans-serif;
+    -fx-font-weight: normal;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 1, 0, 0, 1);
+}
+
+.connect-button:hover {
+    -fx-background-color: #4a5c6d;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 2, 0, 0, 1);
+}
+
+.connect-button:pressed {
+    -fx-background-color: #3a4c5d;
+    -fx-effect: innershadow(gaussian, rgba(0, 0, 0, 0.15), 1, 0, 0, 1);
+}
+
+.connect-button:disabled {
+    -fx-background-color: #bdc3c7;
+    -fx-text-fill: #7f8c8d;
+    -fx-cursor: default;
+    -fx-effect: none;
+}
