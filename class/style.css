@@ -71,7 +71,7 @@
 
 /* Bouton de connexion */
 .connect-button {
-    -fx-background-color: linear-gradient(45deg, #3B484F, #49626D);
+    -fx-background-color: #597185;
     -fx-text-fill: white;
     -fx-font-size: 12px;
     -fx-font-family: "Arial", "Helvetica", sans-serif;
@@ -93,8 +93,117 @@
 }
 
 .connect-button:disabled {
-    -fx-background-color: #bdc3c7;
+    -fx-background-color: #aeb3b7;
     -fx-text-fill: #7f8c8d;
     -fx-cursor: default;
     -fx-effect: none;
+}
+
+/* Styles pour le tableau de bord */
+
+.dashboard-root {
+    -fx-background-color: #f5f5f5;
+}
+
+.dashboard-header {
+    -fx-background-image: url('../asset/home.png');
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center bottom;
+    -fx-background-size: cover;
+}
+
+.dashboard-title {
+    -fx-text-fill: white;
+    -fx-font-family: "System";
+    -fx-font-weight: bold;
+    -fx-font-size: 24px;
+}
+
+.user-name {
+    -fx-text-fill: white;
+    -fx-font-family: "System";
+    -fx-font-weight: normal;
+    -fx-font-size: 14px;
+}
+
+.notification-icon {
+    -fx-background-color: white;
+    -fx-background-radius: 15px;
+    -fx-padding: 5px;
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+}
+
+.notification-badge {
+    -fx-background-color: #ff4444;
+    -fx-background-radius: 8px;
+    -fx-text-fill: white;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 2px 4px 2px 4px;
+    -fx-min-width: 16px;
+    -fx-min-height: 16px;
+    -fx-alignment: center;
+}
+
+.profile-icon {
+    -fx-background-color: white;
+    -fx-background-radius: 15px;
+    -fx-padding: 5px;
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+}
+
+.dashboard-button {
+    -fx-background-color: #5a6c7d;
+    -fx-background-radius: 8px;
+    -fx-border-color: transparent;
+    -fx-border-radius: 8px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 4, 0, 0, 2);
+}
+
+.dashboard-button:hover {
+    -fx-background-color: #4a5c6d;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 6, 0, 0, 3);
+}
+
+.dashboard-button:pressed {
+    -fx-background-color: #3a4c5d;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 2, 0, 0, 1);
+}
+
+.dashboard-button.active-button {
+    -fx-background-color: #4a90e2;
+    -fx-border-color: #2e7bd6;
+    -fx-border-width: 2px;
+}
+
+.dashboard-button.active-button:hover {
+    -fx-background-color: #3a80d2;
+}
+
+.button-icon {
+    -fx-text-fill: white;
+    -fx-font-size: 24px;
+}
+
+.button-text {
+    -fx-text-fill: white;
+    -fx-font-family: "System";
+    -fx-font-weight: normal;
+    -fx-font-size: 16px;
+}
+
+/* Styles spécifiques pour les icônes */
+.affectations-icon::before {
+    content: "👁";
+}
+
+.planning-icon::before {
+    content: "👁";
+}
+
+.disponibilites-icon::before {
+    content: "✏";
 }
