@@ -6,11 +6,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.scene.effect.GaussianBlur;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
+import javafx.stage.Stage;
 import controller.LoginController;
 
 public class LoginView {
@@ -20,8 +18,11 @@ public class LoginView {
     private PasswordField motDePasseField;
     private Button seConnecterButton;
     private LoginController controller;
+    private Stage primaryStage;
     
-    public LoginView() {
+    // Constructor requiring Stage
+    public LoginView(Stage primaryStage) {
+        this.primaryStage = primaryStage;
         createView();
         setupController();
     }
@@ -32,8 +33,6 @@ public class LoginView {
         root.setPrefSize(1024, 600);
         root.getStyleClass().add("root-pane");
         
-        
-        
         // Container principal du formulaire
         VBox loginContainer = new VBox();
         loginContainer.setAlignment(Pos.CENTER);
@@ -41,8 +40,6 @@ public class LoginView {
         loginContainer.setPrefSize(240, 280);
         loginContainer.setPadding(new Insets(30));
         loginContainer.getStyleClass().add("login-container");
-        
-        
         
         // Titre
         Label titleLabel = new Label("SecuOptix");
@@ -58,8 +55,6 @@ public class LoginView {
         formContainer.setPadding(new Insets(20, 15, 15, 15));
         formContainer.getStyleClass().add("form-container");
 
-        
-        
         // Champ identifiant
         VBox identifiantBox = new VBox(3);
         Label identifiantLabel = new Label("Identifiant");
@@ -82,10 +77,11 @@ public class LoginView {
         
         motDePasseBox.getChildren().addAll(motDePasseLabel, motDePasseField);
         
-        // Bouton de connexion
+        // Bouton de connexion (initialement désactivé)
         seConnecterButton = new Button("Se connecter");
         seConnecterButton.setPrefSize(180, 32);
         seConnecterButton.getStyleClass().add("connect-button");
+        seConnecterButton.setDisable(true); // Désactivé par défaut
         
         // Ajout des éléments au formulaire
         formContainer.getChildren().addAll(identifiantBox, motDePasseBox, seConnecterButton);
@@ -102,7 +98,8 @@ public class LoginView {
     }
     
     private void setupController() {
-        controller = new LoginController(identifiantField, motDePasseField, seConnecterButton);
+        // Always use primaryStage to initialize the controller
+        controller = new LoginController(identifiantField, motDePasseField, seConnecterButton, primaryStage);
     }
     
     public AnchorPane getRoot() {
@@ -111,5 +108,12 @@ public class LoginView {
     
     public LoginController getController() {
         return controller;
+    }
+    
+    public void setPrimaryStage(Stage primaryStage) {
+        this.primaryStage = primaryStage;
+        if (controller != null) {
+            controller.setPrimaryStage(primaryStage);
+        }
     }
 }

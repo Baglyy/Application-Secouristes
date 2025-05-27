@@ -2,32 +2,28 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import view.LoginView;
-import java.net.URL;
 
 public class Main extends Application {
     
     @Override
     public void start(Stage primaryStage) {
         try {
-            LoginView loginView = new LoginView();
-            Scene scene = new Scene(loginView.getRoot(), 1024, 600);
+            // Créer la vue de connexion avec la référence au stage principal
+            LoginView loginView = new LoginView(primaryStage);
             
-            // Vérification de l'existence du fichier CSS avant de l'ajouter
-            URL cssResource = getClass().getResource("style.css");
-            if (cssResource != null) {
-                scene.getStylesheets().add(cssResource.toExternalForm());
-                System.out.println("CSS chargé avec succès");
-            } else {
-                System.out.println("Attention : fichier CSS non trouvé - /view/style.css");
-                System.out.println("L'interface fonctionnera sans styles personnalisés");
-            }
+            // Créer la scène
+            Scene scene = new Scene(loginView.getRoot());
             
+            // Appliquer les styles CSS
+            scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
+            
+            // Configurer la fenêtre
             primaryStage.setTitle("SecuOptix - Connexion");
             primaryStage.setScene(scene);
             primaryStage.setResizable(false);
             primaryStage.show();
             
-        } catch (Exception e) {
+        } catch(Exception e) {
             e.printStackTrace();
         }
     }
