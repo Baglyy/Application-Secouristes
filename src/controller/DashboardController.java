@@ -1,9 +1,13 @@
 package controller;
 
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.stage.Stage;
 import javafx.event.ActionEvent;
 import model.DashboardModel;
+import view.DashboardView;
+import view.DisponibilitesView;
 
 public class DashboardController {
     
@@ -65,7 +69,24 @@ public class DashboardController {
     private void handleDisponibilites(ActionEvent event) {
         System.out.println("Navigation vers Disponibilités");
         model.activerDisponibilites();
-        // Ici on pourrait ajouter la logique pour afficher le contenu des disponibilités
+        
+        // Récupérer la fenêtre actuelle
+        Stage currentStage = (Stage) disponibilitesButton.getScene().getWindow();
+        
+        // Créer la nouvelle vue
+        DisponibilitesView disponibilitesView = new DisponibilitesView(model.getNomUtilisateur());
+        
+        // Configurer le retour vers le dashboard
+        disponibilitesView.getController().setOnRetourCallback(() -> {
+            // Recréer la vue du dashboard
+            DashboardView dashboardView = new DashboardView(model.getNomUtilisateur());
+            Scene dashboardScene = new Scene(dashboardView.getRoot(), 1024, 600);
+            currentStage.setScene(dashboardScene);
+        });
+        
+        // Changer la scène
+        Scene disponibilitesScene = new Scene(disponibilitesView.getRoot(), 1024, 600);
+        currentStage.setScene(disponibilitesScene);
     }
     
     private void updateButtonStyles() {
