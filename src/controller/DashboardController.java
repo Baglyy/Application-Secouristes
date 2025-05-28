@@ -8,6 +8,8 @@ import javafx.event.ActionEvent;
 import model.DashboardModel;
 import view.DashboardView;
 import view.DisponibilitesView;
+import view.AffectationsView;
+import view.PlanningView;
 
 public class DashboardController {
     
@@ -57,13 +59,47 @@ public class DashboardController {
     private void handleAffectations(ActionEvent event) {
         System.out.println("Navigation vers Affectations");
         model.activerAffectations();
-        // Ici on pourrait ajouter la logique pour afficher le contenu des affectations
+        
+        // Récupérer la fenêtre actuelle
+        Stage currentStage = (Stage) affectationsButton.getScene().getWindow();
+        
+        // Créer la nouvelle vue
+        AffectationsView affectationsView = new AffectationsView(model.getNomUtilisateur());
+        
+        // Configurer le retour vers le dashboard
+        affectationsView.getController().setOnRetourCallback(() -> {
+            // Recréer la vue du dashboard
+            DashboardView dashboardView = new DashboardView(model.getNomUtilisateur());
+            Scene dashboardScene = new Scene(dashboardView.getRoot(), 1024, 600);
+            currentStage.setScene(dashboardScene);
+        });
+        
+        // Changer la scène
+        Scene affectationsScene = new Scene(affectationsView.getRoot(), 1024, 600);
+        currentStage.setScene(affectationsScene);
     }
     
     private void handlePlanning(ActionEvent event) {
         System.out.println("Navigation vers Planning");
         model.activerPlanning();
-        // Ici on pourrait ajouter la logique pour afficher le contenu du planning
+        
+        // Récupérer la fenêtre actuelle
+        Stage currentStage = (Stage) planningButton.getScene().getWindow();
+        
+        // Créer la nouvelle vue
+        PlanningView planningView = new PlanningView(model.getNomUtilisateur());
+        
+        // Configurer le retour vers le dashboard
+        planningView.getController().setOnRetourCallback(() -> {
+            // Recréer la vue du dashboard
+            DashboardView dashboardView = new DashboardView(model.getNomUtilisateur());
+            Scene dashboardScene = new Scene(dashboardView.getRoot(), 1024, 600);
+            currentStage.setScene(dashboardScene);
+        });
+        
+        // Changer la scène
+        Scene planningScene = new Scene(planningView.getRoot(), 1024, 600);
+        currentStage.setScene(planningScene);
     }
     
     private void handleDisponibilites(ActionEvent event) {

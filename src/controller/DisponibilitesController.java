@@ -5,7 +5,10 @@ import javafx.scene.control.Label;
 import javafx.event.ActionEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 import model.DisponibilitesModel;
+import view.DashboardView;
 
 public class DisponibilitesController {
     
@@ -14,6 +17,7 @@ public class DisponibilitesController {
     private Button precedentButton;
     private Button suivantButton;
     private Button retourButton;
+    private Button homeButton;
     private GridPane calendrierGrid;
     private DisponibilitesModel model;
     private Runnable onRetourCallback;
@@ -43,6 +47,16 @@ public class DisponibilitesController {
         model.setNomUtilisateur(nomUtilisateur);
     }
     
+    public DisponibilitesController(Label nomUtilisateurLabel, Label semaineLabel,
+                                  Button precedentButton, Button suivantButton, 
+                                  Button retourButton, GridPane calendrierGrid,
+                                  String nomUtilisateur, Button homeButton) {
+        this(nomUtilisateurLabel, semaineLabel, precedentButton, suivantButton, 
+             retourButton, calendrierGrid, nomUtilisateur);
+        this.homeButton = homeButton;
+        setupHomeButtonListener();
+    }
+    
     private void setupBindings() {
         // Liaison du nom d'utilisateur avec le label
         if (nomUtilisateurLabel != null) {
@@ -58,6 +72,12 @@ public class DisponibilitesController {
         precedentButton.setOnAction(this::handlePrecedent);
         suivantButton.setOnAction(this::handleSuivant);
         retourButton.setOnAction(this::handleRetour);
+    }
+    
+    private void setupHomeButtonListener() {
+        if (homeButton != null) {
+            homeButton.setOnAction(this::handleHome);
+        }
     }
     
     private void setupCalendrierListeners() {
@@ -94,6 +114,29 @@ public class DisponibilitesController {
         System.out.println("Retour au tableau de bord");
         if (onRetourCallback != null) {
             onRetourCallback.run();
+        } else {
+            navigateToDashboard();
+        }
+    }
+    
+    private void handleHome(ActionEvent event) {
+        System.out.println("Navigation vers le tableau de bord via bouton Home");
+        navigateToDashboard();
+    }
+    
+    private void navigateToDashboard() {
+        try {
+            // Récupérer la fenêtre actuelle
+            Stage currentStage = (Stage) (homeButton != null ? homeButton.getScene().getWindow() : 
+                                         retourButton.getScene().getWindow());
+            
+            // Créer la nouvelle vue du dashboard
+            DashboardView dashboardView = new DashboardView(model.getNomUtilisateur());
+            Scene dashboardScene = new Scene(dashboardView.getRoot(), 1024, 600);
+            currentStage.setScene(dashboardScene);
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la navigation vers le dashboard : " + e.getMessage());
+            e.printStackTrace();
         }
     }
     
@@ -118,9 +161,6 @@ public class DisponibilitesController {
                 
                 // Mettre à jour le style du bouton
                 updateCellStyle(clickedButton, model.isDisponible(heure, jour));
-                
-                System.out.println("Toggle disponibilité: " + jour + " " + heure + 
-                                 " -> " + (model.isDisponible(heure, jour) ? "Disponible" : "Indisponible"));
             }
         }
     }
