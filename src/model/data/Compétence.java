@@ -2,10 +2,10 @@ package model.data
 
 
 public class Compétence{
-    
+
     private String intitule;
 
-    // Constructeur avec validation
+    // Constructeur
     public Competence(String intitule) {
         setIntitule(intitule);
     }
@@ -15,7 +15,7 @@ public class Compétence{
         return intitule;
     }
 
-    // Setter défensif
+    // Setter
     public void setIntitule(String intitule) {
         if (intitule == null || intitule.trim().isEmpty()) {
             throw new IllegalArgumentException("Intitulé invalide");
