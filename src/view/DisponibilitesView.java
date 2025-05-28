@@ -20,6 +20,7 @@ public class DisponibilitesView {
     private Button precedentButton;
     private Button suivantButton;
     private Button retourButton;
+    private Button homeButton;
     private GridPane calendrierGrid;
     private DisponibilitesController controller;
     
@@ -75,11 +76,11 @@ public class DisponibilitesView {
         AnchorPane.setTopAnchor(notificationBadge, -5.0);
         AnchorPane.setRightAnchor(notificationBadge, -5.0);
         
-        // Icône de profil
-        Label profileIcon = new Label("👤");
-        profileIcon.getStyleClass().add("profile-icon");
+        // Bouton Home (remplace l'icône de profil)
+        homeButton = new Button("🏠");
+        homeButton.getStyleClass().add("profile-icon");
         
-        userInfo.getChildren().addAll(nomUtilisateurLabel, notificationContainer, profileIcon);
+        userInfo.getChildren().addAll(nomUtilisateurLabel, notificationContainer, homeButton);
         headerContent.getChildren().addAll(titleLabel, spacer, userInfo);
         
         AnchorPane.setLeftAnchor(headerContent, 0.0);
@@ -234,7 +235,7 @@ public class DisponibilitesView {
     private void setupController(String nomUtilisateur) {
         controller = new DisponibilitesController(nomUtilisateurLabel, semaineLabel,
                                                 precedentButton, suivantButton, 
-                                                retourButton, calendrierGrid, nomUtilisateur);
+                                                retourButton, calendrierGrid, nomUtilisateur, homeButton);
     }
     
     private void loadStylesheet() {

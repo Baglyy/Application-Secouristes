@@ -36,7 +36,7 @@ public class DashboardView {
         
         // Header avec image de fond de montagnes
         AnchorPane header = new AnchorPane();
-        header.setPrefHeight(80);
+        header.setPrefHeight(70);
         header.getStyleClass().add("dashboard-header");
         
         // Container du header avec le titre et les infos utilisateur
