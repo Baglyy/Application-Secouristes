@@ -8,6 +8,7 @@ import javafx.stage.Stage;
 import javafx.event.ActionEvent;
 import model.LoginModel;
 import view.DashboardView;
+import view.AdminDashboardView;
 
 public class LoginController {
     
@@ -65,7 +66,13 @@ public class LoginController {
         // Simuler une authentification réussie
         if (authenticateUser(model.getIdentifiant(), model.getMotDePasse())) {
             System.out.println("Connexion réussie ! Redirection vers le tableau de bord...");
-            navigateToDashboard();
+            
+            // Vérifier si l'utilisateur est admin
+            if ("admin".equalsIgnoreCase(model.getIdentifiant().trim())) {
+                navigateToAdminDashboard();
+            } else {
+                navigateToDashboard();
+            }
         } else {
             System.out.println("Échec de la connexion : identifiants incorrects");
             // Ici, on pourrait afficher un message d'erreur à l'utilisateur
@@ -97,7 +104,7 @@ public class LoginController {
             try {
                 dashboardScene.getStylesheets().add(getClass().getResource("../style.css").toExternalForm());
             } catch (Exception cssException) {
-                System.out.println("Attention: Fichier CSS dashboard.css non trouvé, styles par défaut appliqués");
+                System.out.println("Attention: Fichier CSS style.css non trouvé, styles par défaut appliqués");
             }
             
             // Changer la scène
@@ -107,10 +114,47 @@ public class LoginController {
             // Vider les champs de connexion pour la sécurité
             model.clearFields();
             
-            System.out.println("Navigation vers le tableau de bord réussie !");
+            System.out.println("Navigation vers le tableau de bord utilisateur réussie !");
             
         } catch (Exception e) {
             System.err.println("Erreur lors de la navigation vers le tableau de bord: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    private void navigateToAdminDashboard() {
+        if (primaryStage == null) {
+            System.err.println("Erreur: primaryStage est null - impossible de naviguer vers le tableau de bord admin");
+            // Vider les champs quand même
+            model.clearFields();
+            return;
+        }
+        
+        try {
+            // Créer la vue du tableau de bord admin avec le nom d'utilisateur
+            AdminDashboardView adminDashboardView = new AdminDashboardView(model.getIdentifiant().toUpperCase());
+            
+            // Créer une nouvelle scène avec le tableau de bord admin
+            Scene adminDashboardScene = new Scene(adminDashboardView.getRoot());
+            
+            // Essayer d'appliquer le CSS pour le dashboard
+            try {
+                adminDashboardScene.getStylesheets().add(getClass().getResource("../style.css").toExternalForm());
+            } catch (Exception cssException) {
+                System.out.println("Attention: Fichier CSS style.css non trouvé, styles par défaut appliqués");
+            }
+            
+            // Changer la scène
+            primaryStage.setScene(adminDashboardScene);
+            primaryStage.setTitle("SecuOptix - Tableau de bord Administrateur");
+            
+            // Vider les champs de connexion pour la sécurité
+            model.clearFields();
+            
+            System.out.println("Navigation vers le tableau de bord administrateur réussie !");
+            
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la navigation vers le tableau de bord admin: " + e.getMessage());
             e.printStackTrace();
         }
     }
