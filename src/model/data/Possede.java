@@ -7,8 +7,10 @@ public class Possede {
 
     // Constructeur
     public Possede(Secouriste secouriste, Competence competence) {
-        setSecouriste(secouriste);
-        setCompetence(competence);
+        if(secouriste == null) throw new NullPointerException("Erreur : le secouriste ne peut pas être null.");
+        if(competence == null) throw new NullPointerException("Erreur : la compétence ne peut pas être null.");
+        this.secouriste = secouriste;
+        this.competence = competence;
     }
 
     // Getter
@@ -23,14 +25,14 @@ public class Possede {
     // Setter
     public void setSecouriste(Secouriste secouriste) {
         if (secouriste == null) {
-            throw new IllegalArgumentException("Secouriste ne peuyt pas etre null");
+            throw new IllegalArgumentException("Secouriste ne peut pas être null");
         }
         this.secouriste = secouriste;
     }
 
     public void setCompetence(Competence competence) {
         if (competence == null) {
-            throw new IllegalArgumentException("Competence ne peut pas etre null");
+            throw new IllegalArgumentException("Competence ne peut pas être null");
         }
         this.competence = competence;
     }
