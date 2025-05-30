@@ -13,12 +13,12 @@ public class Besoin {
         setNombre(nombre);
     }
 
-    // Getter 
+    // Getter nbr
     public int getNombre() {
         return nombre;
     }
 
-    // Setter 
+    // Setter nbr
     public void setNombre(int nombre) {
         if (nombre <= 0) {
             throw new IllegalArgumentException("Nombre invalide");
@@ -26,12 +26,12 @@ public class Besoin {
         this.nombre = nombre;
     }
 
-    // Getter
+    // Getter dps
     public DPS getDps() {
         return dps;
     }
 
-    // Setter 
+    // Setter dps
     public void setDps(DPS dps) {
         if (dps == null) {
             throw new IllegalArgumentException("DPS invalide");
@@ -39,12 +39,12 @@ public class Besoin {
         this.dps = dps;
     }
 
-    // Getter 
+    // Getter cpt
     public Competence getCompetence() {
         return competence;
     }
 
-    // Setter 
+    // Setter cpt
     public void setCompetence(Competence competence) {
         if (competence == null) {
             throw new IllegalArgumentException("Compétence invalide");
