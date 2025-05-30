@@ -1,5 +1,10 @@
 package model.data;
 
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+
 class Secouriste{
     private long id;
     private String nom;
@@ -10,7 +15,7 @@ class Secouriste{
     private String adresse;
 
     public Secouriste(long id, String nom, String prenom, String dateDeNaissance, String email, String tel, String adresse){
-        if (id == null || id <= 0) {
+        if (id <= 0) {
             throw new IllegalArgumentException("L'ID doit être un nombre positif non null");
         }
         if (nom == null || nom.isEmpty()) {
@@ -33,6 +38,17 @@ class Secouriste{
         this.email = email;
         this.tel = tel;
         this.adresse = adresse;
+    }
+
+    public int calculerAge(){
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDate naissance = LocalDate.parse(this.dateDeNaissance, formatter);
+            LocalDate aujourdHui = LocalDate.now();
+            return Period.between(naissance, aujourdHui).getYears();
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("Format de date invalide. Attendu : yyyy-MM-dd");
+        }
     }
 
 

@@ -1,3 +1,5 @@
+package model.data;
+
 public class Possede {
 
     private Secouriste secouriste;

@@ -7,7 +7,7 @@ class estDisponible{
     private int annee;
 
     //constructeur
-    public estDisponible( ling idSecouriste, int jour, int mois, int annee){
+    public estDisponible( long idSecouriste, int jour, int mois, int annee){
         if (idSecouriste <= 0) throw new IllegalArgumentException("ID invalide");
         if (jour < 1 || jour > 31) throw new IllegalArgumentException("Jour invalide : " + jour);
         if (mois < 1 || mois > 12) throw new IllegalArgumentException("Mois invalide : " + mois);
@@ -34,7 +34,7 @@ class estDisponible{
     }
 
     // setter
-    public void setIdSecouriste(ling idSecouriste){
+    public void setIdSecouriste(long idSecouriste){
         if ( idSecouriste <= 0) throw new IllegalArgumentException("ID invalide");
         this.idSecouriste = idSecouriste;
     }
@@ -47,7 +47,7 @@ class estDisponible{
         this.mois = mois; 
     }
     public void setAnnee(int annee){
-        if (anne <= 0) throw new IllegalArgumentException("Annee invalide : " + annee);
+        if (annee <= 0) throw new IllegalArgumentException("Annee invalide : " + annee);
         this.annee = annee;
     }
 
