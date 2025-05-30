@@ -26,16 +26,19 @@ public class Journee {
     }
 
     private int nbJoursDansMois(int mois, int annee) {
+        int nbJours = 31;
+
         if (mois == 2) {
-            return estBissextile(annee) ? 29 : 28;
+            if (estBissextile(annee)) {
+                nbJours = 29;
+            } else {
+                nbJours = 28;
+            }
+        } else if (mois == 4 || mois == 6 || mois == 9 || mois == 11) {
+            nbJours = 30;
         }
 
-        if (mois == 4 || mois == 6 || mois == 9 || mois == 11) {
-            return 30;
-        }
-
-        // Tous les autres mois : 1, 3, 5, 7, 8, 10, 12
-        return 31;
+        return nbJours;
     }
 
     private boolean estBissextile(int annee) {
