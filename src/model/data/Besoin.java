@@ -1,4 +1,4 @@
-package model.data
+package model.data;
 
 public class Besoin {
 
