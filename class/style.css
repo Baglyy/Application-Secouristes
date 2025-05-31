@@ -158,6 +158,7 @@
     -fx-background-color: #5a6c7d;
     -fx-background-radius: 8px;
     -fx-border-color: transparent;
+    -fx-text-fill: white;
     -fx-border-radius: 8px;
     -fx-cursor: hand;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 4, 0, 0, 2);
@@ -165,11 +166,13 @@
 
 .dashboard-button:hover {
     -fx-background-color: #2e475e;
+    -fx-text-fill: white;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 6, 0, 0, 3);
 }
 
 .dashboard-button:pressed {
     -fx-background-color: #3a4c5d;
+    -fx-text-fill: white;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 2, 0, 0, 1);
 }
 
