@@ -6,6 +6,10 @@ import javafx.scene.control.Label;
 import javafx.stage.Stage;
 import javafx.event.ActionEvent;
 import model.AdminDashboardModel;
+import view.AdminDashboardView;
+import view.AdminSecouristesView;
+import view.AdminAffectationsView;
+import view.AdminDispositifsView;
 
 public class AdminDashboardController {
     
@@ -56,48 +60,69 @@ public class AdminDashboardController {
         System.out.println("Navigation vers Dispositifs de secours");
         model.activerDispositifs();
         
-        // TODO: Implémenter la navigation vers la vue des dispositifs
         // Récupérer la fenêtre actuelle
-        // Stage currentStage = (Stage) dispositifsButton.getScene().getWindow();
+        Stage currentStage = (Stage) dispositifsButton.getScene().getWindow();
         
         // Créer la nouvelle vue
-        // DispositivsView dispositivsView = new DispositivsView(model.getNomUtilisateur());
+        AdminDispositifsView adminDispositifsView = new AdminDispositifsView(model.getNomUtilisateur());
+        
+        // Configurer le retour vers le dashboard
+        adminDispositifsView.getController().setOnRetourCallback(() -> {
+            // Recréer la vue du dashboard
+            AdminDashboardView dashboardView = new AdminDashboardView(model.getNomUtilisateur());
+            Scene dashboardScene = new Scene(dashboardView.getRoot(), 1024, 600);
+            currentStage.setScene(dashboardScene);
+        });
         
         // Changer la scène
-        // Scene dispositivsScene = new Scene(dispositivsView.getRoot(), 1024, 600);
-        // currentStage.setScene(dispositivsScene);
+        Scene dispositifsScene = new Scene(adminDispositifsView.getRoot(), 1024, 600);
+        currentStage.setScene(dispositifsScene);
     }
     
     private void handleAffectationsSecouristes(ActionEvent event) {
         System.out.println("Navigation vers Affectations secouristes");
         model.activerAffectationsSecouristes();
         
-        // TODO: Implémenter la navigation vers la vue des affectations secouristes
         // Récupérer la fenêtre actuelle
-        // Stage currentStage = (Stage) affectationsSecouristesButton.getScene().getWindow();
+        Stage currentStage = (Stage) affectationsSecouristesButton.getScene().getWindow();
         
         // Créer la nouvelle vue
-        // AffectationsSecouristesView affectationsSecouristesView = new AffectationsSecouristesView(model.getNomUtilisateur());
+        AdminAffectationsView adminAffectationsView = new AdminAffectationsView(model.getNomUtilisateur());
+        
+        // Configurer le retour vers le dashboard
+        adminAffectationsView.getController().setOnRetourCallback(() -> {
+            // Recréer la vue du dashboard
+            AdminDashboardView dashboardView = new AdminDashboardView(model.getNomUtilisateur());
+            Scene dashboardScene = new Scene(dashboardView.getRoot(), 1024, 600);
+            currentStage.setScene(dashboardScene);
+        });
         
         // Changer la scène
-        // Scene affectationsSecouristesScene = new Scene(affectationsSecouristesView.getRoot(), 1024, 600);
-        // currentStage.setScene(affectationsSecouristesScene);
+        Scene affectationsScene = new Scene(adminAffectationsView.getRoot(), 1024, 600);
+        currentStage.setScene(affectationsScene);
     }
     
     private void handleSecouristes(ActionEvent event) {
         System.out.println("Navigation vers Secouristes");
         model.activerSecouristes();
         
-        // TODO: Implémenter la navigation vers la vue des secouristes
         // Récupérer la fenêtre actuelle
-        // Stage currentStage = (Stage) secouristesButton.getScene().getWindow();
+        Stage currentStage = (Stage) secouristesButton.getScene().getWindow();
         
         // Créer la nouvelle vue
-        // SecouristesView secouristesView = new SecouristesView(model.getNomUtilisateur());
+        AdminSecouristesView adminSecouristesView = new AdminSecouristesView(model.getNomUtilisateur());
+        
+        // Configurer le retour vers le dashboard
+        adminSecouristesView.getController().setOnRetourCallback(() -> {
+            // Recréer la vue du dashboard
+            AdminDashboardView dashboardView = new AdminDashboardView(model.getNomUtilisateur());
+            Scene dashboardScene = new Scene(dashboardView.getRoot(), 1024, 600);
+            currentStage.setScene(dashboardScene);
+        });
         
         // Changer la scène
-        // Scene secouristesScene = new Scene(secouristesView.getRoot(), 1024, 600);
-        // currentStage.setScene(secouristesScene);
+        Scene secouristesScene = new Scene(adminSecouristesView.getRoot(), 1024, 600);
+        currentStage.setScene(secouristesScene);
     }
     
     private void updateButtonStyles() {
