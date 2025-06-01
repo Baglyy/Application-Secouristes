@@ -22,7 +22,7 @@ public abstract class DAO <T> {
         return DriverManager.getConnection(url , username , password);
     }
     public abstract List <T> findAll ();
-    public abstract T findByID(Long id);
+    public abstract T findByID(long id);
     public abstract int update(T element);
     public abstract int delete(T element);
     public abstract int create(T element);
