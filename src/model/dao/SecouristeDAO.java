@@ -51,7 +51,7 @@ public class SecouristeDAO extends DAO<Secouriste>{
         Statement st = con.createStatement ();
         ResultSet rs = st.executeQuery("SELECT * FROM SECOURISTE")) {
             while (rs.next()) {
-                String id = rs.getLong("ID");
+                long id = rs.getLong("ID");
                 String nom = rs.getString("NOM");
                 String prenom = rs.getString("PRENOM");
                 String dateDeNaissance = rs.getString("DATEDENAISSANCE");
@@ -66,14 +66,19 @@ public class SecouristeDAO extends DAO<Secouriste>{
         return secouristes;
     }
 
-    public Secouriste findId(String id) {
+    public Secouriste findByID(long id) {
         try (Connection con = getConnection ();
         PreparedStatement st = con.prepareStatement("SELECT * FROM SECOURISTE WHERE ID= ?")) {
-            st.setString(1, id);
+            st.setLong(1, id);
             try(ResultSet rs = st.executeQuery ()){
                 if (rs.next()) {
-                    String l = rs.getString("ID");
-                    return new Secouriste(l);
+                    String nom = rs.getString("NOM");
+                    String prenom = rs.getString("PRENOM");
+                    String dateDeNaissance = rs.getString("DATEDENAISSANCE");
+                    String email = rs.getString("EMAIL");
+                    String tel = rs.getString("TEL");
+                    String adresse = rs.getString("ADRESSE");
+                    return new Secouriste(id, nom, prenom, dateDeNaissance, email, tel, adresse);
                 }
             } catch (SQLException ex) { ex.printStackTrace (); }
         } catch (SQLException ex) { 
