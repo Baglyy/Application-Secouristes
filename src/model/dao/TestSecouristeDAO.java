@@ -1,3 +1,5 @@
+package model.dao;
+
 import model.dao.SecouristeDAO;
 import model.data.Secouriste;
 
