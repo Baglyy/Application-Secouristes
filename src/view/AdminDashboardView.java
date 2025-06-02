@@ -62,7 +62,7 @@ public class AdminDashboardView {
         
         // Icône de notification
         Label notificationIcon = new Label("🔔");
-        notificationIcon.getStyleClass().add("notification-icon");
+        notificationIcon.getStyleClass().add("profile-icon");
         
         // Badge rouge sur la notification
         Label notificationBadge = new Label("1");

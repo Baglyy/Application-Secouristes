@@ -68,7 +68,7 @@ public class PlanningView {
         
         // Icône de notification avec badge
         Label notificationIcon = new Label("🔔");
-        notificationIcon.getStyleClass().add("notification-icon");
+        notificationIcon.getStyleClass().add("profile-icon");
         
         Label notificationBadge = new Label("1");
         notificationBadge.getStyleClass().add("notification-badge");

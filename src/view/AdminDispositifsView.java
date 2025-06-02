@@ -111,7 +111,7 @@ public class AdminDispositifsView {
         
         // Icône de notification avec badge
         Label notificationIcon = new Label("🔔");
-        notificationIcon.getStyleClass().add("notification-icon");
+        notificationIcon.getStyleClass().add("profile-icon");
         
         Label notificationBadge = new Label("1");
         notificationBadge.getStyleClass().add("notification-badge");
@@ -123,7 +123,7 @@ public class AdminDispositifsView {
         
         // Icône maison pour retour
         homeIcon = new Label("🏠");
-        homeIcon.getStyleClass().addAll("notification-icon", "clickable");
+        homeIcon.getStyleClass().addAll("profile-icon", "clickable");
         homeIcon.setStyle("-fx-cursor: hand;");
         
         userInfo.getChildren().addAll(nomUtilisateurLabel, notificationContainer, homeIcon);

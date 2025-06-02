@@ -65,7 +65,7 @@ public class DashboardView {
         
         // Icône de notification
         Label notificationIcon = new Label("🔔");
-        notificationIcon.getStyleClass().add("notification-icon");
+        notificationIcon.getStyleClass().add("profile-icon");
         
         // Badge rouge sur la notification
         Label notificationBadge = new Label("1");
@@ -79,7 +79,7 @@ public class DashboardView {
         
         // Bouton de déconnexion (remplace l'icône de profil)
         deconnexionButton = new Button("Déconnexion");
-        deconnexionButton.getStyleClass().add("notification-icon");
+        deconnexionButton.getStyleClass().add("profile-icon");
         
         userInfo.getChildren().addAll(nomUtilisateurLabel, notificationContainer, deconnexionButton);
         headerContent.getChildren().addAll(titleLabel, spacer, userInfo);

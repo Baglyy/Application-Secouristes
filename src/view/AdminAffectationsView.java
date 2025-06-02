@@ -69,7 +69,7 @@ public class AdminAffectationsView {
         
         // Icône de notification
         Label notificationIcon = new Label("🔔");
-        notificationIcon.getStyleClass().add("notification-icon");
+        notificationIcon.getStyleClass().add("profile-icon");
         
         // Badge rouge sur la notification
         Label notificationBadge = new Label("1");
@@ -83,7 +83,7 @@ public class AdminAffectationsView {
         
         // Icône maison
         homeIcon = new Label("🏠");
-        homeIcon.getStyleClass().add("notification-icon");
+        homeIcon.getStyleClass().add("profile-icon");
         
         userInfo.getChildren().addAll(nomUtilisateurLabel, notificationContainer, homeIcon);
         headerContent.getChildren().addAll(titleLabel, spacer, userInfo);
