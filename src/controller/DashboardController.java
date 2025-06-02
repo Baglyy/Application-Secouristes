@@ -10,20 +10,23 @@ import view.DashboardView;
 import view.DisponibilitesView;
 import view.AffectationsView;
 import view.PlanningView;
+import view.LoginView;
 
 public class DashboardController {
     
     private Button affectationsButton;
     private Button planningButton;
     private Button disponibilitesButton;
+    private Button deconnexionButton;
     private Label nomUtilisateurLabel;
     private DashboardModel model;
     
     public DashboardController(Button affectationsButton, Button planningButton, 
-                              Button disponibilitesButton, Label nomUtilisateurLabel) {
+                              Button disponibilitesButton, Button deconnexionButton, Label nomUtilisateurLabel) {
         this.affectationsButton = affectationsButton;
         this.planningButton = planningButton;
         this.disponibilitesButton = disponibilitesButton;
+        this.deconnexionButton = deconnexionButton;
         this.nomUtilisateurLabel = nomUtilisateurLabel;
         this.model = new DashboardModel();
         
@@ -33,9 +36,9 @@ public class DashboardController {
     }
     
     public DashboardController(Button affectationsButton, Button planningButton, 
-                              Button disponibilitesButton, Label nomUtilisateurLabel, 
+                              Button disponibilitesButton, Button deconnexionButton, Label nomUtilisateurLabel, 
                               String nomUtilisateur) {
-        this(affectationsButton, planningButton, disponibilitesButton, nomUtilisateurLabel);
+        this(affectationsButton, planningButton, disponibilitesButton, deconnexionButton, nomUtilisateurLabel);
         model.setNomUtilisateur(nomUtilisateur);
     }
     
@@ -54,6 +57,7 @@ public class DashboardController {
         affectationsButton.setOnAction(this::handleAffectations);
         planningButton.setOnAction(this::handlePlanning);
         disponibilitesButton.setOnAction(this::handleDisponibilites);
+        deconnexionButton.setOnAction(this::handleDeconnexion);
     }
     
     private void handleAffectations(ActionEvent event) {
@@ -123,6 +127,32 @@ public class DashboardController {
         // Changer la scène
         Scene disponibilitesScene = new Scene(disponibilitesView.getRoot(), 1024, 600);
         currentStage.setScene(disponibilitesScene);
+    }
+    
+    private void handleDeconnexion(ActionEvent event) {
+        System.out.println("Déconnexion de l'utilisateur");
+        
+        // Récupérer la fenêtre actuelle
+        Stage currentStage = (Stage) deconnexionButton.getScene().getWindow();
+        
+        // Créer la vue de connexion
+        LoginView loginView = new LoginView(currentStage);
+        
+        // Créer une nouvelle scène avec la vue de connexion
+        Scene loginScene = new Scene(loginView.getRoot(), 1024, 600);
+        
+        // Essayer d'appliquer le CSS pour le login
+        try {
+            loginScene.getStylesheets().add(getClass().getResource("../style.css").toExternalForm());
+        } catch (Exception cssException) {
+            System.out.println("Attention: Fichier CSS style.css non trouvé, styles par défaut appliqués");
+        }
+        
+        // Changer la scène
+        currentStage.setScene(loginScene);
+        currentStage.setTitle("SecuOptix - Connexion");
+        
+        System.out.println("Retour à la page de connexion réussi !");
     }
     
     private void updateButtonStyles() {

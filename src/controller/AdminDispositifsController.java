@@ -27,6 +27,7 @@ public class AdminDispositifsController {
     private WebView mapWebView;
     private AdminDispositifsModel model;
     private Runnable onRetourCallback;
+    private boolean mapInitialized = false;
     
     public AdminDispositifsController(
             TextField nomTextField,
@@ -50,12 +51,8 @@ public class AdminDispositifsController {
         this.mapWebView = mapWebView;
         this.model = new AdminDispositifsModel(nomUtilisateur);
         
-        // S'assurer que le WebView a une taille appropriée
-        mapWebView.setPrefSize(800, 250);
-        
         setupBindings();
         setupListeners();
-        initializeInteractiveMap();
     }
     
     private void setupBindings() {
@@ -68,7 +65,11 @@ public class AdminDispositifsController {
         // Écouter les changements dans la liste pour mettre à jour la carte
         model.getDispositifs().addListener(
             (javafx.collections.ListChangeListener<AdminDispositifsModel.Dispositif>) change -> {
-                Platform.runLater(() -> updateMapMarkers());
+                Platform.runLater(() -> {
+                    if (mapInitialized) {
+                        updateMapMarkers();
+                    }
+                });
             }
         );
     }
@@ -81,7 +82,7 @@ public class AdminDispositifsController {
         // Listener pour la sélection dans la liste
         deviceListView.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             supprimerButton.setDisable(newSelection == null);
-            if (newSelection != null) {
+            if (newSelection != null && mapInitialized) {
                 // Centrer la carte sur le dispositif sélectionné
                 centerMapOnDevice(newSelection);
             }
@@ -89,6 +90,10 @@ public class AdminDispositifsController {
     }
     
     private void initializeInteractiveMap() {
+        if (mapInitialized) {
+            return;
+        }
+        
         String mapHtml = """
             <!DOCTYPE html>
             <html>
@@ -108,8 +113,8 @@ public class AdminDispositifsController {
 
                     #map {
                         width: 100%;
-                        height: 250px; /* fixe explicite */
-                        max-height: 100%;
+                        height: 100%;
+                        min-height: 500px;
                     }
                 </style>
             </head>
@@ -205,6 +210,7 @@ public class AdminDispositifsController {
         // Attendre que la carte soit chargée
         mapWebView.getEngine().getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
             if (newState == Worker.State.SUCCEEDED) {
+                mapInitialized = true;
                 Platform.runLater(() -> {
                     mapWebView.getEngine().executeScript("""
                         if (typeof invalidateMapSize === 'function') {
@@ -218,10 +224,13 @@ public class AdminDispositifsController {
                 });
             }
         });
-
     }
     
     private void updateMapMarkers() {
+        if (!mapInitialized) {
+            return;
+        }
+        
         try {
             // Construire le tableau JavaScript des dispositifs
             StringBuilder jsDevices = new StringBuilder("[");
@@ -245,6 +254,10 @@ public class AdminDispositifsController {
     }
     
     private void centerMapOnDevice(AdminDispositifsModel.Dispositif device) {
+        if (!mapInitialized) {
+            return;
+        }
+        
         try {
             String script = String.format("if (typeof centerOnDevice === 'function') { centerOnDevice(%f, %f); }", 
                                         device.getLatitude(), device.getLongitude());
@@ -372,24 +385,28 @@ public class AdminDispositifsController {
         return model;
     }
     
-    // Méthode pour forcer la mise à jour de la carte
+    // Méthode pour initialiser et rafraîchir la carte (appelée lors de l'ouverture de la popup)
     public void refreshMap() {
         Platform.runLater(() -> {
-            mapWebView.getEngine().executeScript("""
-                if (typeof invalidateMapSize === 'function') {
-                    invalidateMapSize();
-                }
-            """);
-            updateMapMarkers();
+            if (!mapInitialized) {
+                initializeInteractiveMap();
+            } else {
+                mapWebView.getEngine().executeScript("""
+                    if (typeof invalidateMapSize === 'function') {
+                        invalidateMapSize();
+                    }
+                """);
+                updateMapMarkers();
+            }
         });
     }
-
-
     
-    // Nouvelle méthode pour forcer le recalcul de la taille de la carte
+    // Méthode pour forcer le recalcul de la taille de la carte
     public void invalidateMapSize() {
         Platform.runLater(() -> {
-            mapWebView.getEngine().executeScript("if (typeof invalidateMapSize === 'function') { invalidateMapSize(); }");
+            if (mapInitialized) {
+                mapWebView.getEngine().executeScript("if (typeof invalidateMapSize === 'function') { invalidateMapSize(); }");
+            }
         });
     }
 }
