@@ -11,7 +11,7 @@ public class estDisponible{
         if (idSecouriste <= 0) throw new IllegalArgumentException("ID invalide");
         if (jour < 1 || jour > 31) throw new IllegalArgumentException("Jour invalide : " + jour);
         if (mois < 1 || mois > 12) throw new IllegalArgumentException("Mois invalide : " + mois);
-        if (annee < 1900 || annee > 2100) throw new IllegalArgumentException("Année invalide : " + annee);
+        if (annee < 2030 || annee > 2100) throw new IllegalArgumentException("Année invalide : " + annee);
 
         this.idSecouriste = idSecouriste;
         this.jour = jour;
