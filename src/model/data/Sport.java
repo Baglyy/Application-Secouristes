@@ -7,8 +7,11 @@ public class Sport {
 
     // Constructeur 
     public Sport(String code, String nom) {
-        setCode(code);
-        setNom(nom);
+        if (code == null || code.trim().isEmpty()) throw new IllegalArgumentException("Code Sport invalide");
+        this.code = code.trim();
+        
+        if (nom == null || nom.trim().isEmpty()) throw new IllegalArgumentException("Nome Sport invalide");
+        this.nom = nom.trim();
     }
 
     // Getter  code
