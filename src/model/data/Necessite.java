@@ -7,8 +7,11 @@ public class Necessite {
 
     // Constructeur 
     public Necessite(DPS dps, Competence competence) {
-        setDps(dps);
-        setCompetence(competence);
+        if (dps == null) throw new IllegalArgumentException("DPS invalide");
+        this.dps = dps;
+        
+        if (competence == null) throw new IllegalArgumentException("Compétence invalide");
+        this.competence = competence;
     }
 
     // Getter DPS
