@@ -1,6 +1,6 @@
 package model.data;
 
-class estDisponible{
+public class estDisponible{
     private long idSecouriste;
     private int jour;
     private int mois;
