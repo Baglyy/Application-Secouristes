@@ -13,10 +13,18 @@ public class Site {
 
     // Constructeur 
     public Site(String code, String nom, float longitude, float latitude) {
-        setCode(code);
-        setNom(nom);
-        setLongitude(longitude);
-        setLatitude(latitude);
+        if (nom == null || nom.trim().isEmpty()) throw new IllegalArgumentException("Nom invalide");
+        this.nom = nom.trim();
+        
+        if (code == null || code.trim().isEmpty()) throw new IllegalArgumentException("Code invalide");
+        this.code = code.trim();
+        
+        if (longitude < -180 || longitude > 180) throw new IllegalArgumentException("Longitude invalide.");
+        this.longitude = longitude;        
+
+        if (latitude < -90 || latitude > 90) throw new IllegalArgumentException("Latitude invalide.");
+        this.latitude = latitude;
+        
         this.dpsOrganises = new ArrayList<>();
     }
 
