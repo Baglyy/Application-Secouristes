@@ -8,9 +8,14 @@ public class Besoin {
 
     // Constructeur défensif
     public Besoin(DPS dps, Competence competence, int nombre) {
-        setDps(dps);
-        setCompetence(competence);
-        setNombre(nombre);
+        if (dps == null) throw new IllegalArgumentException("DPS invalide");
+        this.dps = dps;
+        
+        if (competence == null) throw new IllegalArgumentException("Compétence invalide");
+        this.competence = competence;
+        
+        if (nombre <= 0) throw new IllegalArgumentException("Nombre invalide");
+        this.nombre = nombre;
     }
 
     // Getter nbr
