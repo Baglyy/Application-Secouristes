@@ -17,6 +17,7 @@ public class DashboardView {
     private Button affectationsButton;
     private Button planningButton;
     private Button disponibilitesButton;
+    private Button deconnexionButton;
     private Label nomUtilisateurLabel;
     private DashboardController controller;
     
@@ -76,11 +77,11 @@ public class DashboardView {
         AnchorPane.setTopAnchor(notificationBadge, -5.0);
         AnchorPane.setRightAnchor(notificationBadge, -5.0);
         
-        // Icône de profil
-        Label profileIcon = new Label("👤");
-        profileIcon.getStyleClass().add("profile-icon");
+        // Bouton de déconnexion (remplace l'icône de profil)
+        deconnexionButton = new Button("Déconnexion");
+        deconnexionButton.getStyleClass().add("notification-icon");
         
-        userInfo.getChildren().addAll(nomUtilisateurLabel, notificationContainer, profileIcon);
+        userInfo.getChildren().addAll(nomUtilisateurLabel, notificationContainer, deconnexionButton);
         headerContent.getChildren().addAll(titleLabel, spacer, userInfo);
         
         // Ajout du contenu au header
@@ -184,12 +185,12 @@ public class DashboardView {
     
     private void setupController() {
         controller = new DashboardController(affectationsButton, planningButton, 
-                                           disponibilitesButton, nomUtilisateurLabel);
+                                           disponibilitesButton, deconnexionButton, nomUtilisateurLabel);
     }
     
     private void setupController(String nomUtilisateur) {
         controller = new DashboardController(affectationsButton, planningButton, 
-                                           disponibilitesButton, nomUtilisateurLabel, nomUtilisateur);
+                                           disponibilitesButton, deconnexionButton, nomUtilisateurLabel, nomUtilisateur);
     }
     
     private void loadStylesheet() {

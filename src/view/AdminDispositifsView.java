@@ -2,9 +2,12 @@ package view;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.web.WebView;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import controller.AdminDispositifsController;
 import model.AdminDispositifsModel;
 
@@ -16,11 +19,13 @@ public class AdminDispositifsView {
     private TextField longitudeTextField;
     private Button ajouterButton;
     private Button supprimerButton;
+    private Button afficherCarteButton;
     private ListView<AdminDispositifsModel.Dispositif> deviceListView;
     private Label nomUtilisateurLabel;
     private Label homeIcon;
     private WebView mapWebView;
     private AdminDispositifsController controller;
+    private Stage mapStage;
     
     public AdminDispositifsView(String nomUtilisateur) {
         createView();
@@ -55,8 +60,8 @@ public class AdminDispositifsView {
         
         topSection.getChildren().addAll(formulaire, listeSection);
         
-        // Carte interactive (partie basse)
-        VBox carteSection = createCarteSection();
+        // Section bouton carte
+        VBox carteSection = createCarteButtonSection();
         
         mainContent.getChildren().addAll(topSection, carteSection);
         
@@ -71,6 +76,9 @@ public class AdminDispositifsView {
         AnchorPane.setBottomAnchor(mainContent, 0.0);
         
         root.getChildren().addAll(header, mainContent);
+        
+        // Créer la WebView pour la popup (cachée)
+        createMapWebView();
     }
     
     private AnchorPane createHeader() {
@@ -201,7 +209,7 @@ public class AdminDispositifsView {
         // Liste des dispositifs
         deviceListView = new ListView<>();
         deviceListView.getStyleClass().add("device-list");
-        deviceListView.setPrefHeight(200);
+        deviceListView.setPrefHeight(280); // Augmenté pour compenser l'absence de la carte
         
         // Personnaliser l'affichage des éléments de la liste
         deviceListView.setCellFactory(listView -> new ListCell<AdminDispositifsModel.Dispositif>() {
@@ -229,24 +237,94 @@ public class AdminDispositifsView {
         return listeSection;
     }
     
-    private VBox createCarteSection() {
+    private VBox createCarteButtonSection() {
         VBox carteSection = new VBox();
         carteSection.setSpacing(10);
+        carteSection.setAlignment(Pos.CENTER);
         
-        // Titre de la carte
-        Label carteTitle = new Label("🗺️ Localisation des dispositifs");
-        carteTitle.getStyleClass().add("form-title");
+        // Bouton pour afficher la carte
+        afficherCarteButton = new Button("🗺️ Afficher la carte");
+        afficherCarteButton.getStyleClass().addAll("dashboard-button", "active-button");
+        afficherCarteButton.setPrefWidth(200);
+        afficherCarteButton.setPrefHeight(40);
+        afficherCarteButton.setOnAction(e -> openMapPopup());
         
-        // Carte interactive
-        mapWebView = new WebView();
-        mapWebView.setMinHeight(250);
-        mapWebView.setPrefHeight(250);
-        mapWebView.setMaxHeight(250); 
-        mapWebView.getStyleClass().add("map-view");
-        
-        carteSection.getChildren().addAll(carteTitle, mapWebView);
+        carteSection.getChildren().add(afficherCarteButton);
         
         return carteSection;
+    }
+    
+    private void createMapWebView() {
+        mapWebView = new WebView();
+        mapWebView.setPrefSize(900, 600);
+    }
+    
+    private void openMapPopup() {
+        if (mapStage == null) {
+            mapStage = new Stage();
+            mapStage.setTitle("Carte des dispositifs de secours");
+            mapStage.initModality(Modality.APPLICATION_MODAL);
+            mapStage.setResizable(true);
+            mapStage.setMinWidth(800);
+            mapStage.setMinHeight(600);
+            
+            // Container pour la popup
+            VBox popupContent = new VBox();
+            popupContent.setSpacing(10);
+            popupContent.setPadding(new Insets(10));
+            
+            // Header de la popup avec titre et bouton fermer
+            HBox popupHeader = new HBox();
+            popupHeader.setAlignment(Pos.CENTER_LEFT);
+            popupHeader.setSpacing(10);
+            popupHeader.setPadding(new Insets(10));
+            popupHeader.getStyleClass().add("popup-header");
+            
+            Label popupTitle = new Label("🗺️ Localisation des dispositifs");
+            popupTitle.getStyleClass().add("form-title");
+            
+            Region spacer = new Region();
+            HBox.setHgrow(spacer, Priority.ALWAYS);
+            
+            Button fermerButton = new Button("✖ Fermer");
+            fermerButton.getStyleClass().add("dashboard-button");
+            fermerButton.setOnAction(e -> mapStage.close());
+            
+            popupHeader.getChildren().addAll(popupTitle, spacer, fermerButton);
+            
+            // Ajout de la WebView
+            VBox.setVgrow(mapWebView, Priority.ALWAYS);
+            
+            popupContent.getChildren().addAll(popupHeader, mapWebView);
+            
+            Scene popupScene = new Scene(popupContent, 900, 650);
+            
+            // Appliquer le même style que la fenêtre principale
+            try {
+                String cssPath = getClass().getResource("../style.css").toExternalForm();
+                popupScene.getStylesheets().add(cssPath);
+            } catch (Exception ex) {
+                System.err.println("Impossible de charger le fichier CSS pour la popup");
+            }
+            
+            mapStage.setScene(popupScene);
+            
+            // Centrer la popup par rapport à la fenêtre principale
+            mapStage.setOnShowing(e -> {
+                Stage parentStage = (Stage) root.getScene().getWindow();
+                if (parentStage != null) {
+                    mapStage.setX(parentStage.getX() + (parentStage.getWidth() - mapStage.getWidth()) / 2);
+                    mapStage.setY(parentStage.getY() + (parentStage.getHeight() - mapStage.getHeight()) / 2);
+                }
+            });
+        }
+        
+        mapStage.show();
+        
+        // Rafraîchir la carte quand la popup s'ouvre
+        if (controller != null) {
+            controller.refreshMap();
+        }
     }
     
     private void setupController(String nomUtilisateur) {
@@ -279,5 +357,11 @@ public class AdminDispositifsView {
     
     public AdminDispositifsController getController() {
         return controller;
+    }
+    
+    public void closeMapPopup() {
+        if (mapStage != null && mapStage.isShowing()) {
+            mapStage.close();
+        }
     }
 }
