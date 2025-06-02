@@ -8,9 +8,14 @@ public class EstAffecteA {
 
     // Constructeur 
     public EstAffecteA(Secouriste secouriste, DPS dps, Journee journee) {
-        setSecouriste(secouriste);
-        setDps(dps);
-        setJournee(journee);
+        if (secouriste == null) throw new IllegalArgumentException("Secouriste invalide");
+        this.secouriste = secouriste;
+        
+        if (dps == null) throw new IllegalArgumentException("DPS invalide");
+        this.dps = dps;
+        
+        if (journee == null) throw new IllegalArgumentException("La journée est invalide");
+        this.journee = journee;
     }
 
     // Getters
