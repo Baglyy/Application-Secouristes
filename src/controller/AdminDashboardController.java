@@ -10,20 +10,23 @@ import view.AdminDashboardView;
 import view.AdminSecouristesView;
 import view.AdminAffectationsView;
 import view.AdminDispositifsView;
+import view.LoginView;
 
 public class AdminDashboardController {
     
     private Button dispositifsButton;
     private Button affectationsSecouristesButton;
     private Button secouristesButton;
+    private Button deconnexionButton;
     private Label nomUtilisateurLabel;
     private AdminDashboardModel model;
     
     public AdminDashboardController(Button dispositifsButton, Button affectationsSecouristesButton, 
-                                   Button secouristesButton, Label nomUtilisateurLabel) {
+                                   Button secouristesButton, Button deconnexionButton, Label nomUtilisateurLabel) {
         this.dispositifsButton = dispositifsButton;
         this.affectationsSecouristesButton = affectationsSecouristesButton;
         this.secouristesButton = secouristesButton;
+        this.deconnexionButton = deconnexionButton;
         this.nomUtilisateurLabel = nomUtilisateurLabel;
         this.model = new AdminDashboardModel();
         
@@ -33,9 +36,9 @@ public class AdminDashboardController {
     }
     
     public AdminDashboardController(Button dispositifsButton, Button affectationsSecouristesButton, 
-                                   Button secouristesButton, Label nomUtilisateurLabel, 
+                                   Button secouristesButton, Button deconnexionButton, Label nomUtilisateurLabel, 
                                    String nomUtilisateur) {
-        this(dispositifsButton, affectationsSecouristesButton, secouristesButton, nomUtilisateurLabel);
+        this(dispositifsButton, affectationsSecouristesButton, secouristesButton, deconnexionButton, nomUtilisateurLabel);
         model.setNomUtilisateur(nomUtilisateur);
     }
     
@@ -54,6 +57,7 @@ public class AdminDashboardController {
         dispositifsButton.setOnAction(this::handleDispositifs);
         affectationsSecouristesButton.setOnAction(this::handleAffectationsSecouristes);
         secouristesButton.setOnAction(this::handleSecouristes);
+        deconnexionButton.setOnAction(this::handleDeconnexion);
     }
     
     private void handleDispositifs(ActionEvent event) {
@@ -123,6 +127,32 @@ public class AdminDashboardController {
         // Changer la scène
         Scene secouristesScene = new Scene(adminSecouristesView.getRoot(), 1024, 600);
         currentStage.setScene(secouristesScene);
+    }
+    
+    private void handleDeconnexion(ActionEvent event) {
+        System.out.println("Déconnexion de l'utilisateur");
+        
+        // Récupérer la fenêtre actuelle
+        Stage currentStage = (Stage) deconnexionButton.getScene().getWindow();
+        
+        // Créer la vue de connexion
+        LoginView loginView = new LoginView(currentStage);
+        
+        // Créer une nouvelle scène avec la vue de connexion
+        Scene loginScene = new Scene(loginView.getRoot(), 1024, 600);
+        
+        // Essayer d'appliquer le CSS pour le login
+        try {
+            loginScene.getStylesheets().add(getClass().getResource("../style.css").toExternalForm());
+        } catch (Exception cssException) {
+            System.out.println("Attention: Fichier CSS style.css non trouvé, styles par défaut appliqués");
+        }
+        
+        // Changer la scène
+        currentStage.setScene(loginScene);
+        currentStage.setTitle("SecuOptix - Connexion");
+        
+        System.out.println("Retour à la page de connexion réussi !");
     }
     
     private void updateButtonStyles() {
