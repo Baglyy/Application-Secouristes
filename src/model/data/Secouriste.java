@@ -5,7 +5,7 @@ import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
-class Secouriste{
+public class Secouriste{
     private long id;
     private String nom;
     private String prenom;
