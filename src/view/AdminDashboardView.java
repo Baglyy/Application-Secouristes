@@ -17,6 +17,7 @@ public class AdminDashboardView {
     private Button dispositifsButton;
     private Button affectationsSecouristesButton;
     private Button secouristesButton;
+    private Button deconnexionButton;
     private Label nomUtilisateurLabel;
     private AdminDashboardController controller;
     
@@ -74,11 +75,11 @@ public class AdminDashboardView {
         AnchorPane.setTopAnchor(notificationBadge, -5.0);
         AnchorPane.setRightAnchor(notificationBadge, -5.0);
         
-        // Icône de profil
-        Label profileIcon = new Label("👤");
-        profileIcon.getStyleClass().add("profile-icon");
+        // Bouton de déconnexion (remplace l'icône de profil)
+        deconnexionButton = new Button("Déconnexion");
+        deconnexionButton.getStyleClass().add("profile-icon");
         
-        userInfo.getChildren().addAll(nomUtilisateurLabel, notificationContainer, profileIcon);
+        userInfo.getChildren().addAll(nomUtilisateurLabel, notificationContainer, deconnexionButton);
         headerContent.getChildren().addAll(titleLabel, spacer, userInfo);
         
         // Ajout du contenu au header
@@ -182,7 +183,7 @@ public class AdminDashboardView {
     
     private void setupController(String nomUtilisateur) {
         controller = new AdminDashboardController(dispositifsButton, affectationsSecouristesButton, 
-                                                 secouristesButton, nomUtilisateurLabel, nomUtilisateur);
+                                                 secouristesButton, deconnexionButton, nomUtilisateurLabel, nomUtilisateur);
     }
     
     private void loadStylesheet() {
