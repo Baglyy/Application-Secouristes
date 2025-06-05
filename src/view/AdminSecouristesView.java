@@ -4,9 +4,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.control.ListView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -14,20 +12,15 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.Priority;
 import controller.AdminSecouristesController;
 import model.AdminSecouristesModel;
-import javafx.beans.property.SimpleStringProperty;
+import model.data.Secouriste;
 
 public class AdminSecouristesView {
     
     private AnchorPane root;
-    private Button editerButton;
+    private Button modifierCompetencesButton;
     private Button ajouterButton;
     private Button supprimerButton;
-    private TableView<AdminSecouristesModel.Secouriste> tableView;
-    private TableColumn<AdminSecouristesModel.Secouriste, String> colA;
-    private TableColumn<AdminSecouristesModel.Secouriste, String> colB;
-    private TableColumn<AdminSecouristesModel.Secouriste, String> colC;
-    private TableColumn<AdminSecouristesModel.Secouriste, String> colD;
-    private TableColumn<AdminSecouristesModel.Secouriste, String> colE;
+    private ListView<Secouriste> listView;
     private Label nomUtilisateurLabel;
     private Label homeIcon;
     private AdminSecouristesController controller;
@@ -110,10 +103,11 @@ public class AdminSecouristesView {
         buttonsContainer.setAlignment(Pos.CENTER_LEFT);
         buttonsContainer.setSpacing(20);
         
-        // Bouton Éditer les spécificités des secouristes
-        editerButton = new Button("Éditer les spécificités des secouristes");
-        editerButton.getStyleClass().addAll("action-button", "edit-button");
-        editerButton.setPrefSize(300, 40);
+        // Bouton Modifier compétences
+        modifierCompetencesButton = new Button("Modifier compétences");
+        modifierCompetencesButton.getStyleClass().addAll("dashboard-button", "edit-button");
+        modifierCompetencesButton.setPrefSize(300, 40);
+        modifierCompetencesButton.setDisable(true); // Désactivé par défaut
         
         // Bouton Ajouter des secouristes
         ajouterButton = new Button("Ajouter des secouristes");
@@ -124,51 +118,20 @@ public class AdminSecouristesView {
         supprimerButton = new Button("Supprimer des secouristes");
         supprimerButton.getStyleClass().addAll("dashboard-button", "active-button");
         supprimerButton.setPrefSize(200, 40);
+        supprimerButton.setDisable(true); // Désactivé par défaut
         
-        buttonsContainer.getChildren().addAll(editerButton, ajouterButton, supprimerButton);
+        buttonsContainer.getChildren().addAll(modifierCompetencesButton, ajouterButton, supprimerButton);
         
-        // TableView pour afficher les secouristes
-        tableView = new TableView<>();
-        tableView.getStyleClass().add("secouristes-table");
-        tableView.setEditable(true);
+        // ListView pour afficher les secouristes
+        listView = new ListView<>();
+        listView.getStyleClass().add("secouristes-table");
+        listView.setPrefHeight(350);
         
-        // Création des colonnes (A, B, C, D, E)
-        colA = new TableColumn<>("A");
-        colB = new TableColumn<>("B");
-        colC = new TableColumn<>("C");
-        colD = new TableColumn<>("D");
-        colE = new TableColumn<>("E");
-        
-        // Configuration des colonnes avec lambda-based CellValueFactory
-        colA.setCellValueFactory(cellData -> cellData.getValue().nom1Property());
-        colB.setCellValueFactory(cellData -> cellData.getValue().nom2Property());
-        colC.setCellValueFactory(cellData -> cellData.getValue().nom3Property());
-        colD.setCellValueFactory(cellData -> cellData.getValue().nom4Property());
-        colE.setCellValueFactory(cellData -> cellData.getValue().nom5Property());
-        
-        // Rendre les colonnes éditables
-        colA.setCellFactory(TextFieldTableCell.forTableColumn());
-        colB.setCellFactory(TextFieldTableCell.forTableColumn());
-        colC.setCellFactory(TextFieldTableCell.forTableColumn());
-        colD.setCellFactory(TextFieldTableCell.forTableColumn());
-        colE.setCellFactory(TextFieldTableCell.forTableColumn());
-        
-        // Définir la largeur des colonnes
-        double columnWidth = 150;
-        colA.setPrefWidth(columnWidth);
-        colB.setPrefWidth(columnWidth);
-        colC.setPrefWidth(columnWidth);
-        colD.setPrefWidth(columnWidth);
-        colE.setPrefWidth(columnWidth);
-        
-        // Ajouter les colonnes à la table
-        tableView.getColumns().addAll(colA, colB, colC, colD, colE);
-        
-        // Configuration de la taille de la table
-        tableView.setPrefHeight(350);
+        // Configuration de l'affichage personnalisé
+        listView.setCellFactory(param -> new SecouristeListCell());
         
         // Ajout des éléments au contenu principal
-        mainContent.getChildren().addAll(buttonsContainer, tableView);
+        mainContent.getChildren().addAll(buttonsContainer, listView);
         
         // Positionnement des éléments
         AnchorPane.setTopAnchor(header, 0.0);
@@ -183,22 +146,6 @@ public class AdminSecouristesView {
         root.getChildren().addAll(header, mainContent);
     }
     
-    private void setupController(String nomUtilisateur) {
-        controller = new AdminSecouristesController(
-                editerButton, 
-                ajouterButton, 
-                supprimerButton, 
-                tableView, 
-                colA, 
-                colB, 
-                colC, 
-                colD, 
-                colE, 
-                nomUtilisateurLabel, 
-                homeIcon, 
-                nomUtilisateur);
-    }
-    
     private void loadStylesheet() {
         try {
             String cssPath = getClass().getResource("../style.css").toExternalForm();
@@ -209,11 +156,44 @@ public class AdminSecouristesView {
         }
     }
     
+    private void setupController(String nomUtilisateur) {
+        controller = new AdminSecouristesController(
+                modifierCompetencesButton,
+                ajouterButton,
+                supprimerButton,
+                listView,
+                nomUtilisateurLabel,
+                homeIcon,
+                nomUtilisateur);
+    }
+    
     public AnchorPane getRoot() {
         return root;
     }
     
     public AdminSecouristesController getController() {
         return controller;
+    }
+    
+    // Classe interne pour personnaliser l'affichage des cellules
+    private static class SecouristeListCell extends javafx.scene.control.ListCell<Secouriste> {
+        @Override
+        protected void updateItem(Secouriste secouriste, boolean empty) {
+            super.updateItem(secouriste, empty);
+            if (empty || secouriste == null) {
+                setText(null);
+                setGraphic(null);
+            } else {
+                String competences = secouriste.getCompetences() != null
+                    ? String.join(", ", secouriste.getCompetences().stream()
+                        .map(model.data.Competence::getIntitule)
+                        .toList())
+                    : "Aucune compétence";
+                setText(String.format("%s %s - Compétences: %s",
+                    secouriste.getNom(),
+                    secouriste.getPrenom(),
+                    competences));
+            }
+        }
     }
 }
