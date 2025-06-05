@@ -10,6 +10,9 @@ import model.LoginModel;
 import view.DashboardView;
 import view.AdminDashboardView;
 
+import model.dao.SecouristeDAO;
+import model.data.Secouriste;
+
 public class LoginController {
     
     private TextField identifiantField;
@@ -80,9 +83,17 @@ public class LoginController {
     }
     
     private boolean authenticateUser(String identifiant, String motDePasse) {
-        // Simulation d'authentification - accepter toute combinaison non vide
-        // En réalité, ceci ferait appel à un service d'authentification
-        return !identifiant.trim().isEmpty() && !motDePasse.trim().isEmpty();
+        try {
+            long id = Long.parseLong(identifiant);
+            SecouristeDAO dao = new SecouristeDAO();
+            Secouriste secouriste = dao.findByIdAndNom(id, motDePasse);
+
+            return secouriste != null;
+
+        } catch (NumberFormatException e) {
+            System.out.println("Identifiant invalide : doit être un nombre (ID du secouriste)");
+            return false;
+        }
     }
     
     private void navigateToDashboard() {
