@@ -7,11 +7,10 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.event.ActionEvent;
 import model.LoginModel;
-import view.DashboardView;
-import view.AdminDashboardView;
-
 import model.dao.SecouristeDAO;
 import model.data.Secouriste;
+import view.DashboardView;
+import view.AdminDashboardView;
 
 public class LoginController {
     
@@ -20,6 +19,7 @@ public class LoginController {
     private Button seConnecterButton;
     private LoginModel model;
     private Stage primaryStage;
+    private SecouristeDAO secouristeDAO;
     
     // Constructeur principal avec primaryStage
     public LoginController(TextField identifiantField, PasswordField motDePasseField, 
@@ -29,6 +29,7 @@ public class LoginController {
         this.seConnecterButton = seConnecterButton;
         this.primaryStage = primaryStage;
         this.model = new LoginModel();
+        this.secouristeDAO = new SecouristeDAO();
         
         setupBindings();
         setupListeners();
@@ -66,7 +67,7 @@ public class LoginController {
         System.out.println("Identifiant: " + model.getIdentifiant());
         System.out.println("Mot de passe: [PROTÉGÉ]");
         
-        // Simuler une authentification réussie
+        // Authentification avec les nouvelles règles
         if (authenticateUser(model.getIdentifiant(), model.getMotDePasse())) {
             System.out.println("Connexion réussie ! Redirection vers le tableau de bord...");
             
@@ -83,17 +84,44 @@ public class LoginController {
     }
     
     private boolean authenticateUser(String identifiant, String motDePasse) {
-        try {
-            long id = Long.parseLong(identifiant);
-            SecouristeDAO dao = new SecouristeDAO();
-            Secouriste secouriste = dao.findByIdAndNom(id, motDePasse);
-
-            return secouriste != null;
-
-        } catch (NumberFormatException e) {
-            System.out.println("Identifiant invalide : doit être un nombre (ID du secouriste)");
+        String cleanIdentifiant = identifiant.trim();
+        String cleanMotDePasse = motDePasse.trim();
+        
+        // Vérifier si les champs ne sont pas vides
+        if (cleanIdentifiant.isEmpty() || cleanMotDePasse.isEmpty()) {
             return false;
         }
+        
+        // Cas spécial pour l'administrateur
+        if ("admin".equalsIgnoreCase(cleanIdentifiant)) {
+            return "JO2030".equals(cleanMotDePasse);
+        }
+        
+        // Pour les autres utilisateurs : vérifier dans la base de données
+        try {
+            // Essayer de convertir l'identifiant en ID (long)
+            long secouristeId = Long.parseLong(cleanIdentifiant);
+            
+            // Chercher le secouriste par ID
+            Secouriste secouriste = secouristeDAO.findByID(secouristeId);
+            
+            if (secouriste != null) {
+                // Vérifier si le mot de passe correspond au nom du secouriste
+                return cleanMotDePasse.equalsIgnoreCase(secouriste.getNom().trim());
+            }
+            
+        } catch (NumberFormatException e) {
+            // L'identifiant n'est pas un nombre valide
+            System.out.println("Identifiant invalide : doit être un ID numérique pour les secouristes");
+            return false;
+        } catch (Exception e) {
+            // Erreur lors de l'accès à la base de données
+            System.err.println("Erreur lors de l'authentification : " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+        
+        return false;
     }
     
     private void navigateToDashboard() {
@@ -105,8 +133,11 @@ public class LoginController {
         }
         
         try {
+            // Récupérer le nom du secouriste pour l'affichage
+            String displayName = getUserDisplayName();
+            
             // Créer la vue du tableau de bord avec le nom d'utilisateur
-            DashboardView dashboardView = new DashboardView(model.getIdentifiant().toUpperCase());
+            DashboardView dashboardView = new DashboardView(displayName);
             
             // Créer une nouvelle scène avec le tableau de bord
             Scene dashboardScene = new Scene(dashboardView.getRoot());
@@ -143,7 +174,7 @@ public class LoginController {
         
         try {
             // Créer la vue du tableau de bord admin avec le nom d'utilisateur
-            AdminDashboardView adminDashboardView = new AdminDashboardView(model.getIdentifiant().toUpperCase());
+            AdminDashboardView adminDashboardView = new AdminDashboardView("ADMINISTRATEUR");
             
             // Créer une nouvelle scène avec le tableau de bord admin
             Scene adminDashboardScene = new Scene(adminDashboardView.getRoot());
@@ -168,6 +199,22 @@ public class LoginController {
             System.err.println("Erreur lors de la navigation vers le tableau de bord admin: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+    
+    private String getUserDisplayName() {
+        try {
+            long secouristeId = Long.parseLong(model.getIdentifiant().trim());
+            Secouriste secouriste = secouristeDAO.findByID(secouristeId);
+            
+            if (secouriste != null) {
+                return (secouriste.getPrenom() + " " + secouriste.getNom()).toUpperCase();
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la récupération du nom d'affichage : " + e.getMessage());
+        }
+        
+        // Fallback si erreur
+        return model.getIdentifiant().toUpperCase();
     }
     
     private void updateButtonState() {
