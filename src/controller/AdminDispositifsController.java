@@ -21,7 +21,7 @@ public class AdminDispositifsController {
     private TextField longitudeTextField;
     private Button ajouterButton;
     private Button supprimerButton;
-    private ListView<AdminDispositifsModel.Dispositif> deviceListView;
+    private ListView<AdminDispositifsModel.DispositifView> deviceListView;
     private Label nomUtilisateurLabel;
     private Label homeIcon;
     private WebView mapWebView;
@@ -35,7 +35,7 @@ public class AdminDispositifsController {
             TextField longitudeTextField,
             Button ajouterButton,
             Button supprimerButton,
-            ListView<AdminDispositifsModel.Dispositif> deviceListView,
+            ListView<AdminDispositifsModel.DispositifView> deviceListView,
             Label nomUtilisateurLabel,
             Label homeIcon,
             WebView mapWebView,
@@ -64,7 +64,7 @@ public class AdminDispositifsController {
         
         // Écouter les changements dans la liste pour mettre à jour la carte
         model.getDispositifs().addListener(
-            (javafx.collections.ListChangeListener<AdminDispositifsModel.Dispositif>) change -> {
+            (javafx.collections.ListChangeListener<AdminDispositifsModel.DispositifView>) change -> {
                 Platform.runLater(() -> {
                     if (mapInitialized) {
                         updateMapMarkers();
@@ -235,7 +235,7 @@ public class AdminDispositifsController {
             // Construire le tableau JavaScript des dispositifs
             StringBuilder jsDevices = new StringBuilder("[");
             for (int i = 0; i < model.getDispositifs().size(); i++) {
-                AdminDispositifsModel.Dispositif device = model.getDispositifs().get(i);
+                AdminDispositifsModel.DispositifView device = model.getDispositifs().get(i);
                 if (i > 0) jsDevices.append(",");
                 jsDevices.append("{")
                         .append("nom: '").append(escapeJavaScript(device.getNom())).append("',")
@@ -253,7 +253,7 @@ public class AdminDispositifsController {
         }
     }
     
-    private void centerMapOnDevice(AdminDispositifsModel.Dispositif device) {
+    private void centerMapOnDevice(AdminDispositifsModel.DispositifView device) {
         if (!mapInitialized) {
             return;
         }
@@ -324,20 +324,22 @@ public class AdminDispositifsController {
                 return;
             }
             
-            AdminDispositifsModel.Dispositif nouveauDispositif = 
-                new AdminDispositifsModel.Dispositif(nom, latitude, longitude);
+            // Ajouter le dispositif via le modèle (qui utilise la base de données)
+            boolean success = model.ajouterDispositif(nom, latitude, longitude);
             
-            model.ajouterDispositif(nouveauDispositif);
-            
-            // Vider les champs après ajout
-            nomTextField.clear();
-            latitudeTextField.clear();
-            longitudeTextField.clear();
-            
-            // Remettre le focus sur le premier champ
-            nomTextField.requestFocus();
-            
-            showAlert("Succès", "Dispositif '" + nom + "' ajouté avec succès!", Alert.AlertType.INFORMATION);
+            if (success) {
+                // Vider les champs après ajout
+                nomTextField.clear();
+                latitudeTextField.clear();
+                longitudeTextField.clear();
+                
+                // Remettre le focus sur le premier champ
+                nomTextField.requestFocus();
+                
+                showAlert("Succès", "Dispositif '" + nom + "' ajouté avec succès!", Alert.AlertType.INFORMATION);
+            } else {
+                showAlert("Erreur", "Erreur lors de l'ajout du dispositif en base de données.", Alert.AlertType.ERROR);
+            }
             
         } catch (NumberFormatException e) {
             showAlert("Erreur", "Les coordonnées doivent être des nombres valides.\nFormat attendu: XX.XXXX", Alert.AlertType.ERROR);
@@ -349,13 +351,18 @@ public class AdminDispositifsController {
     }
     
     private void handleSupprimer(ActionEvent event) {
-        AdminDispositifsModel.Dispositif selectedDevice = deviceListView.getSelectionModel().getSelectedItem();
+        AdminDispositifsModel.DispositifView selectedDevice = deviceListView.getSelectionModel().getSelectedItem();
         
         if (selectedDevice != null) {
             try {
                 String nomDispositif = selectedDevice.getNom();
-                model.supprimerDispositif(selectedDevice);
-                showAlert("Succès", "Dispositif '" + nomDispositif + "' supprimé avec succès!", Alert.AlertType.INFORMATION);
+                boolean success = model.supprimerDispositif(selectedDevice);
+                
+                if (success) {
+                    showAlert("Succès", "Dispositif '" + nomDispositif + "' supprimé avec succès!", Alert.AlertType.INFORMATION);
+                } else {
+                    showAlert("Erreur", "Erreur lors de la suppression en base de données.", Alert.AlertType.ERROR);
+                }
             } catch (Exception e) {
                 showAlert("Erreur", "Erreur lors de la suppression: " + e.getMessage(), Alert.AlertType.ERROR);
                 System.err.println("Erreur lors de la suppression: " + e.getMessage());
@@ -385,7 +392,7 @@ public class AdminDispositifsController {
         return model;
     }
     
-    // Méthode pour initialiser et rafraîchir la carte (appelée lors de l'ouverture de la popup)
+    // Méthode pour initialiser et rafraîchir la carte
     public void refreshMap() {
         Platform.runLater(() -> {
             if (!mapInitialized) {
@@ -408,5 +415,10 @@ public class AdminDispositifsController {
                 mapWebView.getEngine().executeScript("if (typeof invalidateMapSize === 'function') { invalidateMapSize(); }");
             }
         });
+    }
+    
+    // Méthode pour rafraîchir les données depuis la base
+    public void refreshData() {
+        model.refreshFromDatabase();
     }
 }
