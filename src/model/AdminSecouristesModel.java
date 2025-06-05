@@ -83,4 +83,8 @@ public class AdminSecouristesModel {
         return secouristeDAO.findByIdAndNom(0, nom) != null && 
                secouristeDAO.findByIdAndNom(0, nom).getPrenom().equals(prenom);
     }
+    
+    public boolean idExists(long id) {
+        return secouristeDAO.findByID(id) != null;
+    }
 }
