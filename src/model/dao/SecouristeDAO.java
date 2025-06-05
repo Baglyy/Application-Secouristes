@@ -7,6 +7,31 @@ import model.data.Secouriste;
 
 public class SecouristeDAO extends DAO<Secouriste> {
 
+
+    public Secouriste findByIdAndNom(long id, String nom) {
+        String query = "SELECT * FROM Secouriste WHERE ID = ? AND NOM = ?";
+        try (Connection con = getConnection();
+            PreparedStatement pst = con.prepareStatement(query)) {
+
+            pst.setLong(1, id);
+            pst.setString(2, nom);
+            try (ResultSet rs = pst.executeQuery()) {
+                if (rs.next()) {
+                    String prenom = rs.getString("PRENOM");
+                    String dateDeNaissance = rs.getString("DATENAISSANCE");
+                    String email = rs.getString("EMAIL");
+                    String tel = rs.getString("TEL");
+                    String adresse = rs.getString("ADRESSE");
+
+                    return new Secouriste(id, nom, prenom, dateDeNaissance, email, tel, adresse);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     @Override
     public int create(Secouriste secouriste) {
         String query = "INSERT INTO Secouriste(ID, NOM, PRENOM, DATENAISSANCE, EMAIL, TEL, ADRESSE) VALUES (?, ?, ?, ?, ?, ?, ?)";
