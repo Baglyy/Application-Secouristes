@@ -1,110 +1,70 @@
 package controller;
 
 import javafx.event.ActionEvent;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableView;
-import javafx.scene.control.Alert;
-import javafx.scene.control.TableColumn;
+import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.AdminSecouristesModel;
+import model.data.Secouriste;
+import model.data.Competence;
 import view.AdminDashboardView;
 
 public class AdminSecouristesController {
     
-    private Button editerButton;
+    private Button modifierCompetencesButton;
     private Button ajouterButton;
     private Button supprimerButton;
-    private TableView<AdminSecouristesModel.Secouriste> tableView;
+    private ListView<Secouriste> listView;
     private Label nomUtilisateurLabel;
     private Label homeIcon;
     private AdminSecouristesModel model;
     private Runnable onRetourCallback;
-    private TableColumn<AdminSecouristesModel.Secouriste, String> colA;
-    private TableColumn<AdminSecouristesModel.Secouriste, String> colB;
-    private TableColumn<AdminSecouristesModel.Secouriste, String> colC;
-    private TableColumn<AdminSecouristesModel.Secouriste, String> colD;
-    private TableColumn<AdminSecouristesModel.Secouriste, String> colE;
     
     public AdminSecouristesController(
-            Button editerButton, 
+            Button modifierCompetencesButton,
             Button ajouterButton,
-            Button supprimerButton, 
-            TableView<AdminSecouristesModel.Secouriste> tableView,
-            TableColumn<AdminSecouristesModel.Secouriste, String> colA,
-            TableColumn<AdminSecouristesModel.Secouriste, String> colB,
-            TableColumn<AdminSecouristesModel.Secouriste, String> colC,
-            TableColumn<AdminSecouristesModel.Secouriste, String> colD,
-            TableColumn<AdminSecouristesModel.Secouriste, String> colE,
-            Label nomUtilisateurLabel, 
-            Label homeIcon, 
+            Button supprimerButton,
+            ListView<Secouriste> listView,
+            Label nomUtilisateurLabel,
+            Label homeIcon,
             String nomUtilisateur) {
-        this.editerButton = editerButton;
+        this.modifierCompetencesButton = modifierCompetencesButton;
         this.ajouterButton = ajouterButton;
         this.supprimerButton = supprimerButton;
-        this.tableView = tableView;
-        this.colA = colA;
-        this.colB = colB;
-        this.colC = colC;
-        this.colD = colD;
-        this.colE = colE;
+        this.listView = listView;
         this.nomUtilisateurLabel = nomUtilisateurLabel;
         this.homeIcon = homeIcon;
         this.model = new AdminSecouristesModel(nomUtilisateur);
         
         setupBindings();
         setupListeners();
-        setupTableEditing();
     }
     
     private void setupBindings() {
-        // Liaison du nom d'utilisateur avec le label
         nomUtilisateurLabel.textProperty().bind(model.nomUtilisateurProperty());
-        
-        // Liaison des données avec la table
-        tableView.setItems(model.getSecouristes());
+        listView.setItems(model.getSecouristes());
+        listView.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            boolean isSelected = newSelection != null;
+            modifierCompetencesButton.setDisable(!isSelected);
+            supprimerButton.setDisable(!isSelected);
+        });
     }
     
     private void setupListeners() {
-        // Listeners pour les boutons
         homeIcon.setOnMouseClicked(event -> handleRetour());
-        editerButton.setOnAction(this::handleEditer);
+        modifierCompetencesButton.setOnAction(this::handleModifierCompetences);
         ajouterButton.setOnAction(this::handleAjouter);
         supprimerButton.setOnAction(this::handleSupprimer);
     }
     
-    private void setupTableEditing() {
-        // Configure edit commit handlers for each column
-        colA.setOnEditCommit(event -> {
-            AdminSecouristesModel.Secouriste secouriste = event.getRowValue();
-            secouriste.setNom1(event.getNewValue());
-        });
-        colB.setOnEditCommit(event -> {
-            AdminSecouristesModel.Secouriste secouriste = event.getRowValue();
-            secouriste.setNom2(event.getNewValue());
-        });
-        colC.setOnEditCommit(event -> {
-            AdminSecouristesModel.Secouriste secouriste = event.getRowValue();
-            secouriste.setNom3(event.getNewValue());
-        });
-        colD.setOnEditCommit(event -> {
-            AdminSecouristesModel.Secouriste secouriste = event.getRowValue();
-            secouriste.setNom4(event.getNewValue());
-        });
-        colE.setOnEditCommit(event -> {
-            AdminSecouristesModel.Secouriste secouriste = event.getRowValue();
-            secouriste.setNom5(event.getNewValue());
-        });
-    }
-    
     private void handleRetour() {
         System.out.println("Retour vers le tableau de bord administrateur");
-        
         if (onRetourCallback != null) {
             onRetourCallback.run();
         } else {
-            // Navigation par défaut vers le dashboard
             Stage currentStage = (Stage) homeIcon.getScene().getWindow();
             AdminDashboardView dashboardView = new AdminDashboardView(model.getNomUtilisateur());
             Scene dashboardScene = new Scene(dashboardView.getRoot(), 1024, 600);
@@ -112,50 +72,135 @@ public class AdminSecouristesController {
         }
     }
     
-    private void handleEditer(ActionEvent event) {
-        System.out.println("Édition des spécificités des secouristes activée");
+    private void handleModifierCompetences(ActionEvent event) {
+        Secouriste selectedSecouriste = listView.getSelectionModel().getSelectedItem();
+        if (selectedSecouriste == null) return;
         
-        // Activer le mode édition de la table
-        tableView.setEditable(true);
+        Stage popupStage = new Stage();
+        popupStage.initModality(Modality.APPLICATION_MODAL);
+        popupStage.setTitle("Modifier les compétences");
         
-        // Afficher un message d'information
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Mode édition");
-        alert.setHeaderText("Mode édition activé");
-        alert.setContentText("Vous pouvez maintenant cliquer sur les cellules pour les modifier.");
-        alert.showAndWait();
+        VBox popupContent = new VBox(10);
+        popupContent.setPadding(new Insets(20));
+        
+        Label title = new Label("Compétences de " + selectedSecouriste.getNom() + " " + selectedSecouriste.getPrenom());
+        ListView<model.data.Competence> competencesList = new ListView<>();
+        competencesList.setItems(model.getAllCompetences());
+        
+        competencesList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        if (selectedSecouriste.getCompetences() != null) {
+            for (Competence comp : selectedSecouriste.getCompetences()) {
+                competencesList.getSelectionModel().select(comp);
+            }
+        }
+        
+        Button saveButton = new Button("Enregistrer");
+        saveButton.getStyleClass().addAll("dashboard-button", "active-button");
+        saveButton.setOnAction(e -> {
+            model.updateSecouristeCompetences(
+                selectedSecouriste,
+                competencesList.getSelectionModel().getSelectedItems()
+            );
+            popupStage.close();
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Succès");
+            alert.setHeaderText("Compétences mises à jour");
+            alert.setContentText("Les compétences ont été mises à jour avec succès.");
+            alert.showAndWait();
+        });
+        
+        popupContent.getChildren().addAll(title, competencesList, saveButton);
+        
+        Scene popupScene = new Scene(popupContent, 400, 400);
+        popupScene.getStylesheets().add(getClass().getResource("../style.css").toExternalForm());
+        popupStage.setScene(popupScene);
+        popupStage.showAndWait();
     }
     
     private void handleAjouter(ActionEvent event) {
-        System.out.println("Ajout d'un nouveau secouriste");
+        Stage popupStage = new Stage();
+        popupStage.initModality(Modality.APPLICATION_MODAL);
+        popupStage.setTitle("Ajouter un secouriste");
         
-        // Créer un nouveau secouriste avec des valeurs par défaut
-        AdminSecouristesModel.Secouriste nouveauSecouriste = 
-            new AdminSecouristesModel.Secouriste("Nouveau", "Nouveau", "Nouveau", "Nouveau", "Nouveau");
+        VBox popupContent = new VBox(10);
+        popupContent.setPadding(new Insets(20));
         
-        // Ajouter le secouriste au modèle
-        model.ajouterSecouriste(nouveauSecouriste);
+        TextField nomField = new TextField();
+        nomField.setPromptText("Nom");
+        TextField prenomField = new TextField();
+        prenomField.setPromptText("Prénom");
+        TextField dateNaissanceField = new TextField();
+        dateNaissanceField.setPromptText("Date de naissance (yyyy-MM-dd)");
+        TextField emailField = new TextField();
+        emailField.setPromptText("Email");
+        TextField telField = new TextField();
+        telField.setPromptText("Téléphone");
+        TextField adresseField = new TextField();
+        adresseField.setPromptText("Adresse");
         
-        // Sélectionner la nouvelle ligne
-        tableView.getSelectionModel().selectLast();
-        tableView.scrollTo(nouveauSecouriste);
+        Button saveButton = new Button("Ajouter");
+        saveButton.getStyleClass().addAll("dashboard-button", "active-button");
+        saveButton.setOnAction(e -> {
+            try {
+                Secouriste newSecouriste = new Secouriste(
+                    System.currentTimeMillis(),
+                    nomField.getText(),
+                    prenomField.getText(),
+                    dateNaissanceField.getText(),
+                    emailField.getText(),
+                    telField.getText(),
+                    adresseField.getText()
+                );
+                
+                if (model.secouristeExists(newSecouriste.getNom(), newSecouriste.getPrenom())) {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("Erreur");
+                    alert.setHeaderText("Secouriste existant");
+                    alert.setContentText("Un secouriste avec ce nom et prénom existe déjà.");
+                    alert.showAndWait();
+                    return;
+                }
+                
+                model.ajouterSecouriste(newSecouriste);
+                popupStage.close();
+                
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Succès");
+                alert.setHeaderText("Secouriste ajouté");
+                alert.setContentText("Le secouriste a été ajouté avec succès.");
+                alert.showAndWait();
+                
+                listView.getSelectionModel().selectLast();
+                listView.scrollTo(newSecouriste);
+            } catch (IllegalArgumentException ex) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Erreur");
+                alert.setHeaderText("Données invalides");
+                alert.setContentText(ex.getMessage());
+                alert.showAndWait();
+            }
+        });
         
-        // Afficher un message de confirmation
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Secouriste ajouté");
-        alert.setHeaderText("Nouveau secouriste ajouté");
-        alert.setContentText("Un nouveau secouriste a été ajouté à la liste. Vous pouvez maintenant modifier ses informations.");
-        alert.showAndWait();
+        popupContent.getChildren().addAll(
+            new Label("Nouveau secouriste"),
+            nomField,
+            prenomField,
+            dateNaissanceField,
+            emailField,
+            telField,
+            adresseField,
+            saveButton
+        );
+        
+        Scene popupScene = new Scene(popupContent, 300, 400);
+        popupScene.getStylesheets().add(getClass().getResource("../style.css").toExternalForm());
+        popupStage.setScene(popupScene);
+        popupStage.showAndWait();
     }
     
     private void handleSupprimer(ActionEvent event) {
-        System.out.println("Suppression d'un secouriste");
-        
-        // Vérifier qu'un secouriste est sélectionné
-        AdminSecouristesModel.Secouriste secouristeSelectionne = tableView.getSelectionModel().getSelectedItem();
-        
-        if (secouristeSelectionne == null) {
-            // Aucun secouriste sélectionné
+        Secouriste selectedSecouriste = listView.getSelectionModel().getSelectedItem();
+        if (selectedSecouriste == null) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setTitle("Aucune sélection");
             alert.setHeaderText("Aucun secouriste sélectionné");
@@ -164,7 +209,6 @@ public class AdminSecouristesController {
             return;
         }
         
-        // Demander confirmation
         Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
         confirmAlert.setTitle("Confirmation de suppression");
         confirmAlert.setHeaderText("Supprimer le secouriste");
@@ -172,10 +216,7 @@ public class AdminSecouristesController {
         
         confirmAlert.showAndWait().ifPresent(response -> {
             if (response.getButtonData().isDefaultButton()) {
-                // Supprimer le secouriste du modèle
-                model.supprimerSecouriste(secouristeSelectionne);
-                
-                // Afficher un message de confirmation
+                model.supprimerSecouriste(selectedSecouriste);
                 Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
                 successAlert.setTitle("Secouriste supprimé");
                 successAlert.setHeaderText("Suppression réussie");
@@ -185,7 +226,6 @@ public class AdminSecouristesController {
         });
     }
     
-    // Méthodes publiques pour interaction externe
     public void setNomUtilisateur(String nomUtilisateur) {
         model.setNomUtilisateur(nomUtilisateur);
     }
