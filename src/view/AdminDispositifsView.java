@@ -10,6 +10,8 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import controller.AdminDispositifsController;
 import model.AdminDispositifsModel;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class AdminDispositifsView {
     
@@ -20,7 +22,7 @@ public class AdminDispositifsView {
     private Button ajouterButton;
     private Button supprimerButton;
     private Button afficherCarteButton;
-    private ListView<AdminDispositifsModel.Dispositif> deviceListView;
+    private ListView<AdminDispositifsModel.DispositifView> deviceListView;
     private Label nomUtilisateurLabel;
     private Label homeIcon;
     private WebView mapWebView;
@@ -209,12 +211,12 @@ public class AdminDispositifsView {
         // Liste des dispositifs
         deviceListView = new ListView<>();
         deviceListView.getStyleClass().add("device-list");
-        deviceListView.setPrefHeight(280); // Augmenté pour compenser l'absence de la carte
+        deviceListView.setPrefHeight(280);
         
         // Personnaliser l'affichage des éléments de la liste
-        deviceListView.setCellFactory(listView -> new ListCell<AdminDispositifsModel.Dispositif>() {
+        deviceListView.setCellFactory(listView -> new ListCell<AdminDispositifsModel.DispositifView>() {
             @Override
-            protected void updateItem(AdminDispositifsModel.Dispositif item, boolean empty) {
+            protected void updateItem(AdminDispositifsModel.DispositifView item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || item == null) {
                     setText(null);
@@ -304,7 +306,8 @@ public class AdminDispositifsView {
                 String cssPath = getClass().getResource("../style.css").toExternalForm();
                 popupScene.getStylesheets().add(cssPath);
             } catch (Exception ex) {
-                System.err.println("Impossible de charger le fichier CSS pour la popup");
+                System.err.println(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()) + " Impossible de charger le fichier CSS pour la popup");
+                ex.printStackTrace();
             }
             
             mapStage.setScene(popupScene);
@@ -346,7 +349,7 @@ public class AdminDispositifsView {
             String cssPath = getClass().getResource("../style.css").toExternalForm();
             root.getStylesheets().add(cssPath);
         } catch (Exception e) {
-            System.err.println("Impossible de charger le fichier CSS style.css");
+            System.err.println(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()) + " Impossible de charger le fichier CSS style.css");
             e.printStackTrace();
         }
     }
