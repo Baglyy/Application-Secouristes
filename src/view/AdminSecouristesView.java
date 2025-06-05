@@ -10,8 +10,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.GridPane;
 import controller.AdminSecouristesController;
-import model.AdminSecouristesModel;
 import model.data.Secouriste;
 
 public class AdminSecouristesView {
@@ -105,7 +105,7 @@ public class AdminSecouristesView {
         
         // Bouton Modifier compétences
         modifierCompetencesButton = new Button("Modifier compétences");
-        modifierCompetencesButton.getStyleClass().addAll("dashboard-button", "edit-button");
+        modifierCompetencesButton.getStyleClass().addAll("action-button", "edit-button");
         modifierCompetencesButton.setPrefSize(300, 40);
         modifierCompetencesButton.setDisable(true); // Désactivé par défaut
         
@@ -184,15 +184,79 @@ public class AdminSecouristesView {
                 setText(null);
                 setGraphic(null);
             } else {
+                // Create a GridPane for structured display
+                GridPane grid = new GridPane();
+                grid.setHgap(10);
+                grid.setVgap(5);
+                grid.setPadding(new Insets(5));
+                
+                // Add labels for each attribute
+                int row = 0;
+                
+                // ID
+                Label idLabel = new Label("ID:");
+                idLabel.getStyleClass().add("secouriste-label");
+                Label idValue = new Label(String.valueOf(secouriste.getId()));
+                grid.add(idLabel, 0, row);
+                grid.add(idValue, 1, row++);
+                
+                // Nom
+                Label nomLabel = new Label("Nom:");
+                nomLabel.getStyleClass().add("secouriste-label");
+                Label nomValue = new Label(secouriste.getNom());
+                grid.add(nomLabel, 0, row);
+                grid.add(nomValue, 1, row++);
+                
+                // Prénom
+                Label prenomLabel = new Label("Prénom:");
+                prenomLabel.getStyleClass().add("secouriste-label");
+                Label prenomValue = new Label(secouriste.getPrenom());
+                grid.add(prenomLabel, 0, row);
+                grid.add(prenomValue, 1, row++);
+                
+                // Date de naissance
+                Label dateNaissanceLabel = new Label("Date de naissance:");
+                dateNaissanceLabel.getStyleClass().add("secouriste-label");
+                Label dateNaissanceValue = new Label(secouriste.getDateDeNaissance());
+                grid.add(dateNaissanceLabel, 0, row);
+                grid.add(dateNaissanceValue, 1, row++);
+                
+                // Email
+                Label emailLabel = new Label("Email:");
+                emailLabel.getStyleClass().add("secouriste-label");
+                Label emailValue = new Label(secouriste.getEmail());
+                grid.add(emailLabel, 0, row);
+                grid.add(emailValue, 1, row++);
+                
+                // Téléphone
+                Label telLabel = new Label("Téléphone:");
+                telLabel.getStyleClass().add("secouriste-label");
+                Label telValue = new Label(secouriste.getTel());
+                grid.add(telLabel, 0, row);
+                grid.add(telValue, 1, row++);
+                
+                // Adresse
+                Label adresseLabel = new Label("Adresse:");
+                adresseLabel.getStyleClass().add("secouriste-label");
+                Label adresseValue = new Label(secouriste.getAdresse());
+                grid.add(adresseLabel, 0, row);
+                grid.add(adresseValue, 1, row++);
+                
+                // Compétences
+                Label competencesLabel = new Label("Compétences:");
+                competencesLabel.getStyleClass().add("secouriste-label");
                 String competences = secouriste.getCompetences() != null
                     ? String.join(", ", secouriste.getCompetences().stream()
                         .map(model.data.Competence::getIntitule)
                         .toList())
                     : "Aucune compétence";
-                setText(String.format("%s %s - Compétences: %s",
-                    secouriste.getNom(),
-                    secouriste.getPrenom(),
-                    competences));
+                Label competencesValue = new Label(competences);
+                grid.add(competencesLabel, 0, row);
+                grid.add(competencesValue, 1, row);
+                
+                // Set the GridPane as the cell's graphic
+                setGraphic(grid);
+                setText(null);
             }
         }
     }
