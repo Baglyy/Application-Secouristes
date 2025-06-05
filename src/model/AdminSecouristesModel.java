@@ -63,8 +63,20 @@ public class AdminSecouristesModel {
     }
     
     public void updateSecouristeCompetences(Secouriste secouriste, ObservableList<Competence> newCompetences) {
+        // Update competences in the in-memory model
         secouriste.setCompetences(new ArrayList<>(newCompetences));
+        
+        // Update the secouriste in the database
+        // Note: This assumes SecouristeDAO.update handles competences internally.
+        // For a proper implementation, SecouristeDAO should have a method to manage
+        // the SecouristeCompetence junction table directly.
         secouristeDAO.update(secouriste);
+        
+        // Refresh the secouriste's data in the in-memory list
+        int index = secouristes.indexOf(secouriste);
+        if (index >= 0) {
+            secouristes.set(index, secouriste);
+        }
     }
     
     public boolean secouristeExists(String nom, String prenom) {
