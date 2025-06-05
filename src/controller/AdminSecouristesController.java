@@ -7,6 +7,8 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.collections.ObservableList;
+import javafx.collections.FXCollections;
 import model.AdminSecouristesModel;
 import model.data.Secouriste;
 import model.data.Competence;
@@ -84,23 +86,37 @@ public class AdminSecouristesController {
         popupContent.setPadding(new Insets(20));
         
         Label title = new Label("Compétences de " + selectedSecouriste.getNom() + " " + selectedSecouriste.getPrenom());
-        ListView<model.data.Competence> competencesList = new ListView<>();
-        competencesList.setItems(model.getAllCompetences());
         
-        competencesList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        if (selectedSecouriste.getCompetences() != null) {
-            for (Competence comp : selectedSecouriste.getCompetences()) {
-                competencesList.getSelectionModel().select(comp);
+        // Create a checkbox for each competence
+        VBox competencesBox = new VBox(5);
+        for (Competence comp : model.getAllCompetences()) {
+            CheckBox checkBox = new CheckBox(comp.getIntitule());
+            checkBox.setUserData(comp); // Store the Competence object
+            // Pre-check if the secouriste already has this competence
+            if (selectedSecouriste.getCompetences() != null && 
+                selectedSecouriste.getCompetences().contains(comp)) {
+                checkBox.setSelected(true);
             }
+            competencesBox.getChildren().add(checkBox);
         }
         
         Button saveButton = new Button("Enregistrer");
         saveButton.getStyleClass().addAll("dashboard-button", "active-button");
         saveButton.setOnAction(e -> {
-            model.updateSecouristeCompetences(
-                selectedSecouriste,
-                competencesList.getSelectionModel().getSelectedItems()
-            );
+            // Collect selected competences
+            ObservableList<Competence> selectedCompetences = FXCollections.observableArrayList();
+            for (javafx.scene.Node node : competencesBox.getChildren()) {
+                if (node instanceof CheckBox checkBox && checkBox.isSelected()) {
+                    selectedCompetences.add((Competence) checkBox.getUserData());
+                }
+            }
+            
+            // Update competences in the model and database
+            model.updateSecouristeCompetences(selectedSecouriste, selectedCompetences);
+            
+            // Refresh the ListView to reflect changes
+            listView.refresh();
+            
             popupStage.close();
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Succès");
@@ -109,7 +125,7 @@ public class AdminSecouristesController {
             alert.showAndWait();
         });
         
-        popupContent.getChildren().addAll(title, competencesList, saveButton);
+        popupContent.getChildren().addAll(title, competencesBox, saveButton);
         
         Scene popupScene = new Scene(popupContent, 400, 400);
         popupScene.getStylesheets().add(getClass().getResource("../style.css").toExternalForm());
