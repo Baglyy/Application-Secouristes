@@ -141,6 +141,8 @@ public class AdminSecouristesController {
         VBox popupContent = new VBox(10);
         popupContent.setPadding(new Insets(20));
         
+        TextField idField = new TextField();
+        idField.setPromptText("Identifiant (numérique)");
         TextField nomField = new TextField();
         nomField.setPromptText("Nom");
         TextField prenomField = new TextField();
@@ -158,8 +160,30 @@ public class AdminSecouristesController {
         saveButton.getStyleClass().addAll("dashboard-button", "active-button");
         saveButton.setOnAction(e -> {
             try {
+                // Validate ID
+                String idText = idField.getText().trim();
+                long id;
+                try {
+                    id = Long.parseLong(idText);
+                    if (id <= 0) {
+                        throw new IllegalArgumentException("L'identifiant doit être un nombre positif.");
+                    }
+                } catch (NumberFormatException ex) {
+                    throw new IllegalArgumentException("L'identifiant doit être un nombre valide.");
+                }
+                
+                // Check if ID is unique
+                if (model.idExists(id)) {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("Erreur");
+                    alert.setHeaderText("Identifiant existant");
+                    alert.setContentText("Un secouriste avec cet identifiant existe déjà.");
+                    alert.showAndWait();
+                    return;
+                }
+                
                 Secouriste newSecouriste = new Secouriste(
-                    System.currentTimeMillis(),
+                    id,
                     nomField.getText(),
                     prenomField.getText(),
                     dateNaissanceField.getText(),
@@ -199,6 +223,7 @@ public class AdminSecouristesController {
         
         popupContent.getChildren().addAll(
             new Label("Nouveau secouriste"),
+            idField,
             nomField,
             prenomField,
             dateNaissanceField,
@@ -208,7 +233,7 @@ public class AdminSecouristesController {
             saveButton
         );
         
-        Scene popupScene = new Scene(popupContent, 300, 400);
+        Scene popupScene = new Scene(popupContent, 300, 450); // Increased height for new field
         popupScene.getStylesheets().add(getClass().getResource("../style.css").toExternalForm());
         popupStage.setScene(popupScene);
         popupStage.showAndWait();
