@@ -15,6 +15,50 @@ public class AffectationDAO extends DAO<Object> {
     private JourneeDAO journeeDAO = new JourneeDAO();
     private SiteDAO siteDAO = new SiteDAO();
 
+    public List<AdminAffectationsModel.Affectation> findAffectationsForSecoursiteAndMonth(long idSecouriste, int month, int year) {
+        List<AdminAffectationsModel.Affectation> affectations = new ArrayList<>();
+        
+        String query = 
+            "SELECT d.jour, d.mois, d.annee, si.nom AS site, GROUP_CONCAT(s.nom || ' ' || s.prenom) AS secouristes " +
+            "FROM Affectation a " +
+            "JOIN DPS d ON a.idDps = d.id " +
+            "JOIN Secouriste s ON a.idSecouriste = s.id " +
+            "JOIN Site si ON d.leSite = si.code " +
+            "WHERE a.idSecouriste = ? AND d.mois = ? AND d.annee = ? " +
+            "GROUP BY d.jour, d.mois, d.annee, si.nom";
+        
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+            
+            pstmt.setLong(1, idSecouriste);
+            pstmt.setInt(2, month);
+            pstmt.setInt(3, year);
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    int jour = rs.getInt("jour");
+                    int mois = rs.getInt("mois");
+                    int annee = rs.getInt("annee");
+                    String site = rs.getString("site");
+                    String secouristes = rs.getString("secouristes");
+                    
+                    String dateStr = String.format("%02d/%02d/%d", jour, mois, annee);
+                    affectations.add(new AdminAffectationsModel.Affectation(
+                        dateStr, 
+                        site, 
+                        secouristes.replace(",", "\n")
+                    ));
+                }
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Erreur lors du chargement des affectations : " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return affectations;
+    }
+
     public int createAffectation(long idSecouriste, long idDps) {
         String query = "INSERT INTO Affectation(idSecouriste, idDps) VALUES (?, ?)";
         try (Connection con = getConnection();
