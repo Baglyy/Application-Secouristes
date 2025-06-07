@@ -32,7 +32,10 @@ public class PlanningModel {
     }
     
     private void initializeAffectations() {
+        // IMPORTANT: Vider complètement les collections avant de recharger
         affectations.clear();
+        affectationsParDate.clear(); // Ajout de cette ligne cruciale
+        
         YearMonth currentMonth = moisActuel.get();
         
         System.out.println("=== DEBUG initializeAffectations ===");
@@ -58,9 +61,11 @@ public class PlanningModel {
     }
     
     private void mapAffectationsParDate() {
-        affectationsParDate.clear();
+        // Le mapping est maintenant vidé dans initializeAffectations()
+        // On ne fait plus affectationsParDate.clear() ici pour éviter la duplication
         System.out.println("=== DEBUG mapAffectationsParDate ===");
         System.out.println("Nombre d'affectations à mapper: " + affectations.size());
+        System.out.println("État du mapping avant traitement: " + affectationsParDate.size() + " entrées");
         
         // Différents formats de date possibles
         DateTimeFormatter[] formatters = {
@@ -104,24 +109,30 @@ public class PlanningModel {
     
     public void moisPrecedent() {
         System.out.println("=== Changement vers mois précédent ===");
+        YearMonth ancienMois = moisActuel.get();
         moisActuel.set(moisActuel.get().minusMonths(1));
-        System.out.println("Nouveau mois: " + moisActuel.get());
+        YearMonth nouveauMois = moisActuel.get();
+        System.out.println("Changement de mois: " + ancienMois + " -> " + nouveauMois);
         initializeAffectations();
         mapAffectationsParDate();
     }
     
     public void moisSuivant() {
         System.out.println("=== Changement vers mois suivant ===");
+        YearMonth ancienMois = moisActuel.get();
         moisActuel.set(moisActuel.get().plusMonths(1));
-        System.out.println("Nouveau mois: " + moisActuel.get());
+        YearMonth nouveauMois = moisActuel.get();
+        System.out.println("Changement de mois: " + ancienMois + " -> " + nouveauMois);
         initializeAffectations();
         mapAffectationsParDate();
     }
     
     public void allerAujourdHui() {
         System.out.println("=== Retour au mois actuel ===");
+        YearMonth ancienMois = moisActuel.get();
         moisActuel.set(YearMonth.now());
-        System.out.println("Mois actuel: " + moisActuel.get());
+        YearMonth nouveauMois = moisActuel.get();
+        System.out.println("Changement de mois: " + ancienMois + " -> " + nouveauMois);
         initializeAffectations();
         mapAffectationsParDate();
     }
@@ -168,7 +179,9 @@ public class PlanningModel {
     }
     
     public void setMoisActuel(YearMonth mois) {
+        YearMonth ancienMois = this.moisActuel.get();
         this.moisActuel.set(mois);
+        System.out.println("setMoisActuel: " + ancienMois + " -> " + mois);
         initializeAffectations();
         mapAffectationsParDate();
     }
