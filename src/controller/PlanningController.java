@@ -95,11 +95,8 @@ public class PlanningController {
             nomUtilisateurLabel.textProperty().bind(model.nomUtilisateurProperty());
         }
         
-        // Écouter les changements de mois pour rafraîchir le calendrier
-        model.moisActuelProperty().addListener((obs, oldMois, newMois) -> {
-            System.out.println("Changement de mois détecté: " + oldMois + " -> " + newMois);
-            updateCalendrier();
-        });
+        // SUPPRESSION DU LISTENER PROBLÉMATIQUE
+        // L'updateCalendrier() sera appelé manuellement après les changements de données
     }
     
     private void setupListeners() {
@@ -180,19 +177,22 @@ public class PlanningController {
     private void handleMoisPrecedent(ActionEvent event) {
         System.out.println("=== handleMoisPrecedent ===");
         model.moisPrecedent();
-        // updateCalendrier() sera appelé automatiquement par le listener
+        // Appel manuel d'updateCalendrier() APRÈS que les données soient rechargées
+        updateCalendrier();
     }
     
     private void handleMoisSuivant(ActionEvent event) {
         System.out.println("=== handleMoisSuivant ===");
         model.moisSuivant();
-        // updateCalendrier() sera appelé automatiquement par le listener
+        // Appel manuel d'updateCalendrier() APRÈS que les données soient rechargées
+        updateCalendrier();
     }
     
     private void handleAujourdHui(ActionEvent event) {
         System.out.println("=== handleAujourdHui ===");
         model.allerAujourdHui();
-        // updateCalendrier() sera appelé automatiquement par le listener
+        // Appel manuel d'updateCalendrier() APRÈS que les données soient rechargées
+        updateCalendrier();
     }
     
     private void handleHome(ActionEvent event) {
