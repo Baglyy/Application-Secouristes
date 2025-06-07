@@ -4,24 +4,17 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.Priority;
+import javafx.scene.layout.*;
 import controller.PlanningController;
 
 public class PlanningView {
     
     private AnchorPane root;
     private Label nomUtilisateurLabel;
-    private Button retourButton;
-    private Button homeButton;
     private Button precedentMoisButton;
     private Button suivantMoisButton;
     private Button aujourdHuiButton;
+    private Button homeButton;
     private Label moisAnneeLabel;
     private GridPane calendrierGrid;
     private PlanningController controller;
@@ -33,40 +26,32 @@ public class PlanningView {
     }
     
     private void createView() {
-        // Conteneur principal
         root = new AnchorPane();
         root.setPrefSize(1024, 600);
-        root.getStyleClass().add("planning-root");
+        root.getStyleClass().add("disponibilites-root");
         
-        // Header avec image de fond de montagnes
         AnchorPane header = new AnchorPane();
         header.setPrefHeight(70);
-        header.getStyleClass().add("planning-header");
+        header.getStyleClass().add("disponibilites-header");
         
-        // Container du header
         HBox headerContent = new HBox();
         headerContent.setAlignment(Pos.CENTER_LEFT);
         headerContent.setPadding(new Insets(15, 30, 15, 30));
         headerContent.setSpacing(20);
         
-        // Titre "Planning"
         Label titleLabel = new Label("Planning");
         titleLabel.getStyleClass().add("disponibilites-title");
         
-        // Spacer pour pousser les éléments utilisateur à droite
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         
-        // Container pour les informations utilisateur
         HBox userInfo = new HBox();
         userInfo.setAlignment(Pos.CENTER_RIGHT);
         userInfo.setSpacing(15);
         
-        // Nom de l'utilisateur
         nomUtilisateurLabel = new Label("NOM PRÉNOM DE L'UTILISATEUR");
         nomUtilisateurLabel.getStyleClass().add("user-name");
         
-        // Icône de notification avec badge
         Label notificationIcon = new Label("🔔");
         notificationIcon.getStyleClass().add("profile-icon");
         
@@ -78,7 +63,6 @@ public class PlanningView {
         AnchorPane.setTopAnchor(notificationBadge, -5.0);
         AnchorPane.setRightAnchor(notificationBadge, -5.0);
         
-        // Bouton Home
         homeButton = new Button("🏠");
         homeButton.getStyleClass().add("profile-icon");
         
@@ -91,121 +75,71 @@ public class PlanningView {
         AnchorPane.setBottomAnchor(headerContent, 0.0);
         header.getChildren().add(headerContent);
         
-        // Container principal pour le contenu
         VBox mainContent = new VBox();
         mainContent.setAlignment(Pos.TOP_CENTER);
         mainContent.setSpacing(20);
         mainContent.setPadding(new Insets(30, 50, 30, 50));
         
-        // Titre du calendrier
-        Label calendrierTitre = new Label("CALENDRIER DU PLANNING");
-        calendrierTitre.getStyleClass().add("tableau-titre");
+        HBox legende = new HBox();
+        legende.setAlignment(Pos.CENTER_LEFT);
+        legende.setSpacing(30);
+        legende.setPadding(new Insets(0, 0, 10, 0));
         
-        // Container pour les contrôles de navigation du calendrier
-        HBox navigationCalendrier = new HBox();
-        navigationCalendrier.setAlignment(Pos.CENTER);
-        navigationCalendrier.setSpacing(20);
-        navigationCalendrier.setPadding(new Insets(10, 0, 10, 0));
+        HBox affectationInfo = new HBox();
+        affectationInfo.setAlignment(Pos.CENTER_LEFT);
+        affectationInfo.setSpacing(8);
+        Label affectationCircle = new Label("●");
+        affectationCircle.getStyleClass().add("legende-affectation");
+        Label affectationText = new Label("Avec affectation");
+        affectationText.getStyleClass().add("legende-text");
+        affectationInfo.getChildren().addAll(affectationCircle, affectationText);
         
-        // Bouton mois précédent
+        HBox aujourdHuiInfo = new HBox();
+        aujourdHuiInfo.setAlignment(Pos.CENTER_LEFT);
+        aujourdHuiInfo.setSpacing(8);
+        Label aujourdHuiCircle = new Label("●");
+        aujourdHuiCircle.getStyleClass().add("legende-aujourdhui");
+        Label aujourdHuiText = new Label("Aujourd'hui");
+        aujourdHuiText.getStyleClass().add("legende-text");
+        aujourdHuiInfo.getChildren().addAll(aujourdHuiCircle, aujourdHuiText);
+        
+        legende.getChildren().addAll(affectationInfo, aujourdHuiInfo);
+        
+        HBox navigationMois = new HBox();
+        navigationMois.setAlignment(Pos.CENTER);
+        navigationMois.setSpacing(20);
+        navigationMois.setPadding(new Insets(10, 0, 20, 0));
+        
         precedentMoisButton = new Button("❮");
         precedentMoisButton.getStyleClass().add("navigation-button");
         
-        // Label pour afficher le mois et l'année
-        moisAnneeLabel = new Label("Février 2030");
-        moisAnneeLabel.getStyleClass().add("mois-annee-label");
-        moisAnneeLabel.setPrefWidth(200);
-        moisAnneeLabel.setAlignment(Pos.CENTER);
+        moisAnneeLabel = new Label("Janvier 2025");
+        moisAnneeLabel.getStyleClass().add("mois-label");
         
-        // Bouton mois suivant
         suivantMoisButton = new Button("❯");
         suivantMoisButton.getStyleClass().add("navigation-button");
         
-        // Bouton "Aujourd'hui"
         aujourdHuiButton = new Button("Aujourd'hui");
         aujourdHuiButton.getStyleClass().add("retour-button");
         
-        navigationCalendrier.getChildren().addAll(precedentMoisButton, moisAnneeLabel, suivantMoisButton, aujourdHuiButton);
+        navigationMois.getChildren().addAll(precedentMoisButton, moisAnneeLabel, suivantMoisButton, aujourdHuiButton);
         
-        // Container pour le calendrier avec scroll
-        ScrollPane scrollPane = new ScrollPane();
-        scrollPane.getStyleClass().add("calendrier-scroll");
-        scrollPane.setFitToWidth(true);
-        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        
-        // Container principal du calendrier
         VBox calendrierContainer = new VBox();
-        calendrierContainer.getStyleClass().add("planning-container");
-        calendrierContainer.setSpacing(0);
+        calendrierContainer.setAlignment(Pos.CENTER);
+        calendrierContainer.getStyleClass().add("calendrier-container");
         
-        // Header du calendrier (jours de la semaine)
-        HBox joursHeader = new HBox();
-        joursHeader.getStyleClass().add("jours-header");
-        joursHeader.setAlignment(Pos.CENTER);
-        joursHeader.setPrefHeight(40);
+        Label calendrierTitre = new Label("CALENDRIER MENSUEL DES AFFECTATIONS");
+        calendrierTitre.getStyleClass().add("calendrier-titre");
         
-        String[] nomsJours = {"Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"};
-        for (String jour : nomsJours) {
-            Label jourLabel = new Label(jour);
-            jourLabel.getStyleClass().add("jour-header-cell");
-            jourLabel.setPrefWidth(120);
-            jourLabel.setAlignment(Pos.CENTER);
-            joursHeader.getChildren().add(jourLabel);
-        }
-        
-        // Grid pour les jours du mois
         calendrierGrid = new GridPane();
-        calendrierGrid.getStyleClass().add("planning-grid");
-        calendrierGrid.setHgap(1);
-        calendrierGrid.setVgap(1);
-        calendrierGrid.setAlignment(Pos.CENTER);
+        calendrierGrid.getStyleClass().add("calendrier-grid");
         
-        // Configurer les contraintes de colonne pour le grid
-        for (int i = 0; i < 7; i++) {
-            calendrierGrid.getColumnConstraints().add(new javafx.scene.layout.ColumnConstraints(120));
-        }
+        createCalendrierGrid();
         
-        calendrierContainer.getChildren().addAll(joursHeader, calendrierGrid);
-        scrollPane.setContent(calendrierContainer);
+        calendrierContainer.getChildren().addAll(calendrierTitre, calendrierGrid);
         
-        // Légende
-        HBox legendeContainer = new HBox();
-        legendeContainer.setAlignment(Pos.CENTER);
-        legendeContainer.setSpacing(30);
-        legendeContainer.setPadding(new Insets(15, 0, 0, 0));
+        mainContent.getChildren().addAll(legende, navigationMois, calendrierContainer);
         
-        HBox legendeAffectation = new HBox();
-        legendeAffectation.setAlignment(Pos.CENTER_LEFT);
-        legendeAffectation.setSpacing(8);
-        
-        Label legendeColorAffectation = new Label();
-        legendeColorAffectation.getStyleClass().add("legende-color-affectation");
-        legendeColorAffectation.setPrefSize(15, 15);
-        
-        Label legendeTextAffectation = new Label("Jour avec affectation");
-        legendeTextAffectation.getStyleClass().add("legende-text");
-        
-        legendeAffectation.getChildren().addAll(legendeColorAffectation, legendeTextAffectation);
-        
-        HBox legendeAujourdhui = new HBox();
-        legendeAujourdhui.setAlignment(Pos.CENTER_LEFT);
-        legendeAujourdhui.setSpacing(8);
-        
-        Label legendeColorAujourdhui = new Label();
-        legendeColorAujourdhui.getStyleClass().add("legende-color-aujourdhui");
-        legendeColorAujourdhui.setPrefSize(15, 15);
-        
-        Label legendeTextAujourdhui = new Label("Aujourd'hui");
-        legendeTextAujourdhui.getStyleClass().add("legende-text");
-        
-        legendeAujourdhui.getChildren().addAll(legendeColorAujourdhui, legendeTextAujourdhui);
-        
-        legendeContainer.getChildren().addAll(legendeAffectation, legendeAujourdhui);
-        
-        mainContent.getChildren().addAll(calendrierTitre, navigationCalendrier, scrollPane, legendeContainer);
-        
-        // Positionnement des éléments
         AnchorPane.setTopAnchor(header, 0.0);
         AnchorPane.setLeftAnchor(header, 0.0);
         AnchorPane.setRightAnchor(header, 0.0);
@@ -218,11 +152,18 @@ public class PlanningView {
         root.getChildren().addAll(header, mainContent);
     }
     
+    private void createCalendrierGrid() {
+        String[] joursSemaine = {"LUNDI", "MARDI", "MERCREDI", "JEUDI", "VENDREDI", "SAMEDI", "DIMANCHE"};
+        
+        for (int col = 0; col < joursSemaine.length; col++) {
+            Label header = new Label(joursSemaine[col]);
+            header.getStyleClass().add("calendrier-header");
+            calendrierGrid.add(header, col, 0);
+        }
+    }
+    
     private void setupController(String nomUtilisateur) {
-        // Le bouton retour est maintenant null car il n'existe plus
-        controller = new PlanningController(nomUtilisateurLabel, null, homeButton,
-                                          precedentMoisButton, suivantMoisButton, aujourdHuiButton,
-                                          moisAnneeLabel, calendrierGrid, nomUtilisateur);
+        controller = new PlanningController(nomUtilisateurLabel, homeButton,precedentMoisButton, suivantMoisButton, aujourdHuiButton,moisAnneeLabel, calendrierGrid, nomUtilisateur);
     }
     
     private void loadStylesheet() {
