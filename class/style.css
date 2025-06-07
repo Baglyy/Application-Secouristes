@@ -591,3 +591,27 @@
     -fx-text-fill: #333333;
 }
 
+.legende-affectation {
+    -fx-font-size: 16px;
+    -fx-text-fill: #4caf50;
+}
+
+.legende-aujourdhui {
+    -fx-font-size: 16px;
+    -fx-text-fill: #2196f3;
+}
+
+.affectation-cell {
+    -fx-background-color: #4caf50;
+    -fx-text-fill: #ffffff;
+}
+
+.aujourdhui-cell {
+    -fx-background-color: #2196f3;
+    -fx-text-fill: #ffffff;
+}
+
+.neutre-cell {
+    -fx-background-color: #e0e0e0;
+    -fx-text-fill: #333333;
+}
