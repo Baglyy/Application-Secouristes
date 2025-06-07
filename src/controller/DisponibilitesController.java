@@ -59,7 +59,6 @@ public class DisponibilitesController {
     }
     
     private void updateCalendrier() {
-        // Clear existing cells (except headers)
         calendrierGrid.getChildren().removeIf(node -> GridPane.getRowIndex(node) != null && GridPane.getRowIndex(node) > 0);
         
         LocalDate date = LocalDate.of(model.getCurrentYear(), model.getCurrentMonth(), 1);
