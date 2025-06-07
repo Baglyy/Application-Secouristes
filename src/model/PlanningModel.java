@@ -35,6 +35,11 @@ public class PlanningModel {
         affectations.clear();
         YearMonth currentMonth = moisActuel.get();
         
+        System.out.println("=== DEBUG initializeAffectations ===");
+        System.out.println("Chargement des affectations pour idSecouriste=" + idSecouriste + 
+                          ", mois=" + currentMonth.getMonthValue() + 
+                          ", année=" + currentMonth.getYear());
+        
         // Utiliser le DAO au lieu de faire la requête directement
         List<AdminAffectationsModel.Affectation> affectationsDuMois = 
             affectationDAO.findAffectationsForSecoursiteAndMonth(
@@ -44,8 +49,12 @@ public class PlanningModel {
             );
         
         affectations.addAll(affectationsDuMois);
-        System.out.println("Chargé " + affectationsDuMois.size() + " affectations pour idSecouriste=" + idSecouriste +
-                           ", mois=" + currentMonth.getMonthValue() + ", année=" + currentMonth.getYear());
+        System.out.println("Chargé " + affectationsDuMois.size() + " affectations");
+        
+        for (AdminAffectationsModel.Affectation aff : affectationsDuMois) {
+            System.out.println("  - Date: " + aff.getDate() + ", Site: " + aff.getSitesOlympiques());
+        }
+        System.out.println("=== FIN DEBUG initializeAffectations ===");
     }
     
     private void mapAffectationsParDate() {
@@ -94,19 +103,25 @@ public class PlanningModel {
     }
     
     public void moisPrecedent() {
+        System.out.println("=== Changement vers mois précédent ===");
         moisActuel.set(moisActuel.get().minusMonths(1));
+        System.out.println("Nouveau mois: " + moisActuel.get());
         initializeAffectations();
         mapAffectationsParDate();
     }
     
     public void moisSuivant() {
+        System.out.println("=== Changement vers mois suivant ===");
         moisActuel.set(moisActuel.get().plusMonths(1));
+        System.out.println("Nouveau mois: " + moisActuel.get());
         initializeAffectations();
         mapAffectationsParDate();
     }
     
     public void allerAujourdHui() {
+        System.out.println("=== Retour au mois actuel ===");
         moisActuel.set(YearMonth.now());
+        System.out.println("Mois actuel: " + moisActuel.get());
         initializeAffectations();
         mapAffectationsParDate();
     }
