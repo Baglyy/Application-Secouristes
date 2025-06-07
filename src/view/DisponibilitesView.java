@@ -6,6 +6,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import controller.DisponibilitesController;
+import model.dao.SecouristeDAO;
+import model.data.Secouriste;
 
 public class DisponibilitesView {
     
@@ -19,10 +21,34 @@ public class DisponibilitesView {
     private GridPane calendrierGrid;
     private DisponibilitesController controller;
     
+    // Constructeur principal
     public DisponibilitesView(String nomUtilisateur) {
+        long idSecouriste = getIdSecouristeFromDatabase(nomUtilisateur);
         createView();
-        setupController(nomUtilisateur);
+        setupController(nomUtilisateur, idSecouriste);
         loadStylesheet();
+    }
+    
+    // Constructeur avec ID explicite
+    public DisponibilitesView(String nomUtilisateur, long idSecouriste) {
+        createView();
+        setupController(nomUtilisateur, idSecouriste);
+        loadStylesheet();
+    }
+    
+    private long getIdSecouristeFromDatabase(String nomUtilisateur) {
+        try {
+            SecouristeDAO dao = new SecouristeDAO();
+            Secouriste secouriste = dao.findByNom(nomUtilisateur);
+            if (secouriste != null) {
+                return secouriste.getId();
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la récupération de l'ID du secouriste pour " + nomUtilisateur + " : " + e.getMessage());
+            e.printStackTrace();
+        }
+        System.out.println("ATTENTION : ID secouriste non trouvé pour " + nomUtilisateur + ", utilisation de -1");
+        return -1; // Fallback pour votre PC
     }
     
     private void createView() {
@@ -161,21 +187,24 @@ public class DisponibilitesView {
     private void createCalendrierGrid() {
         String[] joursSemaine = {"LUNDI", "MARDI", "MERCREDI", "JEUDI", "VENDREDI", "SAMEDI", "DIMANCHE"};
         
-        // Headers pour les jours de la semaine
         for (int col = 0; col < joursSemaine.length; col++) {
             Label header = new Label(joursSemaine[col]);
             header.getStyleClass().add("calendrier-header");
             calendrierGrid.add(header, col, 0);
         }
-        
-        // Les cellules seront remplies dynamiquement par le contrôleur
     }
     
-    private void setupController(String nomUtilisateur) {
-        controller = new DisponibilitesController(nomUtilisateurLabel, moisLabel,
-                                                precedentButton, suivantButton, 
-                                                retourButton, calendrierGrid, 
-                                                nomUtilisateur, homeButton);
+    private void setupController(String nomUtilisateur, long idSecouriste) {
+        controller = new DisponibilitesController(
+            nomUtilisateurLabel, moisLabel, precedentButton, suivantButton, 
+            retourButton, calendrierGrid, nomUtilisateur, homeButton, idSecouriste
+        );
+    }
+    
+    public void setIdSecouriste(long idSecouriste) {
+        if (controller != null) {
+            controller.setIdSecouriste(idSecouriste);
+        }
     }
     
     private void loadStylesheet() {
