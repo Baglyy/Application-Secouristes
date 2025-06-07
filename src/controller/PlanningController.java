@@ -117,6 +117,11 @@ public class PlanningController {
         int premierJourSemaine = model.getPremierJourSemaine();
         LocalDate aujourdhui = LocalDate.now();
         
+        // Debug : afficher les affectations chargées
+        System.out.println("=== DEBUG updateCalendrier ===");
+        System.out.println("Mois actuel: " + moisActuel);
+        System.out.println("Nombre d'affectations dans le modèle: " + model.getAffectations().size());
+        
         int row = 1;
         int col = premierJourSemaine - 1;
         
@@ -125,19 +130,28 @@ public class PlanningController {
             Button cellButton = new Button(String.valueOf(jour));
             cellButton.getStyleClass().add("calendrier-cell");
             
+            // Debug : vérifier chaque jour
+            boolean hasAffectation = model.hasAffectationPourDate(dateJour);
+            System.out.println("Date: " + dateJour + " -> hasAffectation: " + hasAffectation);
+            
             if (dateJour.equals(aujourdhui)) {
                 cellButton.getStyleClass().add("aujourdhui-cell");
-            } else if (model.hasAffectationPourDate(dateJour)) {
+                System.out.println("  -> Ajout classe 'aujourdhui-cell'");
+            } else if (hasAffectation) {
                 cellButton.getStyleClass().add("affectation-cell");
                 AdminAffectationsModel.Affectation affectation = model.getAffectationPourDate(dateJour);
-                Tooltip tooltip = new Tooltip(
-                    "Affectation du " + affectation.getDate() + "\n" +
-                    "Site: " + affectation.getSitesOlympiques() + "\n" +
-                    "Secouristes: " + affectation.getSecouristes()
-                );
-                cellButton.setTooltip(tooltip);
+                if (affectation != null) {
+                    Tooltip tooltip = new Tooltip(
+                        "Affectation du " + affectation.getDate() + "\n" +
+                        "Site: " + affectation.getSitesOlympiques() + "\n" +
+                        "Secouristes: " + affectation.getSecouristes()
+                    );
+                    cellButton.setTooltip(tooltip);
+                }
+                System.out.println("  -> Ajout classe 'affectation-cell'");
             } else {
                 cellButton.getStyleClass().add("neutre-cell");
+                System.out.println("  -> Ajout classe 'neutre-cell'");
             }
             
             calendrierGrid.add(cellButton, col, row);
@@ -151,6 +165,8 @@ public class PlanningController {
         
         String moisAnneeText = model.getMoisAnneeString();
         moisAnneeLabel.setText(moisAnneeText.substring(0, 1).toUpperCase() + moisAnneeText.substring(1));
+        
+        System.out.println("=== FIN DEBUG updateCalendrier ===");
     }
     
     private void handleMoisPrecedent(ActionEvent event) {
