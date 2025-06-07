@@ -5,13 +5,10 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.event.ActionEvent;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import javafx.geometry.Pos;
-import javafx.geometry.Insets;
 import model.PlanningModel;
-import model.AffectationsModel;
+import model.AdminAffectationsModel;
 import view.DashboardView;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -19,7 +16,6 @@ import java.time.YearMonth;
 public class PlanningController {
     
     private Label nomUtilisateurLabel;
-    private Button retourButton;
     private Button homeButton;
     private Button precedentMoisButton;
     private Button suivantMoisButton;
@@ -29,18 +25,17 @@ public class PlanningController {
     private PlanningModel model;
     private Runnable onRetourCallback;
     
-    public PlanningController(Label nomUtilisateurLabel, Button retourButton, Button homeButton,
+    public PlanningController(Label nomUtilisateurLabel, Button homeButton,
                              Button precedentMoisButton, Button suivantMoisButton, Button aujourdHuiButton,
                              Label moisAnneeLabel, GridPane calendrierGrid, String nomUtilisateur) {
         this.nomUtilisateurLabel = nomUtilisateurLabel;
-        this.retourButton = retourButton;
         this.homeButton = homeButton;
         this.precedentMoisButton = precedentMoisButton;
         this.suivantMoisButton = suivantMoisButton;
         this.aujourdHuiButton = aujourdHuiButton;
         this.moisAnneeLabel = moisAnneeLabel;
         this.calendrierGrid = calendrierGrid;
-        this.model = new PlanningModel(nomUtilisateur);
+        this.model = new PlanningModel(nomUtilisateur, -1); // Placeholder idSecouriste
         
         setupBindings();
         setupListeners();
@@ -48,39 +43,25 @@ public class PlanningController {
     }
     
     private void setupBindings() {
-        // Liaison du nom d'utilisateur avec le label
         if (nomUtilisateurLabel != null) {
             nomUtilisateurLabel.textProperty().bind(model.nomUtilisateurProperty());
         }
-        
-        // Écouter les changements de mois pour mettre à jour le calendrier
         model.moisActuelProperty().addListener((obs, oldMois, newMois) -> {
             updateCalendrier();
         });
     }
     
     private void setupListeners() {
-        // Listeners pour les boutons de navigation
-        if (retourButton != null) {
-            retourButton.setOnAction(this::handleRetour);
-        }
         if (homeButton != null) {
             homeButton.setOnAction(this::handleHome);
         }
-        
-        // Listeners pour la navigation du calendrier
         precedentMoisButton.setOnAction(this::handleMoisPrecedent);
         suivantMoisButton.setOnAction(this::handleMoisSuivant);
         aujourdHuiButton.setOnAction(this::handleAujourdHui);
     }
     
     private void updateCalendrier() {
-        // Mettre à jour le label du mois
-        String moisAnneeText = model.getMoisAnneeString();
-        moisAnneeLabel.setText(moisAnneeText.substring(0, 1).toUpperCase() + moisAnneeText.substring(1));
-        
-        // Vider le calendrier
-        calendrierGrid.getChildren().clear();
+        calendrierGrid.getChildren().removeIf(node -> GridPane.getRowIndex(node) != null && GridPane.getRowIndex(node) > 0);
         
         YearMonth moisActuel = model.getMoisActuel();
         LocalDate premierJour = model.getPremierJourDuMois();
@@ -88,104 +69,62 @@ public class PlanningController {
         int premierJourSemaine = model.getPremierJourSemaine();
         LocalDate aujourdhui = LocalDate.now();
         
-        int ligne = 0;
-        int colonne = premierJourSemaine - 1; // Ajuster pour commencer au bon jour de la semaine
+        int row = 1;
+        int col = premierJourSemaine - 1;
         
-        // Créer les cellules pour chaque jour du mois
         for (int jour = 1; jour <= nombreJours; jour++) {
             LocalDate dateJour = premierJour.withDayOfMonth(jour);
+            Button cellButton = new Button(String.valueOf(jour));
+            cellButton.getStyleClass().add("calendrier-cell");
             
-            VBox celluleJour = createCelluleJour(dateJour, aujourdhui);
+            if (dateJour.equals(aujourdhui)) {
+                cellButton.getStyleClass().add("aujourdhui-cell");
+            } else if (model.hasAffectationPourDate(dateJour)) {
+                cellButton.getStyleClass().add("affectation-cell");
+                AdminAffectationsModel.Affectation affectation = model.getAffectationPourDate(dateJour);
+                Tooltip tooltip = new Tooltip(
+                    "Affectation du " + affectation.getDate() + "\n" +
+                    "Site: " + affectation.getSitesOlympiques() + "\n" +
+                    "Secouristes: " + affectation.getSecouristes()
+                );
+                cellButton.setTooltip(tooltip);
+            } else {
+                cellButton.getStyleClass().add("neutre-cell");
+            }
             
-            calendrierGrid.add(celluleJour, colonne, ligne);
+            calendrierGrid.add(cellButton, col, row);
             
-            colonne++;
-            if (colonne >= 7) {
-                colonne = 0;
-                ligne++;
+            col++;
+            if (col > 6) {
+                col = 0;
+                row++;
             }
         }
-    }
-    
-    private VBox createCelluleJour(LocalDate date, LocalDate aujourdhui) {
-        VBox cellule = new VBox();
-        cellule.setAlignment(Pos.TOP_CENTER);
-        cellule.setPrefSize(120, 80);
-        cellule.setPadding(new Insets(5));
-        cellule.getStyleClass().add("calendrier-cellule");
         
-        // Ajouter la classe pour aujourd'hui
-        if (date.equals(aujourdhui)) {
-            cellule.getStyleClass().add("calendrier-cellule-aujourdhui");
-        }
-        
-        // Label pour le numéro du jour
-        Label numeroJour = new Label(String.valueOf(date.getDayOfMonth()));
-        numeroJour.getStyleClass().add("calendrier-numero-jour");
-        
-        // Vérifier s'il y a une affectation pour cette date
-        AffectationsModel.Affectation affectation = model.getAffectationPourDate(date);
-        if (affectation != null) {
-            cellule.getStyleClass().add("calendrier-cellule-affectation");
-            
-            // Indicateur d'affectation
-            Label indicateur = new Label("●");
-            indicateur.getStyleClass().add("calendrier-indicateur-affectation");
-            
-            // Tooltip avec les détails de l'affectation
-            Tooltip tooltip = new Tooltip(
-                "Affectation du " + affectation.getDate() + "\n" +
-                "Site: " + affectation.getSiteOlympique() + "\n" +
-                "Type: " + affectation.getTypeDispositif()
-            );
-            tooltip.getStyleClass().add("calendrier-tooltip");
-            Tooltip.install(cellule, tooltip);
-            
-            cellule.getChildren().addAll(numeroJour, indicateur);
-        } else {
-            cellule.getChildren().add(numeroJour);
-        }
-        
-        return cellule;
+        String moisAnneeText = model.getMoisAnneeString();
+        moisAnneeLabel.setText(moisAnneeText.substring(0, 1).toUpperCase() + moisAnneeText.substring(1));
     }
     
     private void handleMoisPrecedent(ActionEvent event) {
-        System.out.println("Navigation vers le mois précédent");
         model.moisPrecedent();
     }
     
     private void handleMoisSuivant(ActionEvent event) {
-        System.out.println("Navigation vers le mois suivant");
         model.moisSuivant();
     }
     
     private void handleAujourdHui(ActionEvent event) {
-        System.out.println("Navigation vers le mois actuel");
         model.allerAujourdHui();
     }
     
-    private void handleRetour(ActionEvent event) {
-        System.out.println("Retour au tableau de bord depuis Planning");
-        if (onRetourCallback != null) {
-            onRetourCallback.run();
-        } else {
-            navigateToDashboard();
-        }
-    }
-    
     private void handleHome(ActionEvent event) {
-        System.out.println("Navigation vers le tableau de bord via bouton Home");
         navigateToDashboard();
     }
     
     private void navigateToDashboard() {
         try {
-            // Récupérer la fenêtre actuelle
-            Stage currentStage = (Stage) (homeButton != null ? homeButton.getScene().getWindow() : 
-                                         (retourButton != null ? retourButton.getScene().getWindow() : null));
-            
+            Stage currentStage = (Stage) (homeButton != null ? homeButton.getScene().getWindow() : null);
             if (currentStage != null) {
-                // Créer la nouvelle vue du dashboard
                 DashboardView dashboardView = new DashboardView(model.getNomUtilisateur());
                 Scene dashboardScene = new Scene(dashboardView.getRoot(), 1024, 600);
                 currentStage.setScene(dashboardScene);
@@ -196,7 +135,6 @@ public class PlanningController {
         }
     }
     
-    // Méthodes publiques pour interaction externe
     public void setNomUtilisateur(String nomUtilisateur) {
         model.setNomUtilisateur(nomUtilisateur);
     }
