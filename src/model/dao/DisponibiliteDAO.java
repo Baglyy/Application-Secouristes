@@ -2,12 +2,20 @@ package model.dao;
 
 import java.sql.*;
 import java.util.*;
+import model.data.Journee;
 
 public class DisponibiliteDAO extends DAO<Void> {
     
     private SecouristeDAO secouristeDAO = new SecouristeDAO();
+    private JourneeDAO journeeDAO = new JourneeDAO();
 
     public boolean createDisponibilite(long idSecouriste, int jour, int mois, int annee) {
+        // Vérifier et créer la journée si nécessaire
+        if (!ensureJourneeExists(jour, mois, annee)) {
+            System.err.println("Impossible de créer ou vérifier l'existence de la journée " + jour + "/" + mois + "/" + annee);
+            return false;
+        }
+        
         String sql = 
             "INSERT INTO Disponibilite (idSecouriste, jour, mois, annee) VALUES (?, ?, ?, ?)";
         try (Connection conn = getConnection();
@@ -18,6 +26,37 @@ public class DisponibiliteDAO extends DAO<Void> {
             pstmt.setInt(4, annee);
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
+            System.err.println("Erreur lors de la création de disponibilité : " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Vérifie si une journée existe dans la table Journee, et la crée si nécessaire
+     */
+    private boolean ensureJourneeExists(int jour, int mois, int annee) {
+        try {
+            // Vérifier si la journée existe déjà
+            Journee existingJournee = journeeDAO.findByID(jour, mois, annee);
+            if (existingJournee != null) {
+                return true; // La journée existe déjà
+            }
+            
+            // Créer la journée si elle n'existe pas
+            Journee newJournee = new Journee(jour, mois, annee);
+            int result = journeeDAO.create(newJournee);
+            
+            if (result > 0) {
+                System.out.println("Journée créée automatiquement : " + jour + "/" + mois + "/" + annee);
+                return true;
+            } else {
+                System.err.println("Échec de la création de la journée : " + jour + "/" + mois + "/" + annee);
+                return false;
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la vérification/création de la journée : " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -34,6 +73,7 @@ public class DisponibiliteDAO extends DAO<Void> {
             pstmt.setInt(4, annee);
             return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
+            System.err.println("Erreur lors de la suppression de disponibilité : " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -59,6 +99,7 @@ public class DisponibiliteDAO extends DAO<Void> {
             }
             return dispos;
         } catch (SQLException e) {
+            System.err.println("Erreur lors de la recherche des disponibilités : " + e.getMessage());
             e.printStackTrace();
             return Collections.emptyList();
         }
