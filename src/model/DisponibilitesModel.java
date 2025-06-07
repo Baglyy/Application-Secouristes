@@ -4,103 +4,146 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import model.dao.DisponibiliteDAO;
+
+import java.time.LocalDate;
+import java.time.format.TextStyle;
+import java.util.*;
 
 public class DisponibilitesModel {
     
     private final StringProperty nomUtilisateur = new SimpleStringProperty("");
-    private final StringProperty semaineSelectionnee = new SimpleStringProperty("Semaine 14");
+    private final StringProperty moisSelectionne = new SimpleStringProperty("");
     private final ObservableList<CreneauDisponibilite> creneaux = FXCollections.observableArrayList();
+    private final DisponibiliteDAO disponibiliteDAO = new DisponibiliteDAO();
+    private final long idSecouriste;
+    private int currentMonth;
+    private int currentYear;
     
-    public DisponibilitesModel() {
+    public DisponibilitesModel(String nomUtilisateur, long idSecouriste) {
+        this.nomUtilisateur.set(nomUtilisateur);
+        this.idSecouriste = idSecouriste;
+        LocalDate now = LocalDate.now();
+        this.currentMonth = now.getMonthValue();
+        this.currentYear = now.getYear();
+        updateMoisLabel();
         initializeCreneaux();
     }
     
-    public DisponibilitesModel(String nomUtilisateur) {
-        this.nomUtilisateur.set(nomUtilisateur);
-        initializeCreneaux();
+    private void updateMoisLabel() {
+        LocalDate date = LocalDate.of(currentYear, currentMonth, 1);
+        String moisNom = date.getMonth().getDisplayName(TextStyle.FULL, Locale.FRENCH);
+        moisSelectionne.set(moisNom + " " + currentYear);
     }
     
     private void initializeCreneaux() {
-        // Initialisation des créneaux avec les valeurs par défaut comme dans l'image
-        String[] heures = {"9H - 10H", "10H - 12H", "12H - 14H", "14H - 16H"};
-        String[] jours = {"LUNDI", "MARDI", "MERCREDI", "JEUDI", "VENDREDI"};
+        creneaux.clear();
+        LocalDate date = LocalDate.of(currentYear, currentMonth, 1);
+        int daysInMonth = date.lengthOfMonth();
         
-        // État initial basé sur l'image fournie
-        boolean[][] disponibilites = {
-            {false, true, false, true, true},   // 9H - 10H
-            {false, true, true, false, false},  // 10H - 12H
-            {true, false, false, false, true},  // 12H - 14H
-            {true, true, false, true, true}     // 14H - 16H
-        };
+        List<Map<String, Object>> dbDispos = disponibiliteDAO.findDisponibilitesBySecouristeAndMonth(
+            idSecouriste, currentMonth, currentYear
+        );
         
-        for (int i = 0; i < heures.length; i++) {
-            for (int j = 0; j < jours.length; j++) {
-                creneaux.add(new CreneauDisponibilite(heures[i], jours[j], disponibilites[i][j]));
+        Set<Integer> dispoDays = new HashSet<>();
+        for (Map<String, Object> dispo : dbDispos) {
+            dispoDays.add((Integer) dispo.get("jour"));
+        }
+        
+        for (int day = 1; day <= daysInMonth; day++) {
+            boolean disponible = dispoDays.contains(day);
+            creneaux.add(new CreneauDisponibilite(day, disponible));
+        }
+    }
+    
+    public void toggleDisponibilite(int day) {
+        CreneauDisponibilite creneau = creneaux.stream()
+            .filter(c -> c.getDay() == day)
+            .findFirst()
+            .orElse(null);
+        
+        if (creneau != null && idSecouriste != -1) {
+            boolean newState = !creneau.isDisponible();
+            creneau.setDisponible(newState);
+            
+            if (newState) {
+                disponibiliteDAO.createDisponibilite(
+                    idSecouriste, day, currentMonth, currentYear
+                );
+            } else {
+                disponibiliteDAO.deleteDisponibilite(
+                    idSecouriste, day, currentMonth, currentYear
+                );
             }
         }
     }
     
-    // Getters pour les propriétés
+    public boolean isDisponible(int day) {
+        return creneaux.stream()
+            .filter(c -> c.getDay() == day)
+            .findFirst()
+            .map(CreneauDisponibilite::isDisponible)
+            .orElse(false);
+    }
+    
+    public void previousMonth() {
+        currentMonth--;
+        if (currentMonth < 1) {
+            currentMonth = 12;
+            currentYear--;
+        }
+        updateMoisLabel();
+        initializeCreneaux();
+    }
+    
+    public void nextMonth() {
+        currentMonth++;
+        if (currentMonth > 12) {
+            currentMonth = 1;
+            currentYear++;
+        }
+        updateMoisLabel();
+        initializeCreneaux();
+    }
+    
+    public int getCurrentMonth() {
+        return currentMonth;
+    }
+    
+    public int getCurrentYear() {
+        return currentYear;
+    }
+    
     public StringProperty nomUtilisateurProperty() {
         return nomUtilisateur;
     }
     
-    public StringProperty semaineSelectionneeProperty() {
-        return semaineSelectionnee;
+    public StringProperty moisSelectionneProperty() {
+        return moisSelectionne;
     }
     
     public ObservableList<CreneauDisponibilite> getCreneaux() {
         return creneaux;
     }
     
-    // Getters pour les valeurs
     public String getNomUtilisateur() {
         return nomUtilisateur.get();
     }
     
-    public String getSemaineSelectionnee() {
-        return semaineSelectionnee.get();
-    }
-    
-    // Setters
     public void setNomUtilisateur(String nomUtilisateur) {
         this.nomUtilisateur.set(nomUtilisateur);
     }
     
-    public void setSemaineSelectionnee(String semaine) {
-        this.semaineSelectionnee.set(semaine);
-    }
-    
-    // Méthodes pour gérer les disponibilités
-    public void toggleDisponibilite(String heure, String jour) {
-        creneaux.stream()
-            .filter(c -> c.getHeure().equals(heure) && c.getJour().equals(jour))
-            .findFirst()
-            .ifPresent(c -> c.setDisponible(!c.isDisponible()));
-    }
-    
-    public boolean isDisponible(String heure, String jour) {
-        return creneaux.stream()
-            .filter(c -> c.getHeure().equals(heure) && c.getJour().equals(jour))
-            .findFirst()
-            .map(CreneauDisponibilite::isDisponible)
-            .orElse(false);
-    }
-    
-    // Classe interne pour représenter un créneau
     public static class CreneauDisponibilite {
-        private final String heure;
-        private final String jour;
+        private final int day;
         private boolean disponible;
         
-        public CreneauDisponibilite(String heure, String jour, boolean disponible) {
-            this.heure = heure;
-            this.jour = jour;
+        public CreneauDisponibilite(int day, boolean disponible) {
+            this.day = day;
             this.disponible = disponible;
         }
         
-        public String getHeure() { return heure; }
-        public String getJour() { return jour; }
+        public int getDay() { return day; }
         public boolean isDisponible() { return disponible; }
         public void setDisponible(boolean disponible) { this.disponible = disponible; }
     }
