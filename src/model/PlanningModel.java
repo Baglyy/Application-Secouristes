@@ -50,14 +50,47 @@ public class PlanningModel {
     
     private void mapAffectationsParDate() {
         affectationsParDate.clear();
+        System.out.println("=== DEBUG mapAffectationsParDate ===");
+        System.out.println("Nombre d'affectations à mapper: " + affectations.size());
+        
+        // Différents formats de date possibles
+        DateTimeFormatter[] formatters = {
+            DateTimeFormatter.ofPattern("dd/MM/yyyy"),
+            DateTimeFormatter.ofPattern("d/M/yyyy"),
+            DateTimeFormatter.ofPattern("dd/MM/yy"),
+            DateTimeFormatter.ofPattern("d/M/yy"),
+            DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        };
+        
         for (AdminAffectationsModel.Affectation affectation : affectations) {
-            try {
-                LocalDate date = LocalDate.parse(affectation.getDate(), dateFormatter);
+            String dateString = affectation.getDate();
+            System.out.println("Traitement affectation - Date string: '" + dateString + "'");
+            
+            LocalDate date = null;
+            for (DateTimeFormatter formatter : formatters) {
+                try {
+                    date = LocalDate.parse(dateString, formatter);
+                    System.out.println("  -> Date parsée avec succès: " + date + " (format: " + formatter.toString() + ")");
+                    break;
+                } catch (Exception e) {
+                    // Continuer avec le prochain format
+                }
+            }
+            
+            if (date != null) {
                 affectationsParDate.put(date, affectation);
-            } catch (Exception e) {
-                System.err.println("Erreur lors du mapping de la date : " + affectation.getDate());
+                System.out.println("  -> Ajoutée au mapping: " + date + " - Site: " + affectation.getSitesOlympiques());
+            } else {
+                System.err.println("  -> ERREUR: Impossible de parser la date: " + dateString);
             }
         }
+        
+        System.out.println("Mapping terminé. Nombre de dates mappées: " + affectationsParDate.size());
+        System.out.println("Dates mappées:");
+        for (LocalDate date : affectationsParDate.keySet()) {
+            System.out.println("  - " + date + " : " + affectationsParDate.get(date).getSitesOlympiques());
+        }
+        System.out.println("=== FIN DEBUG mapAffectationsParDate ===");
     }
     
     public void moisPrecedent() {
@@ -83,7 +116,15 @@ public class PlanningModel {
     }
     
     public boolean hasAffectationPourDate(LocalDate date) {
-        return affectationsParDate.containsKey(date);
+        boolean result = affectationsParDate.containsKey(date);
+        System.out.println("hasAffectationPourDate(" + date + ") = " + result);
+        if (!result && !affectationsParDate.isEmpty()) {
+            System.out.println("  Dates disponibles dans le mapping:");
+            for (LocalDate mappedDate : affectationsParDate.keySet()) {
+                System.out.println("    - " + mappedDate);
+            }
+        }
+        return result;
     }
     
     // Getters et Setters
