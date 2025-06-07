@@ -39,16 +39,40 @@ public class DisponibilitesView {
     private long getIdSecouristeFromDatabase(String nomUtilisateur) {
         try {
             SecouristeDAO dao = new SecouristeDAO();
-            Secouriste secouriste = dao.findByNom(nomUtilisateur);
+            
+            System.out.println("Recherche ID secouriste pour: '" + nomUtilisateur + "'");
+            
+            // Utiliser la nouvelle méthode findByFullName
+            Secouriste secouriste = dao.findByFullName(nomUtilisateur);
+            
             if (secouriste != null) {
+                System.out.println("Secouriste trouvé - ID: " + secouriste.getId() + 
+                                ", Nom: " + secouriste.getNom() + 
+                                ", Prénom: " + secouriste.getPrenom());
                 return secouriste.getId();
+            } else {
+                System.err.println("Aucun secouriste trouvé avec le nom complet: '" + nomUtilisateur + "'");
+                
+                // Si ça ne marche pas, essayer avec l'ancienne méthode (juste le nom)
+                String[] parts = nomUtilisateur.trim().split("\\s+");
+                if (parts.length >= 2) {
+                    String nomSeul = parts[parts.length - 1];
+                    System.out.println("Tentative avec le nom seul: '" + nomSeul + "'");
+                    secouriste = dao.findByNom(nomSeul);
+                    if (secouriste != null) {
+                        System.out.println("Secouriste trouvé avec nom seul - ID: " + secouriste.getId());
+                        return secouriste.getId();
+                    }
+                }
             }
+            
         } catch (Exception e) {
-            System.err.println("Erreur lors de la récupération de l'ID du secouriste pour " + nomUtilisateur + " : " + e.getMessage());
+            System.err.println("Erreur lors de la récupération de l'ID du secouriste pour '" + nomUtilisateur + "' : " + e.getMessage());
             e.printStackTrace();
         }
-        System.out.println("ATTENTION : ID secouriste non trouvé pour " + nomUtilisateur + ", utilisation de -1");
-        return -1; // Fallback pour votre PC
+        
+        System.err.println("ATTENTION : ID secouriste non trouvé pour '" + nomUtilisateur + "', utilisation de -1");
+        return -1;
     }
     
     private void createView() {
