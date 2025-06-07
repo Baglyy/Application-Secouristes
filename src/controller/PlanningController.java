@@ -94,7 +94,10 @@ public class PlanningController {
         if (nomUtilisateurLabel != null) {
             nomUtilisateurLabel.textProperty().bind(model.nomUtilisateurProperty());
         }
+        
+        // Écouter les changements de mois pour rafraîchir le calendrier
         model.moisActuelProperty().addListener((obs, oldMois, newMois) -> {
+            System.out.println("Changement de mois détecté: " + oldMois + " -> " + newMois);
             updateCalendrier();
         });
     }
@@ -109,7 +112,13 @@ public class PlanningController {
     }
     
     private void updateCalendrier() {
-        calendrierGrid.getChildren().removeIf(node -> GridPane.getRowIndex(node) != null && GridPane.getRowIndex(node) > 0);
+        System.out.println("=== updateCalendrier appelé ===");
+        
+        // Vider le calendrier (garder seulement les en-têtes)
+        calendrierGrid.getChildren().removeIf(node -> {
+            Integer rowIndex = GridPane.getRowIndex(node);
+            return rowIndex != null && rowIndex > 0;
+        });
         
         YearMonth moisActuel = model.getMoisActuel();
         LocalDate premierJour = model.getPremierJourDuMois();
@@ -118,7 +127,6 @@ public class PlanningController {
         LocalDate aujourdhui = LocalDate.now();
         
         // Debug : afficher les affectations chargées
-        System.out.println("=== DEBUG updateCalendrier ===");
         System.out.println("Mois actuel: " + moisActuel);
         System.out.println("Nombre d'affectations dans le modèle: " + model.getAffectations().size());
         
@@ -166,19 +174,25 @@ public class PlanningController {
         String moisAnneeText = model.getMoisAnneeString();
         moisAnneeLabel.setText(moisAnneeText.substring(0, 1).toUpperCase() + moisAnneeText.substring(1));
         
-        System.out.println("=== FIN DEBUG updateCalendrier ===");
+        System.out.println("=== FIN updateCalendrier ===");
     }
     
     private void handleMoisPrecedent(ActionEvent event) {
+        System.out.println("=== handleMoisPrecedent ===");
         model.moisPrecedent();
+        // updateCalendrier() sera appelé automatiquement par le listener
     }
     
     private void handleMoisSuivant(ActionEvent event) {
+        System.out.println("=== handleMoisSuivant ===");
         model.moisSuivant();
+        // updateCalendrier() sera appelé automatiquement par le listener
     }
     
     private void handleAujourdHui(ActionEvent event) {
+        System.out.println("=== handleAujourdHui ===");
         model.allerAujourdHui();
+        // updateCalendrier() sera appelé automatiquement par le listener
     }
     
     private void handleHome(ActionEvent event) {
