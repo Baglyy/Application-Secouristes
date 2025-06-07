@@ -148,4 +148,27 @@ public class SecouristeDAO extends DAO<Secouriste> {
 
         return null;
     }
+
+    public Secouriste findByNom(String nom) {
+        String query = "SELECT * FROM Secouriste WHERE NOM = ?";
+        try (Connection con = getConnection();
+             PreparedStatement pst = con.prepareStatement(query)) {
+            pst.setString(1, nom);
+            try (ResultSet rs = pst.executeQuery()) {
+                if (rs.next()) {
+                    long id = rs.getLong("ID");
+                    String prenom = rs.getString("PRENOM");
+                    String dateDeNaissance = rs.getString("DATENAISSANCE");
+                    String email = rs.getString("EMAIL");
+                    String tel = rs.getString("TEL");
+                    String adresse = rs.getString("ADRESSE");
+                    return new Secouriste(id, nom, prenom, dateDeNaissance, email, tel, adresse);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur lors de la recherche du secouriste par nom : " + e.getMessage());
+            e.printStackTrace();
+        }
+        return null;
+    }
 }
