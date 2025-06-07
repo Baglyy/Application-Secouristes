@@ -66,15 +66,30 @@ public class DisponibilitesModel {
             boolean newState = !creneau.isDisponible();
             creneau.setDisponible(newState);
             
-            if (newState) {
-                disponibiliteDAO.createDisponibilite(
-                    idSecouriste, day, currentMonth, currentYear
-                );
-            } else {
-                disponibiliteDAO.deleteDisponibilite(
-                    idSecouriste, day, currentMonth, currentYear
-                );
+            try {
+                if (newState) {
+                    boolean success = disponibiliteDAO.createDisponibilite(
+                        idSecouriste, day, currentMonth, currentYear
+                    );
+                    if (!success) {
+                        System.err.println("Échec de la création de disponibilité pour idSecouriste=" + idSecouriste +
+                                           ", jour=" + day + ", mois=" + currentMonth + ", année=" + currentYear);
+                    }
+                } else {
+                    boolean success = disponibiliteDAO.deleteDisponibilite(
+                        idSecouriste, day, currentMonth, currentYear
+                    );
+                    if (!success) {
+                        System.err.println("Échec de la suppression de disponibilité pour idSecouriste=" + idSecouriste +
+                                           ", jour=" + day + ", mois=" + currentMonth + ", année=" + currentYear);
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("Erreur lors de la mise à jour de disponibilité : " + e.getMessage());
+                e.printStackTrace();
             }
+        } else {
+            System.err.println("Toggle ignoré : creneau=" + creneau + ", idSecouriste=" + idSecouriste);
         }
     }
     
