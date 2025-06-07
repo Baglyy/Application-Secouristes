@@ -9,6 +9,8 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import model.PlanningModel;
 import model.AdminAffectationsModel;
+import model.dao.SecouristeDAO;
+import model.data.Secouriste;
 import view.DashboardView;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -35,11 +37,57 @@ public class PlanningController {
         this.aujourdHuiButton = aujourdHuiButton;
         this.moisAnneeLabel = moisAnneeLabel;
         this.calendrierGrid = calendrierGrid;
-        this.model = new PlanningModel(nomUtilisateur, -1); // Placeholder idSecouriste
+        
+        // Récupérer l'ID du secouriste depuis la base de données
+        long idSecouriste = getIdSecouristeFromDatabase(nomUtilisateur);
+        this.model = new PlanningModel(nomUtilisateur, idSecouriste);
         
         setupBindings();
         setupListeners();
         updateCalendrier();
+    }
+    
+    /**
+     * Récupère l'ID du secouriste depuis la base de données
+     * Méthode identique à celle de DisponibilitesView
+     */
+    private long getIdSecouristeFromDatabase(String nomUtilisateur) {
+        try {
+            SecouristeDAO dao = new SecouristeDAO();
+            
+            System.out.println("Recherche ID secouriste pour: '" + nomUtilisateur + "'");
+            
+            // Utiliser la nouvelle méthode findByFullName
+            Secouriste secouriste = dao.findByFullName(nomUtilisateur);
+            
+            if (secouriste != null) {
+                System.out.println("Secouriste trouvé - ID: " + secouriste.getId() + 
+                                ", Nom: " + secouriste.getNom() + 
+                                ", Prénom: " + secouriste.getPrenom());
+                return secouriste.getId();
+            } else {
+                System.err.println("Aucun secouriste trouvé avec le nom complet: '" + nomUtilisateur + "'");
+                
+                // Si ça ne marche pas, essayer avec l'ancienne méthode (juste le nom)
+                String[] parts = nomUtilisateur.trim().split("\\s+");
+                if (parts.length >= 2) {
+                    String nomSeul = parts[parts.length - 1];
+                    System.out.println("Tentative avec le nom seul: '" + nomSeul + "'");
+                    secouriste = dao.findByNom(nomSeul);
+                    if (secouriste != null) {
+                        System.out.println("Secouriste trouvé avec nom seul - ID: " + secouriste.getId());
+                        return secouriste.getId();
+                    }
+                }
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la récupération de l'ID du secouriste pour '" + nomUtilisateur + "' : " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        System.err.println("ATTENTION : ID secouriste non trouvé pour '" + nomUtilisateur + "', utilisation de -1");
+        return -1;
     }
     
     private void setupBindings() {
