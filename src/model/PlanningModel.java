@@ -6,66 +6,81 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import model.dao.AffectationDAO;
+import model.AdminAffectationsModel;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class PlanningModel {
     
     private final StringProperty nomUtilisateur = new SimpleStringProperty("");
     private final ObjectProperty<YearMonth> moisActuel = new SimpleObjectProperty<>(YearMonth.now());
-    private final ObservableList<AffectationsModel.Affectation> affectations = FXCollections.observableArrayList();
-    private final Map<LocalDate, AffectationsModel.Affectation> affectationsParDate = new HashMap<>();
+    private final ObservableList<AdminAffectationsModel.Affectation> affectations = FXCollections.observableArrayList();
+    private final Map<LocalDate, AdminAffectationsModel.Affectation> affectationsParDate = new HashMap<>();
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private final AffectationDAO affectationDAO = new AffectationDAO();
+    private final long idSecouriste;
     
-    public PlanningModel() {
-        initializeAffectations();
-        mapAffectationsParDate();
-    }
-    
-    public PlanningModel(String nomUtilisateur) {
+    public PlanningModel(String nomUtilisateur, long idSecouriste) {
         this.nomUtilisateur.set(nomUtilisateur);
+        this.idSecouriste = idSecouriste;
         initializeAffectations();
         mapAffectationsParDate();
     }
     
     private void initializeAffectations() {
-        // Utilisation des mêmes affectations que dans AffectationsModel
-        affectations.add(new AffectationsModel.Affectation("06/02/2030", "Stade de Ski Alpin", "Poste de Secours Avancé"));
-        affectations.add(new AffectationsModel.Affectation("10/02/2030", "Piste de Bobsleigh", "Équipe Médicale Urgence"));
-        affectations.add(new AffectationsModel.Affectation("15/02/2030", "Village Olympique", "Poste Coordination Médicale"));
-        affectations.add(new AffectationsModel.Affectation("20/02/2030", "Site Saut à Ski", "Équipe Réanimation"));
-    }
-    
-    private void mapAffectationsParDate() {
-        affectationsParDate.clear();
-        for (AffectationsModel.Affectation affectation : affectations) {
+        affectations.clear();
+        List<AdminAffectationsModel.Affectation> allAffectations = affectationDAO.findAllAffectations();
+        YearMonth currentMonth = moisActuel.get();
+        int month = currentMonth.getMonthValue();
+        int year = currentMonth.getYear();
+        
+        for (AdminAffectationsModel.Affectation affectation : allAffectations) {
             try {
                 LocalDate date = LocalDate.parse(affectation.getDate(), dateFormatter);
-                affectationsParDate.put(date, affectation);
+                if (date.getMonthValue() == month && date.getYear() == year) {
+                    // Assume affectation applies to this secouriste (filtering by idSecouriste not possible without DB query)
+                    affectations.add(affectation);
+                }
             } catch (Exception e) {
                 System.err.println("Erreur lors du parsing de la date : " + affectation.getDate());
             }
         }
     }
     
-    // Méthodes de navigation dans le calendrier
+    private void mapAffectationsParDate() {
+        affectationsParDate.clear();
+        for (AdminAffectationsModel.Affectation affectation : affectations) {
+            try {
+                LocalDate date = LocalDate.parse(affectation.getDate(), dateFormatter);
+                affectationsParDate.put(date, affectation);
+            } catch (Exception e) {
+                System.err.println("Erreur lors du mapping de la date : " + affectation.getDate());
+            }
+        }
+    }
+    
     public void moisPrecedent() {
         moisActuel.set(moisActuel.get().minusMonths(1));
+        initializeAffectations();
+        mapAffectationsParDate();
     }
     
     public void moisSuivant() {
         moisActuel.set(moisActuel.get().plusMonths(1));
+        initializeAffectations();
+        mapAffectationsParDate();
     }
     
     public void allerAujourdHui() {
         moisActuel.set(YearMonth.now());
+        initializeAffectations();
+        mapAffectationsParDate();
     }
     
-    // Méthodes pour obtenir les affectations
-    public AffectationsModel.Affectation getAffectationPourDate(LocalDate date) {
+    public AdminAffectationsModel.Affectation getAffectationPourDate(LocalDate date) {
         return affectationsParDate.get(date);
     }
     
@@ -73,7 +88,6 @@ public class PlanningModel {
         return affectationsParDate.containsKey(date);
     }
     
-    // Getters pour les propriétés
     public StringProperty nomUtilisateurProperty() {
         return nomUtilisateur;
     }
@@ -82,11 +96,10 @@ public class PlanningModel {
         return moisActuel;
     }
     
-    public ObservableList<AffectationsModel.Affectation> getAffectations() {
+    public ObservableList<AdminAffectationsModel.Affectation> getAffectations() {
         return affectations;
     }
     
-    // Getters pour les valeurs
     public String getNomUtilisateur() {
         return nomUtilisateur.get();
     }
@@ -95,16 +108,16 @@ public class PlanningModel {
         return moisActuel.get();
     }
     
-    // Setters
     public void setNomUtilisateur(String nomUtilisateur) {
         this.nomUtilisateur.set(nomUtilisateur);
     }
     
     public void setMoisActuel(YearMonth mois) {
         this.moisActuel.set(mois);
+        initializeAffectations();
+        mapAffectationsParDate();
     }
     
-    // Méthodes utilitaires pour le calendrier
     public String getMoisAnneeString() {
         return moisActuel.get().format(DateTimeFormatter.ofPattern("MMMM yyyy", java.util.Locale.FRENCH));
     }
@@ -118,7 +131,6 @@ public class PlanningModel {
     }
     
     public int getPremierJourSemaine() {
-        // Retourne le jour de la semaine du premier jour du mois (1 = Lundi, 7 = Dimanche)
         return getPremierJourDuMois().getDayOfWeek().getValue();
     }
 }
