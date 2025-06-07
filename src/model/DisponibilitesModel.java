@@ -16,7 +16,7 @@ public class DisponibilitesModel {
     private final StringProperty moisSelectionne = new SimpleStringProperty("");
     private final ObservableList<CreneauDisponibilite> creneaux = FXCollections.observableArrayList();
     private final DisponibiliteDAO disponibiliteDAO = new DisponibiliteDAO();
-    private final long idSecouriste;
+    private long idSecouriste;
     private int currentMonth;
     private int currentYear;
     
@@ -30,6 +30,17 @@ public class DisponibilitesModel {
         initializeCreneaux();
     }
     
+    // Ajout d'une méthode pour définir l'ID du secouriste après construction
+    public void setIdSecouriste(long idSecouriste) {
+        this.idSecouriste = idSecouriste;
+        // Recharger les disponibilités avec le nouvel ID
+        initializeCreneaux();
+    }
+    
+    public long getIdSecouriste() {
+        return idSecouriste;
+    }
+    
     private void updateMoisLabel() {
         LocalDate date = LocalDate.of(currentYear, currentMonth, 1);
         String moisNom = date.getMonth().getDisplayName(TextStyle.FULL, Locale.FRENCH);
@@ -41,9 +52,12 @@ public class DisponibilitesModel {
         LocalDate date = LocalDate.of(currentYear, currentMonth, 1);
         int daysInMonth = date.lengthOfMonth();
         
-        List<Map<String, Object>> dbDispos = disponibiliteDAO.findDisponibilitesBySecouristeAndMonth(
-            idSecouriste, currentMonth, currentYear
-        );
+        List<Map<String, Object>> dbDispos = new ArrayList<>();
+        if (idSecouriste > 0) { // Seulement si on a un ID valide
+            dbDispos = disponibiliteDAO.findDisponibilitesBySecouristeAndMonth(
+                idSecouriste, currentMonth, currentYear
+            );
+        }
         
         Set<Integer> dispoDays = new HashSet<>();
         for (Map<String, Object> dispo : dbDispos) {
@@ -62,7 +76,12 @@ public class DisponibilitesModel {
             .findFirst()
             .orElse(null);
         
-        if (creneau != null && idSecouriste != -1) {
+        if (creneau != null) {
+            if (idSecouriste <= 0) {
+                System.err.println("Erreur : ID secouriste non défini (idSecouriste=" + idSecouriste + ")");
+                return;
+            }
+            
             boolean newState = !creneau.isDisponible();
             creneau.setDisponible(newState);
             
@@ -74,6 +93,10 @@ public class DisponibilitesModel {
                     if (!success) {
                         System.err.println("Échec de la création de disponibilité pour idSecouriste=" + idSecouriste +
                                            ", jour=" + day + ", mois=" + currentMonth + ", année=" + currentYear);
+                        // Revenir à l'état précédent en cas d'échec
+                        creneau.setDisponible(!newState);
+                    } else {
+                        System.out.println("Disponibilité créée avec succès pour le " + day + "/" + currentMonth + "/" + currentYear);
                     }
                 } else {
                     boolean success = disponibiliteDAO.deleteDisponibilite(
@@ -82,14 +105,20 @@ public class DisponibilitesModel {
                     if (!success) {
                         System.err.println("Échec de la suppression de disponibilité pour idSecouriste=" + idSecouriste +
                                            ", jour=" + day + ", mois=" + currentMonth + ", année=" + currentYear);
+                        // Revenir à l'état précédent en cas d'échec
+                        creneau.setDisponible(!newState);
+                    } else {
+                        System.out.println("Disponibilité supprimée avec succès pour le " + day + "/" + currentMonth + "/" + currentYear);
                     }
                 }
             } catch (Exception e) {
                 System.err.println("Erreur lors de la mise à jour de disponibilité : " + e.getMessage());
                 e.printStackTrace();
+                // Revenir à l'état précédent en cas d'erreur
+                creneau.setDisponible(!newState);
             }
         } else {
-            System.err.println("Toggle ignoré : creneau=" + creneau + ", idSecouriste=" + idSecouriste);
+            System.err.println("Créneau non trouvé pour le jour " + day);
         }
     }
     
