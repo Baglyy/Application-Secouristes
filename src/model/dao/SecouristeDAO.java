@@ -171,4 +171,87 @@ public class SecouristeDAO extends DAO<Secouriste> {
         }
         return null;
     }
+
+    /**
+     * Trouve un secouriste par son prénom et nom
+     */
+    public Secouriste findByPrenomAndNom(String prenom, String nom) {
+        String query = "SELECT * FROM Secouriste WHERE UPPER(PRENOM) = ? AND UPPER(NOM) = ?";
+        try (Connection con = getConnection();
+            PreparedStatement pst = con.prepareStatement(query)) {
+            
+            pst.setString(1, prenom.toUpperCase().trim());
+            pst.setString(2, nom.toUpperCase().trim());
+            
+            try (ResultSet rs = pst.executeQuery()) {
+                if (rs.next()) {
+                    long id = rs.getLong("ID");
+                    String dateDeNaissance = rs.getString("DATENAISSANCE");
+                    String email = rs.getString("EMAIL");
+                    String tel = rs.getString("TEL");
+                    String adresse = rs.getString("ADRESSE");
+                    
+                    return new Secouriste(id, nom, prenom, dateDeNaissance, email, tel, adresse);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur lors de la recherche du secouriste par prénom et nom : " + e.getMessage());
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * Trouve un secouriste par son nom complet au format "PRÉNOM NOM"
+     * Compatible avec le format utilisé dans l'application
+     */
+    public Secouriste findByFullName(String fullName) {
+        try {
+            String[] parts = fullName.trim().split("\\s+"); // Split sur les espaces
+            if (parts.length >= 2) {
+                String prenom = parts[0];
+                String nom = parts[parts.length - 1]; // Dernier mot = nom de famille
+                
+                System.out.println("Recherche secouriste - Prénom: '" + prenom + "', Nom: '" + nom + "'");
+                return findByPrenomAndNom(prenom, nom);
+            } else {
+                System.err.println("Format de nom invalide: '" + fullName + "' (doit contenir prénom et nom)");
+                return null;
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors de l'analyse du nom complet '" + fullName + "' : " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Récupère uniquement l'ID d'un secouriste par son nom complet
+     * Méthode optimisée si on n'a besoin que de l'ID
+     */
+    public Long getIdByFullName(String fullName) {
+        try {
+            String[] parts = fullName.trim().split("\\s+");
+            if (parts.length >= 2) {
+                String prenom = parts[0];
+                String nom = parts[parts.length - 1];
+                
+                String query = "SELECT ID FROM Secouriste WHERE UPPER(PRENOM) = ? AND UPPER(NOM) = ?";
+                try (Connection con = getConnection();
+                    PreparedStatement pst = con.prepareStatement(query)) {
+                    
+                    pst.setString(1, prenom.toUpperCase().trim());
+                    pst.setString(2, nom.toUpperCase().trim());
+                    
+                    try (ResultSet rs = pst.executeQuery()) {
+                        if (rs.next()) {
+                            return rs.getLong("ID");
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la récupération de l'ID pour '" + fullName + "' : " + e.getMessage());
+        }
+        return null;
+    }
 }
