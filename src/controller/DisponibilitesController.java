@@ -37,11 +37,40 @@ public class DisponibilitesController {
         this.retourButton = retourButton;
         this.calendrierGrid = calendrierGrid;
         this.homeButton = homeButton;
-        this.model = new DisponibilitesModel(nomUtilisateur, -1); // Placeholder idSecouriste
+        
+        // Initialiser avec un ID temporaire, devra être mis à jour
+        this.model = new DisponibilitesModel(nomUtilisateur, -1);
         
         setupBindings();
         setupListeners();
         updateCalendrier();
+    }
+    
+    // Constructeur alternatif avec ID secouriste
+    public DisponibilitesController(Label nomUtilisateurLabel, Label moisLabel,
+                                  Button precedentButton, Button suivantButton, 
+                                  Button retourButton, GridPane calendrierGrid,
+                                  String nomUtilisateur, Button homeButton, long idSecouriste) {
+        this.nomUtilisateurLabel = nomUtilisateurLabel;
+        this.moisLabel = moisLabel;
+        this.precedentButton = precedentButton;
+        this.suivantButton = suivantButton;
+        this.retourButton = retourButton;
+        this.calendrierGrid = calendrierGrid;
+        this.homeButton = homeButton;
+        
+        // Initialiser avec l'ID secouriste correct
+        this.model = new DisponibilitesModel(nomUtilisateur, idSecouriste);
+        
+        setupBindings();
+        setupListeners();
+        updateCalendrier();
+    }
+    
+    // Méthode pour définir l'ID du secouriste après construction
+    public void setIdSecouriste(long idSecouriste) {
+        model.setIdSecouriste(idSecouriste);
+        updateCalendrier(); // Recharger le calendrier avec les nouvelles données
     }
     
     private void setupBindings() {
@@ -123,6 +152,7 @@ public class DisponibilitesController {
     }
     
     private void handleCellClick(int day) {
+        System.out.println("Clic sur le jour " + day + " (idSecouriste=" + model.getIdSecouriste() + ")");
         model.toggleDisponibilite(day);
         updateCalendrier();
     }
