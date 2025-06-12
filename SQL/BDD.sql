@@ -58,7 +58,7 @@ CREATE TABLE Possede (
     idSecouriste BIGINT NOT NULL,
     competence VARCHAR(255) NOT NULL,
     PRIMARY KEY (idSecouriste, competence), -- Clé primaire composite
-    FOREIGN KEY (id_secouriste) REFERENCES Secouriste(id),
+    FOREIGN KEY (idSecouriste) REFERENCES Secouriste(id),
     FOREIGN KEY (competence) REFERENCES Competence(intitule)
 );
 
