@@ -10,15 +10,22 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import controller.AdminDispositifsController;
 import model.AdminDispositifsModel;
+import model.data.Site;
+import model.data.Sport;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class AdminDispositifsView {
     
     private AnchorPane root;
-    private TextField nomTextField;
-    private TextField latitudeTextField;
-    private TextField longitudeTextField;
+    private TextField idTextField;
+    private TextField horaireDepTextField;
+    private TextField horaireFinTextField;
+    private ComboBox<Site> siteComboBox;
+    private ComboBox<Sport> sportComboBox;
+    private TextField jourTextField;
+    private TextField moisTextField;
+    private TextField anneeTextField;
     private Button ajouterButton;
     private Button supprimerButton;
     private Button afficherCarteButton;
@@ -62,10 +69,7 @@ public class AdminDispositifsView {
         
         topSection.getChildren().addAll(formulaire, listeSection);
         
-        // Section bouton carte
-        VBox carteSection = createCarteButtonSection();
-        
-        mainContent.getChildren().addAll(topSection, carteSection);
+        mainContent.getChildren().add(topSection);
         
         // Positionnement des éléments
         AnchorPane.setTopAnchor(header, 0.0);
@@ -143,7 +147,7 @@ public class AdminDispositifsView {
     
     private VBox createFormulaire() {
         VBox formulaire = new VBox();
-        formulaire.setSpacing(15);
+        formulaire.setSpacing(4);
         formulaire.setPrefWidth(300);
         formulaire.getStyleClass().add("form-container");
         formulaire.setPadding(new Insets(20));
@@ -152,26 +156,63 @@ public class AdminDispositifsView {
         Label formTitle = new Label("Ajouter un dispositif");
         formTitle.getStyleClass().add("form-title");
         
-        // Champ nom
-        Label nomLabel = new Label("Nom du dispositif:");
-        nomLabel.getStyleClass().add("form-label");
-        nomTextField = new TextField();
-        nomTextField.setPromptText("Ex: AlpinAlerte");
-        nomTextField.getStyleClass().add("form-textfield");
+        // Champ ID
+        Label idLabel = new Label("ID du dispositif:");
+        idLabel.getStyleClass().add("form-label");
+        idTextField = new TextField();
+        idTextField.setPromptText("Ex: 123456789");
+        idTextField.getStyleClass().add("form-textfield");
         
-        // Champ latitude
-        Label latLabel = new Label("Latitude:");
-        latLabel.getStyleClass().add("form-label");
-        latitudeTextField = new TextField();
-        latitudeTextField.setPromptText("Ex: 45.9237");
-        latitudeTextField.getStyleClass().add("form-textfield");
+        // Champ horaire départ
+        Label horaireDepLabel = new Label("Horaire de départ:");
+        horaireDepLabel.getStyleClass().add("form-label");
+        horaireDepTextField = new TextField();
+        horaireDepTextField.setPromptText("Ex: 08:00:00");
+        horaireDepTextField.getStyleClass().add("form-textfield");
         
-        // Champ longitude
-        Label lngLabel = new Label("Longitude:");
-        lngLabel.getStyleClass().add("form-label");
-        longitudeTextField = new TextField();
-        longitudeTextField.setPromptText("Ex: 6.8694");
-        longitudeTextField.getStyleClass().add("form-textfield");
+        // Champ horaire fin
+        Label horaireFinLabel = new Label("Horaire de fin:");
+        horaireFinLabel.getStyleClass().add("form-label");
+        horaireFinTextField = new TextField();
+        horaireFinTextField.setPromptText("Ex: 18:00:00");
+        horaireFinTextField.getStyleClass().add("form-textfield");
+        
+        // ComboBox site
+        Label siteLabel = new Label("Site:");
+        siteLabel.getStyleClass().add("form-label");
+        siteComboBox = new ComboBox<>();
+        siteComboBox.setPromptText("Sélectionner un site");
+        siteComboBox.getStyleClass().add("form-textfield");
+        siteComboBox.setPrefWidth(250);
+        
+        // ComboBox sport
+        Label sportLabel = new Label("Sport:");
+        sportLabel.getStyleClass().add("form-label");
+        sportComboBox = new ComboBox<>();
+        sportComboBox.setPromptText("Sélectionner un sport");
+        sportComboBox.getStyleClass().add("form-textfield");
+        sportComboBox.setPrefWidth(250);
+        
+        // Champ jour
+        Label jourLabel = new Label("Jour:");
+        jourLabel.getStyleClass().add("form-label");
+        jourTextField = new TextField();
+        jourTextField.setPromptText("Ex: 13");
+        jourTextField.getStyleClass().add("form-textfield");
+        
+        // Champ mois
+        Label moisLabel = new Label("Mois:");
+        moisLabel.getStyleClass().add("form-label");
+        moisTextField = new TextField();
+        moisTextField.setPromptText("Ex: 6");
+        moisTextField.getStyleClass().add("form-textfield");
+        
+        // Champ année
+        Label anneeLabel = new Label("Année:");
+        anneeLabel.getStyleClass().add("form-label");
+        anneeTextField = new TextField();
+        anneeTextField.setPromptText("Ex: 2025");
+        anneeTextField.getStyleClass().add("form-textfield");
         
         // Bouton ajouter
         ajouterButton = new Button("➕ Ajouter dispositif");
@@ -179,10 +220,15 @@ public class AdminDispositifsView {
         ajouterButton.setPrefWidth(250);
         
         formulaire.getChildren().addAll(
-            formTitle, 
-            nomLabel, nomTextField,
-            latLabel, latitudeTextField,
-            lngLabel, longitudeTextField,
+            formTitle,
+            idLabel, idTextField,
+            horaireDepLabel, horaireDepTextField,
+            horaireFinLabel, horaireFinTextField,
+            siteLabel, siteComboBox,
+            sportLabel, sportComboBox,
+            jourLabel, jourTextField,
+            moisLabel, moisTextField,
+            anneeLabel, anneeTextField,
             ajouterButton
         );
         
@@ -223,26 +269,19 @@ public class AdminDispositifsView {
                     setGraphic(null);
                 } else {
                     VBox content = new VBox(2);
-                    Label nameLabel = new Label(item.getNom());
+                    Label nameLabel = new Label("DPS-" + item.getId());
                     nameLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #2c3e50;");
-                    Label coordsLabel = new Label(String.format("%.4f, %.4f", item.getLatitude(), item.getLongitude()));
-                    coordsLabel.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 11px;");
-                    content.getChildren().addAll(nameLabel, coordsLabel);
+                    Label detailsLabel = new Label(String.format("%s, %s, %s",
+                        item.getSite().getNom(),
+                        item.getSport().getNom(),
+                        item.getJournee().toString()));
+                    detailsLabel.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 11px;");
+                    content.getChildren().addAll(nameLabel, detailsLabel);
                     setGraphic(content);
                     setText(null);
                 }
             }
         });
-        
-        listeSection.getChildren().addAll(titleRow, deviceListView);
-        
-        return listeSection;
-    }
-    
-    private VBox createCarteButtonSection() {
-        VBox carteSection = new VBox();
-        carteSection.setSpacing(10);
-        carteSection.setAlignment(Pos.CENTER);
         
         // Bouton pour afficher la carte
         afficherCarteButton = new Button("🗺️ Afficher la carte");
@@ -251,9 +290,9 @@ public class AdminDispositifsView {
         afficherCarteButton.setPrefHeight(40);
         afficherCarteButton.setOnAction(e -> openMapPopup());
         
-        carteSection.getChildren().add(afficherCarteButton);
+        listeSection.getChildren().addAll(titleRow, deviceListView, afficherCarteButton);
         
-        return carteSection;
+        return listeSection;
     }
     
     private void createMapWebView() {
@@ -332,9 +371,14 @@ public class AdminDispositifsView {
     
     private void setupController(String nomUtilisateur) {
         controller = new AdminDispositifsController(
-                nomTextField,
-                latitudeTextField,
-                longitudeTextField,
+                idTextField,
+                horaireDepTextField,
+                horaireFinTextField,
+                siteComboBox,
+                sportComboBox,
+                jourTextField,
+                moisTextField,
+                anneeTextField,
                 ajouterButton,
                 supprimerButton,
                 deviceListView,
