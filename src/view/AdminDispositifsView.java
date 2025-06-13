@@ -12,8 +12,10 @@ import controller.AdminDispositifsController;
 import model.AdminDispositifsModel;
 import model.data.Site;
 import model.data.Sport;
+import model.data.Competence;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class AdminDispositifsView {
     
@@ -26,6 +28,7 @@ public class AdminDispositifsView {
     private TextField jourTextField;
     private TextField moisTextField;
     private TextField anneeTextField;
+    private VBox besoinsContainer;
     private Button ajouterButton;
     private Button supprimerButton;
     private Button afficherCarteButton;
@@ -43,35 +46,27 @@ public class AdminDispositifsView {
     }
     
     private void createView() {
-        // Conteneur principal
         root = new AnchorPane();
         root.setPrefSize(1024, 600);
         root.getStyleClass().add("dashboard-root");
         
-        // Header avec image de fond de montagnes
         AnchorPane header = createHeader();
         
-        // Container principal pour le contenu
         VBox mainContent = new VBox();
         mainContent.setSpacing(20);
         mainContent.setPadding(new Insets(20, 30, 20, 30));
         
-        // Container horizontal pour le formulaire et la liste
         HBox topSection = new HBox();
         topSection.setSpacing(30);
         topSection.setAlignment(Pos.TOP_LEFT);
         
-        // Formulaire d'ajout (partie gauche)
         VBox formulaire = createFormulaire();
-        
-        // Liste des dispositifs (partie droite)
         VBox listeSection = createListeSection();
         
         topSection.getChildren().addAll(formulaire, listeSection);
         
         mainContent.getChildren().add(topSection);
         
-        // Positionnement des éléments
         AnchorPane.setTopAnchor(header, 0.0);
         AnchorPane.setLeftAnchor(header, 0.0);
         AnchorPane.setRightAnchor(header, 0.0);
@@ -83,7 +78,6 @@ public class AdminDispositifsView {
         
         root.getChildren().addAll(header, mainContent);
         
-        // Créer la WebView pour la popup (cachée)
         createMapWebView();
     }
     
@@ -92,30 +86,24 @@ public class AdminDispositifsView {
         header.setPrefHeight(70);
         header.getStyleClass().add("dashboard-header");
         
-        // Container du header
         HBox headerContent = new HBox();
         headerContent.setAlignment(Pos.CENTER_LEFT);
         headerContent.setPadding(new Insets(15, 30, 15, 30));
         headerContent.setSpacing(20);
         
-        // Titre
         Label titleLabel = new Label("Gestion des dispositifs de secours");
         titleLabel.getStyleClass().add("dashboard-title");
         
-        // Spacer
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         
-        // Container pour les informations utilisateur
         HBox userInfo = new HBox();
         userInfo.setAlignment(Pos.CENTER_RIGHT);
         userInfo.setSpacing(15);
         
-        // Nom de l'utilisateur
         nomUtilisateurLabel = new Label("NOM PRÉNOM DE L'UTILISATEUR");
         nomUtilisateurLabel.getStyleClass().add("user-name");
         
-        // Icône de notification avec badge
         Label notificationIcon = new Label("🔔");
         notificationIcon.getStyleClass().add("profile-icon");
         
@@ -127,7 +115,6 @@ public class AdminDispositifsView {
         AnchorPane.setTopAnchor(notificationBadge, -5.0);
         AnchorPane.setRightAnchor(notificationBadge, -5.0);
         
-        // Icône maison pour retour
         homeIcon = new Label("🏠");
         homeIcon.getStyleClass().addAll("profile-icon", "clickable");
         homeIcon.setStyle("-fx-cursor: hand;");
@@ -135,7 +122,6 @@ public class AdminDispositifsView {
         userInfo.getChildren().addAll(nomUtilisateurLabel, notificationContainer, homeIcon);
         headerContent.getChildren().addAll(titleLabel, spacer, userInfo);
         
-        // Ajout du contenu au header
         AnchorPane.setLeftAnchor(headerContent, 0.0);
         AnchorPane.setRightAnchor(headerContent, 0.0);
         AnchorPane.setTopAnchor(headerContent, 0.0);
@@ -147,37 +133,32 @@ public class AdminDispositifsView {
     
     private VBox createFormulaire() {
         VBox formulaire = new VBox();
-        formulaire.setSpacing(4);
+        formulaire.setSpacing(5);
         formulaire.setPrefWidth(300);
         formulaire.getStyleClass().add("form-container");
         formulaire.setPadding(new Insets(20));
         
-        // Titre du formulaire
         Label formTitle = new Label("Ajouter un dispositif");
         formTitle.getStyleClass().add("form-title");
         
-        // Champ ID
         Label idLabel = new Label("ID du dispositif:");
         idLabel.getStyleClass().add("form-label");
         idTextField = new TextField();
         idTextField.setPromptText("Ex: 123456789");
         idTextField.getStyleClass().add("form-textfield");
         
-        // Champ horaire départ
         Label horaireDepLabel = new Label("Horaire de départ:");
         horaireDepLabel.getStyleClass().add("form-label");
         horaireDepTextField = new TextField();
         horaireDepTextField.setPromptText("Ex: 08:00:00");
         horaireDepTextField.getStyleClass().add("form-textfield");
         
-        // Champ horaire fin
         Label horaireFinLabel = new Label("Horaire de fin:");
         horaireFinLabel.getStyleClass().add("form-label");
         horaireFinTextField = new TextField();
         horaireFinTextField.setPromptText("Ex: 18:00:00");
         horaireFinTextField.getStyleClass().add("form-textfield");
         
-        // ComboBox site
         Label siteLabel = new Label("Site:");
         siteLabel.getStyleClass().add("form-label");
         siteComboBox = new ComboBox<>();
@@ -185,7 +166,6 @@ public class AdminDispositifsView {
         siteComboBox.getStyleClass().add("form-textfield");
         siteComboBox.setPrefWidth(250);
         
-        // ComboBox sport
         Label sportLabel = new Label("Sport:");
         sportLabel.getStyleClass().add("form-label");
         sportComboBox = new ComboBox<>();
@@ -193,28 +173,42 @@ public class AdminDispositifsView {
         sportComboBox.getStyleClass().add("form-textfield");
         sportComboBox.setPrefWidth(250);
         
-        // Champ jour
-        Label jourLabel = new Label("Jour:");
-        jourLabel.getStyleClass().add("form-label");
+        // Date fields on the same line
+        Label dateLabel = new Label("Date:");
+        dateLabel.getStyleClass().add("form-label");
+        
+        HBox dateFields = new HBox();
+        dateFields.setSpacing(10);
+        
         jourTextField = new TextField();
-        jourTextField.setPromptText("Ex: 13");
+        jourTextField.setPromptText("Jour (ex: 13)");
         jourTextField.getStyleClass().add("form-textfield");
+        jourTextField.setPrefWidth(80);
         
-        // Champ mois
-        Label moisLabel = new Label("Mois:");
-        moisLabel.getStyleClass().add("form-label");
         moisTextField = new TextField();
-        moisTextField.setPromptText("Ex: 6");
+        moisTextField.setPromptText("Mois (ex: 6)");
         moisTextField.getStyleClass().add("form-textfield");
+        moisTextField.setPrefWidth(80);
         
-        // Champ année
-        Label anneeLabel = new Label("Année:");
-        anneeLabel.getStyleClass().add("form-label");
         anneeTextField = new TextField();
-        anneeTextField.setPromptText("Ex: 2025");
+        anneeTextField.setPromptText("Année (ex: 2025)");
         anneeTextField.getStyleClass().add("form-textfield");
+        anneeTextField.setPrefWidth(80);
         
-        // Bouton ajouter
+        dateFields.getChildren().addAll(
+            new VBox(new Label("Jour:"), jourTextField),
+            new VBox(new Label("Mois:"), moisTextField),
+            new VBox(new Label("Année:"), anneeTextField)
+        );
+        
+        Label besoinsLabel = new Label("Besoins en compétences:");
+        besoinsLabel.getStyleClass().add("form-label");
+        besoinsContainer = new VBox();
+        besoinsContainer.setSpacing(5);
+        Button addBesoinButton = new Button("➕");
+        addBesoinButton.getStyleClass().add("small-button");
+        besoinsContainer.getChildren().add(addBesoinButton);
+        
         ajouterButton = new Button("➕ Ajouter dispositif");
         ajouterButton.getStyleClass().addAll("dashboard-button", "active-button");
         ajouterButton.setPrefWidth(250);
@@ -226,9 +220,8 @@ public class AdminDispositifsView {
             horaireFinLabel, horaireFinTextField,
             siteLabel, siteComboBox,
             sportLabel, sportComboBox,
-            jourLabel, jourTextField,
-            moisLabel, moisTextField,
-            anneeLabel, anneeTextField,
+            dateLabel, dateFields,
+            besoinsLabel, besoinsContainer,
             ajouterButton
         );
         
@@ -240,7 +233,6 @@ public class AdminDispositifsView {
         listeSection.setSpacing(15);
         listeSection.setPrefWidth(400);
         
-        // Titre et bouton supprimer
         HBox titleRow = new HBox();
         titleRow.setAlignment(Pos.CENTER_LEFT);
         titleRow.setSpacing(20);
@@ -254,12 +246,10 @@ public class AdminDispositifsView {
         
         titleRow.getChildren().addAll(listeTitle, supprimerButton);
         
-        // Liste des dispositifs
         deviceListView = new ListView<>();
         deviceListView.getStyleClass().add("device-list");
         deviceListView.setPrefHeight(280);
         
-        // Personnaliser l'affichage des éléments de la liste
         deviceListView.setCellFactory(listView -> new ListCell<AdminDispositifsModel.DispositifView>() {
             @Override
             protected void updateItem(AdminDispositifsModel.DispositifView item, boolean empty) {
@@ -283,7 +273,6 @@ public class AdminDispositifsView {
             }
         });
         
-        // Bouton pour afficher la carte
         afficherCarteButton = new Button("🗺️ Afficher la carte");
         afficherCarteButton.getStyleClass().addAll("dashboard-button", "active-button");
         afficherCarteButton.setPrefWidth(200);
@@ -309,12 +298,10 @@ public class AdminDispositifsView {
             mapStage.setMinWidth(800);
             mapStage.setMinHeight(600);
             
-            // Container pour la popup
             VBox popupContent = new VBox();
             popupContent.setSpacing(10);
             popupContent.setPadding(new Insets(10));
             
-            // Header de la popup avec titre et bouton fermer
             HBox popupHeader = new HBox();
             popupHeader.setAlignment(Pos.CENTER_LEFT);
             popupHeader.setSpacing(10);
@@ -333,14 +320,12 @@ public class AdminDispositifsView {
             
             popupHeader.getChildren().addAll(popupTitle, spacer, fermerButton);
             
-            // Ajout de la WebView
             VBox.setVgrow(mapWebView, Priority.ALWAYS);
             
             popupContent.getChildren().addAll(popupHeader, mapWebView);
             
             Scene popupScene = new Scene(popupContent, 900, 650);
             
-            // Appliquer le même style que la fenêtre principale
             try {
                 String cssPath = getClass().getResource("../style.css").toExternalForm();
                 popupScene.getStylesheets().add(cssPath);
@@ -351,7 +336,6 @@ public class AdminDispositifsView {
             
             mapStage.setScene(popupScene);
             
-            // Centrer la popup par rapport à la fenêtre principale
             mapStage.setOnShowing(e -> {
                 Stage parentStage = (Stage) root.getScene().getWindow();
                 if (parentStage != null) {
@@ -363,7 +347,6 @@ public class AdminDispositifsView {
         
         mapStage.show();
         
-        // Rafraîchir la carte quand la popup s'ouvre
         if (controller != null) {
             controller.refreshMap();
         }
@@ -379,6 +362,7 @@ public class AdminDispositifsView {
                 jourTextField,
                 moisTextField,
                 anneeTextField,
+                besoinsContainer,
                 ajouterButton,
                 supprimerButton,
                 deviceListView,
