@@ -2,21 +2,23 @@ package controller;
 
 import javafx.event.ActionEvent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ListView;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.ListCell;
+import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
+import javafx.geometry.Insets;
 import javafx.stage.Stage;
 import javafx.concurrent.Worker;
+import javafx.stage.Modality;
 import javafx.application.Platform;
 import model.AdminDispositifsModel;
 import model.data.Site;
 import model.data.Sport;
+import model.data.Competence;
+import model.data.Besoin;
 import view.AdminDashboardView;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AdminDispositifsController {
     
@@ -28,6 +30,7 @@ public class AdminDispositifsController {
     private TextField jourTextField;
     private TextField moisTextField;
     private TextField anneeTextField;
+    private VBox besoinsContainer;
     private Button ajouterButton;
     private Button supprimerButton;
     private ListView<AdminDispositifsModel.DispositifView> deviceListView;
@@ -37,6 +40,7 @@ public class AdminDispositifsController {
     private AdminDispositifsModel model;
     private Runnable onRetourCallback;
     private boolean mapInitialized = false;
+    private List<BesoinInput> besoinsInputs; // List to track needs inputs
     
     public AdminDispositifsController(
             TextField idTextField,
@@ -47,6 +51,7 @@ public class AdminDispositifsController {
             TextField jourTextField,
             TextField moisTextField,
             TextField anneeTextField,
+            VBox besoinsContainer,
             Button ajouterButton,
             Button supprimerButton,
             ListView<AdminDispositifsModel.DispositifView> deviceListView,
@@ -62,6 +67,7 @@ public class AdminDispositifsController {
         this.jourTextField = jourTextField;
         this.moisTextField = moisTextField;
         this.anneeTextField = anneeTextField;
+        this.besoinsContainer = besoinsContainer;
         this.ajouterButton = ajouterButton;
         this.supprimerButton = supprimerButton;
         this.deviceListView = deviceListView;
@@ -69,10 +75,12 @@ public class AdminDispositifsController {
         this.homeIcon = homeIcon;
         this.mapWebView = mapWebView;
         this.model = new AdminDispositifsModel(nomUtilisateur);
+        this.besoinsInputs = new ArrayList<>();
         
         setupBindings();
         setupListeners();
         populateComboBoxes();
+        setupBesoinsContainer();
     }
     
     private void populateComboBoxes() {
@@ -111,14 +119,90 @@ public class AdminDispositifsController {
         });
     }
     
-    private void setupBindings() {
-        // Liaison du nom d'utilisateur avec le label
-        nomUtilisateurLabel.textProperty().bind(model.nomUtilisateurProperty());
+    private void setupBesoinsContainer() {
+        // Set action for the initial "+" button
+        Button addButton = (Button) besoinsContainer.getChildren().get(0);
+        addButton.setOnAction(e -> addBesoinInput());
+    }
+    
+    private void addBesoinInput() {
+        // Create a dialog to select competence and number
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setTitle("Ajouter un besoin");
         
-        // Liaison des données avec la liste
+        VBox dialogContent = new VBox(10);
+        dialogContent.setPadding(new Insets(10));
+        
+        ComboBox<Competence> competenceComboBox = new ComboBox<>();
+        competenceComboBox.setItems(model.getCompetences());
+        competenceComboBox.setPromptText("Sélectionner une compétence");
+        competenceComboBox.setPrefWidth(200);
+        
+        TextField nombreField = new TextField();
+        nombreField.setPromptText("Nombre de personnes (ex: 2)");
+        
+        Button confirmButton = new Button("Confirmer");
+        confirmButton.setDisable(true); // Disable until both fields are filled
+        
+        // Enable confirm button when both fields are valid
+        competenceComboBox.getSelectionModel().selectedItemProperty().addListener((obs, old, newValue) -> {
+            confirmButton.setDisable(newValue == null || nombreField.getText().trim().isEmpty());
+        });
+        nombreField.textProperty().addListener((obs, old, newValue) -> {
+            confirmButton.setDisable(newValue.trim().isEmpty() || competenceComboBox.getSelectionModel().isEmpty());
+        });
+        
+        confirmButton.setOnAction(e -> {
+            try {
+                int nombre = Integer.parseInt(nombreField.getText().trim());
+                if (nombre <= 0) {
+                    showAlert("Erreur", "Le nombre doit être positif.", Alert.AlertType.ERROR);
+                    return;
+                }
+                Competence competence = competenceComboBox.getSelectionModel().getSelectedItem();
+                
+                // Create UI representation
+                HBox besoinBox = new HBox(5);
+                Label besoinLabel = new Label(competence.getIntitule() + " (" + nombre + ")");
+                besoinLabel.setStyle("-fx-background-color: #e0e0e0; -fx-padding: 5; -fx-border-radius: 3;");
+                Button newAddButton = new Button("➕");
+                newAddButton.getStyleClass().add("small-button");
+                newAddButton.setOnAction(ev -> addBesoinInput());
+                besoinBox.getChildren().addAll(besoinLabel, newAddButton);
+                
+                // Store input data
+                BesoinInput besoinInput = new BesoinInput(competence, nombre);
+                besoinsInputs.add(besoinInput);
+                
+                // Update UI
+                besoinsContainer.getChildren().remove(besoinsContainer.getChildren().size() - 1); // Remove last "+" button
+                besoinsContainer.getChildren().add(besoinBox);
+                besoinsContainer.getChildren().add(newAddButton); // Add new "+" button
+                
+                dialog.close();
+            } catch (NumberFormatException ex) {
+                showAlert("Erreur", "Le nombre doit être un entier valide.", Alert.AlertType.ERROR);
+            }
+        });
+        
+        dialogContent.getChildren().addAll(
+            new Label("Compétence:"),
+            competenceComboBox,
+            new Label("Nombre de personnes:"),
+            nombreField,
+            confirmButton
+        );
+        
+        Scene dialogScene = new Scene(dialogContent, 250, 200);
+        dialog.setScene(dialogScene);
+        dialog.show();
+    }
+    
+    private void setupBindings() {
+        nomUtilisateurLabel.textProperty().bind(model.nomUtilisateurProperty());
         deviceListView.setItems(model.getDispositifs());
         
-        // Écouter les changements dans la liste pour mettre à jour la carte
         model.getDispositifs().addListener(
             (javafx.collections.ListChangeListener) change -> {
                 Platform.runLater(() -> {
@@ -135,11 +219,9 @@ public class AdminDispositifsController {
         ajouterButton.setOnAction(this::handleAjouter);
         supprimerButton.setOnAction(this::handleSupprimer);
         
-        // Listener pour la sélection dans la liste
         deviceListView.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             supprimerButton.setDisable(newSelection == null);
             if (newSelection != null && mapInitialized) {
-                // Centrer la carte sur le dispositif sélectionné
                 centerMapOnDevice(newSelection);
             }
         });
@@ -202,7 +284,6 @@ public class AdminDispositifsController {
         
         mapWebView.getEngine().loadContent(mapHtml);
         
-        // Attendre que la carte soit chargée
         mapWebView.getEngine().getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
             if (newState == Worker.State.SUCCEEDED) {
                 mapInitialized = true;
@@ -227,7 +308,6 @@ public class AdminDispositifsController {
         }
         
         try {
-            // Construire le tableau JavaScript des dispositifs
             StringBuilder jsDevices = new StringBuilder("[");
             for (int i = 0; i < model.getDispositifs().size(); i++) {
                 AdminDispositifsModel.DispositifView device = model.getDispositifs().get(i);
@@ -277,7 +357,6 @@ public class AdminDispositifsController {
         if (onRetourCallback != null) {
             onRetourCallback.run();
         } else {
-            // Navigation par défaut vers le dashboard
             Stage currentStage = (Stage) homeIcon.getScene().getWindow();
             AdminDashboardView dashboardView = new AdminDashboardView(model.getNomUtilisateur());
             Scene dashboardScene = new Scene(dashboardView.getRoot(), 1024, 600);
@@ -374,8 +453,15 @@ public class AdminDispositifsController {
                 return;
             }
             
-            // Ajouter le dispositif via le modèle
-            boolean success = model.ajouterDispositif(id, horaireDep, horaireFin, selectedSite, selectedSport, jour, mois, annee);
+            // Collect besoins
+            List<BesoinInput> besoins = new ArrayList<>(besoinsInputs);
+            if (besoins.isEmpty()) {
+                showAlert("Erreur", "Au moins un besoin en compétence doit être spécifié.", Alert.AlertType.ERROR);
+                return;
+            }
+            
+            // Ajouter le dispositif et les besoins via le modèle
+            boolean success = model.ajouterDispositif(id, horaireDep, horaireFin, selectedSite, selectedSport, jour, mois, annee, besoins);
             
             if (success) {
                 // Vider les champs après ajout
@@ -387,13 +473,17 @@ public class AdminDispositifsController {
                 jourTextField.clear();
                 moisTextField.clear();
                 anneeTextField.clear();
+                besoinsContainer.getChildren().clear();
+                besoinsInputs.clear();
+                Button newAddButton = new Button("➕");
+                newAddButton.getStyleClass().add("small-button");
+                newAddButton.setOnAction(e -> addBesoinInput());
+                besoinsContainer.getChildren().add(newAddButton);
                 
-                // Remettre le focus sur le premier champ
                 idTextField.requestFocus();
                 
                 showAlert("Succès", "Dispositif 'DPS-" + id + "' ajouté avec succès!", Alert.AlertType.INFORMATION);
             } else {
-                // Vérifier si l'échec est dû à une journée inexistante
                 if (model.getDispositifs().stream().noneMatch(d -> d.getJournee().getJour() == jour && 
                                                                   d.getJournee().getMois() == mois && 
                                                                   d.getJournee().getAnnee() == annee)) {
@@ -443,7 +533,6 @@ public class AdminDispositifsController {
         });
     }
     
-    // Méthodes publiques pour interaction externe
     public void setOnRetourCallback(Runnable callback) {
         this.onRetourCallback = callback;
     }
@@ -452,7 +541,6 @@ public class AdminDispositifsController {
         return model;
     }
     
-    // Méthode pour initialiser et rafraîchir la carte
     public void refreshMap() {
         Platform.runLater(() -> {
             if (!mapInitialized) {
@@ -468,7 +556,6 @@ public class AdminDispositifsController {
         });
     }
     
-    // Méthode pour forcer le recalcul de la taille de la carte
     public void invalidateMapSize() {
         Platform.runLater(() -> {
             if (mapInitialized) {
@@ -477,8 +564,26 @@ public class AdminDispositifsController {
         });
     }
     
-    // Méthode pour rafraîchir les données depuis la base
     public void refreshData() {
         model.refreshFromDatabase();
+    }
+    
+    // Helper class to store besoin inputs
+    public static class BesoinInput {
+        private final Competence competence;
+        private final int nombre;
+        
+        public BesoinInput(Competence competence, int nombre) {
+            this.competence = competence;
+            this.nombre = nombre;
+        }
+        
+        public Competence getCompetence() {
+            return competence;
+        }
+        
+        public int getNombre() {
+            return nombre;
+        }
     }
 }
