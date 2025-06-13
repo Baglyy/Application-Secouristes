@@ -7,18 +7,27 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ComboBox;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import javafx.concurrent.Worker;
 import javafx.application.Platform;
+import javafx.scene.control.ListCell;
 import model.AdminDispositifsModel;
+import model.data.Site;
+import model.data.Sport;
 import view.AdminDashboardView;
 
 public class AdminDispositifsController {
     
-    private TextField nomTextField;
-    private TextField latitudeTextField;
-    private TextField longitudeTextField;
+    private TextField idTextField;
+    private TextField horaireDepTextField;
+    private TextField horaireFinTextField;
+    private ComboBox<Site> siteComboBox;
+    private ComboBox<Sport> sportComboBox;
+    private TextField jourTextField;
+    private TextField moisTextField;
+    private TextField anneeTextField;
     private Button ajouterButton;
     private Button supprimerButton;
     private ListView<AdminDispositifsModel.DispositifView> deviceListView;
@@ -30,9 +39,14 @@ public class AdminDispositifsController {
     private boolean mapInitialized = false;
     
     public AdminDispositifsController(
-            TextField nomTextField,
-            TextField latitudeTextField,
-            TextField longitudeTextField,
+            TextField idTextField,
+            TextField horaireDepTextField,
+            TextField horaireFinTextField,
+            ComboBox<Site> siteComboBox,
+            ComboBox<Sport> sportComboBox,
+            TextField jourTextField,
+            TextField moisTextField,
+            TextField anneeTextField,
             Button ajouterButton,
             Button supprimerButton,
             ListView<AdminDispositifsModel.DispositifView> deviceListView,
@@ -40,9 +54,14 @@ public class AdminDispositifsController {
             Label homeIcon,
             WebView mapWebView,
             String nomUtilisateur) {
-        this.nomTextField = nomTextField;
-        this.latitudeTextField = latitudeTextField;
-        this.longitudeTextField = longitudeTextField;
+        this.idTextField = idTextField;
+        this.horaireDepTextField = horaireDepTextField;
+        this.horaireFinTextField = horaireFinTextField;
+        this.siteComboBox = siteComboBox;
+        this.sportComboBox = sportComboBox;
+        this.jourTextField = jourTextField;
+        this.moisTextField = moisTextField;
+        this.anneeTextField = anneeTextField;
         this.ajouterButton = ajouterButton;
         this.supprimerButton = supprimerButton;
         this.deviceListView = deviceListView;
@@ -53,6 +72,43 @@ public class AdminDispositifsController {
         
         setupBindings();
         setupListeners();
+        populateComboBoxes();
+    }
+    
+    private void populateComboBoxes() {
+        // Populate site ComboBox
+        siteComboBox.setItems(model.getSites());
+        siteComboBox.setCellFactory(lv -> new ListCell<Site>() {
+            @Override
+            protected void updateItem(Site item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.getNom());
+            }
+        });
+        siteComboBox.setButtonCell(new ListCell<Site>() {
+            @Override
+            protected void updateItem(Site item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.getNom());
+            }
+        });
+        
+        // Populate sport ComboBox
+        sportComboBox.setItems(model.getSports());
+        sportComboBox.setCellFactory(lv -> new ListCell<Sport>() {
+            @Override
+            protected void updateItem(Sport item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.getNom());
+            }
+        });
+        sportComboBox.setButtonCell(new ListCell<Sport>() {
+            @Override
+            protected void updateItem(Sport item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.getNom());
+            }
+        });
     }
     
     private void setupBindings() {
@@ -64,7 +120,7 @@ public class AdminDispositifsController {
         
         // Écouter les changements dans la liste pour mettre à jour la carte
         model.getDispositifs().addListener(
-            (javafx.collections.ListChangeListener<AdminDispositifsModel.DispositifView>) change -> {
+            (javafx.collections.ListChangeListener) change -> {
                 Platform.runLater(() -> {
                     if (mapInitialized) {
                         updateMapMarkers();
@@ -98,108 +154,47 @@ public class AdminDispositifsController {
             <!DOCTYPE html>
             <html>
             <head>
-                <meta charset="utf-8">
-                <title>Carte Interactive</title>
+                <title>Carte des dispositifs</title>
                 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
                 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
                 <style>
-                    html, body {
-                        margin: 0;
-                        padding: 0;
-                        width: 100%;
-                        height: 100%;
-                        overflow: hidden;
-                    }
-
-                    #map {
-                        width: 100%;
-                        height: 100%;
-                        min-height: 500px;
-                    }
+                    #map { height: 100%; width: 100%; }
+                    html, body { margin: 0; padding: 0; height: 100%; }
                 </style>
             </head>
             <body>
                 <div id="map"></div>
-                
                 <script>
-                    // Initialiser la carte centrée sur la France
-                    var map = L.map('map').setView([46.603354, 1.888334], 6);
-                    
-                    // Ajouter les tuiles OpenStreetMap
+                    var map = L.map('map').setView([46.603354, 1.888334], 5);
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '© OpenStreetMap contributors',
+                        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
                         maxZoom: 18
                     }).addTo(map);
                     
-                    // Groupe pour gérer les marqueurs
-                    var markerGroup = L.layerGroup().addTo(map);
+                    var markers = [];
                     
-                    // Forcer Leaflet à recalculer sa taille après chargement
-                    setTimeout(function() { 
-                        map.invalidateSize(); 
-                        console.log('Map size invalidated - dimensions:', 
-                                   document.getElementById("map").clientWidth, 
-                                   document.getElementById("map").clientHeight);
-                    }, 500);
-                    
-                    // Fonction pour forcer le recalcul de la taille
-                    window.invalidateMapSize = function() {
-                        setTimeout(function() {
-                            map.invalidateSize();
-                            console.log('Map size invalidated manually');
-                        }, 100);
-                    };
-                    
-                    // Fonction pour mettre à jour les marqueurs
-                    window.updateMarkers = function(devices) {
-                        // Supprimer tous les marqueurs existants
-                        markerGroup.clearLayers();
-                        
-                        if (devices.length === 0) {
-                            return;
-                        }
-                        
-                        var bounds = [];
-                        
-                        // Ajouter un marqueur pour chaque dispositif
-                        devices.forEach(function(device) {
+                    function updateMarkers(devices) {
+                        markers.forEach(marker => map.removeLayer(marker));
+                        markers = [];
+                        devices.forEach(device => {
                             var marker = L.marker([device.latitude, device.longitude])
-                                .bindPopup('<b>' + device.nom + '</b><br>Lat: ' + device.latitude.toFixed(4) + '<br>Lng: ' + device.longitude.toFixed(4));
-                            
-                            markerGroup.addLayer(marker);
-                            bounds.push([device.latitude, device.longitude]);
+                                .addTo(map)
+                                .bindPopup(device.nom);
+                            markers.push(marker);
                         });
-                        
-                        // Ajuster la vue pour voir tous les marqueurs
-                        if (bounds.length > 1) {
-                            map.fitBounds(bounds, {padding: [20, 20]});
-                        } else if (bounds.length === 1) {
-                            map.setView(bounds[0], 12);
+                        if (devices.length > 0) {
+                            var group = new L.featureGroup(markers);
+                            map.fitBounds(group.getBounds().pad(0.1));
                         }
-                        
-                        // Forcer un recalcul après mise à jour des marqueurs
-                        setTimeout(function() {
-                            map.invalidateSize();
-                        }, 100);
-                    };
+                    }
                     
-                    // Fonction pour centrer sur un dispositif spécifique
-                    window.centerOnDevice = function(latitude, longitude) {
-                        map.setView([latitude, longitude], 15);
-                        // Forcer un recalcul après centrage
-                        setTimeout(function() {
-                            map.invalidateSize();
-                        }, 100);
-                    };
+                    function centerOnDevice(lat, lng) {
+                        map.setView([lat, lng], 15);
+                    }
                     
-                    // Gérer le redimensionnement de la fenêtre
-                    window.addEventListener('resize', function() {
-                        setTimeout(function() {
-                            map.invalidateSize();
-                        }, 100);
-                    });
-                    
-                    console.log('Carte interactive initialisée');
+                    function invalidateMapSize() {
+                        map.invalidateSize();
+                    }
                 </script>
             </body>
             </html>
@@ -238,9 +233,9 @@ public class AdminDispositifsController {
                 AdminDispositifsModel.DispositifView device = model.getDispositifs().get(i);
                 if (i > 0) jsDevices.append(",");
                 jsDevices.append("{")
-                        .append("nom: '").append(escapeJavaScript(device.getNom())).append("',")
-                        .append("latitude: ").append(device.getLatitude()).append(",")
-                        .append("longitude: ").append(device.getLongitude())
+                        .append("nom: 'DPS-").append(device.getId()).append("',")
+                        .append("latitude: ").append(device.getSite().getLatitude()).append(",")
+                        .append("longitude: ").append(device.getSite().getLongitude())
                         .append("}");
             }
             jsDevices.append("]");
@@ -260,7 +255,7 @@ public class AdminDispositifsController {
         
         try {
             String script = String.format("if (typeof centerOnDevice === 'function') { centerOnDevice(%f, %f); }", 
-                                        device.getLatitude(), device.getLongitude());
+                                        device.getSite().getLatitude(), device.getSite().getLongitude());
             mapWebView.getEngine().executeScript(script);
         } catch (Exception e) {
             System.err.println("Erreur lors du centrage sur le dispositif: " + e.getMessage());
@@ -292,57 +287,115 @@ public class AdminDispositifsController {
     
     private void handleAjouter(ActionEvent event) {
         try {
-            String nom = nomTextField.getText().trim();
-            String latitudeStr = latitudeTextField.getText().trim();
-            String longitudeStr = longitudeTextField.getText().trim();
+            String idStr = idTextField.getText().trim();
+            String horaireDepStr = horaireDepTextField.getText().trim();
+            String horaireFinStr = horaireFinTextField.getText().trim();
+            Site selectedSite = siteComboBox.getSelectionModel().getSelectedItem();
+            Sport selectedSport = sportComboBox.getSelectionModel().getSelectedItem();
+            String jourStr = jourTextField.getText().trim();
+            String moisStr = moisTextField.getText().trim();
+            String anneeStr = anneeTextField.getText().trim();
             
-            if (nom.isEmpty() || latitudeStr.isEmpty() || longitudeStr.isEmpty()) {
+            // Validation des champs
+            if (idStr.isEmpty() || horaireDepStr.isEmpty() || horaireFinStr.isEmpty() ||
+                selectedSite == null || selectedSport == null ||
+                jourStr.isEmpty() || moisStr.isEmpty() || anneeStr.isEmpty()) {
                 showAlert("Erreur", "Tous les champs sont obligatoires.", Alert.AlertType.ERROR);
                 return;
             }
             
-            double latitude = Double.parseDouble(latitudeStr);
-            double longitude = Double.parseDouble(longitudeStr);
-            
-            // Validation des coordonnées
-            if (latitude < -90 || latitude > 90) {
-                showAlert("Erreur", "La latitude doit être comprise entre -90 et 90.", Alert.AlertType.ERROR);
+            long id;
+            try {
+                id = Long.parseLong(idStr);
+            } catch (NumberFormatException e) {
+                showAlert("Erreur", "L'ID doit être un nombre valide.", Alert.AlertType.ERROR);
                 return;
             }
             
-            if (longitude < -180 || longitude > 180) {
-                showAlert("Erreur", "La longitude doit être comprise entre -180 et 180.", Alert.AlertType.ERROR);
+            java.sql.Time horaireDep;
+            try {
+                horaireDep = java.sql.Time.valueOf(horaireDepStr);
+            } catch (IllegalArgumentException e) {
+                showAlert("Erreur", "L'horaire de départ doit être au format HH:mm:ss.", Alert.AlertType.ERROR);
                 return;
             }
             
-            // Vérifier que le nom n'existe pas déjà
-            boolean nomExiste = model.getDispositifs().stream()
-                .anyMatch(d -> d.getNom().equalsIgnoreCase(nom));
-            
-            if (nomExiste) {
-                showAlert("Erreur", "Un dispositif avec ce nom existe déjà.", Alert.AlertType.ERROR);
+            java.sql.Time horaireFin;
+            try {
+                horaireFin = java.sql.Time.valueOf(horaireFinStr);
+            } catch (IllegalArgumentException e) {
+                showAlert("Erreur", "L'horaire de fin doit être au format HH:mm:ss.", Alert.AlertType.ERROR);
                 return;
             }
             
-            // Ajouter le dispositif via le modèle (qui utilise la base de données)
-            boolean success = model.ajouterDispositif(nom, latitude, longitude);
+            if (!horaireFin.after(horaireDep)) {
+                showAlert("Erreur", "L'horaire de fin doit être après l'horaire de départ.", Alert.AlertType.ERROR);
+                return;
+            }
+            
+            int jour;
+            try {
+                jour = Integer.parseInt(jourStr);
+            } catch (NumberFormatException e) {
+                showAlert("Erreur", "Le jour doit être un nombre valide.", Alert.AlertType.ERROR);
+                return;
+            }
+            
+            int mois;
+            try {
+                mois = Integer.parseInt(moisStr);
+            } catch (NumberFormatException e) {
+                showAlert("Erreur", "Le mois doit être un nombre valide.", Alert.AlertType.ERROR);
+                return;
+            }
+            
+            int annee;
+            try {
+                annee = Integer.parseInt(anneeStr);
+            } catch (NumberFormatException e) {
+                showAlert("Erreur", "L'année doit être un nombre valide.", Alert.AlertType.ERROR);
+                return;
+            }
+            
+            // Validation de la date
+            try {
+                new model.data.Journee(jour, mois, annee);
+            } catch (IllegalArgumentException e) {
+                showAlert("Erreur", "La date entrée est invalide: " + e.getMessage(), Alert.AlertType.ERROR);
+                return;
+            }
+            
+            // Vérifier si l'ID existe déjà
+            boolean idExiste = model.getDispositifs().stream()
+                .anyMatch(d -> d.getId() == id);
+            
+            if (idExiste) {
+                showAlert("Erreur", "Un dispositif avec cet ID existe déjà.", Alert.AlertType.ERROR);
+                return;
+            }
+            
+            // Ajouter le dispositif via le modèle
+            boolean success = model.ajouterDispositif(id, horaireDep, horaireFin, selectedSite, selectedSport, jour, mois, annee);
             
             if (success) {
                 // Vider les champs après ajout
-                nomTextField.clear();
-                latitudeTextField.clear();
-                longitudeTextField.clear();
+                idTextField.clear();
+                horaireDepTextField.clear();
+                horaireFinTextField.clear();
+                siteComboBox.getSelectionModel().clearSelection();
+                sportComboBox.getSelectionModel().clearSelection();
+                jourTextField.clear();
+                moisTextField.clear();
+                anneeTextField.clear();
                 
                 // Remettre le focus sur le premier champ
-                nomTextField.requestFocus();
+                idTextField.requestFocus();
                 
-                showAlert("Succès", "Dispositif '" + nom + "' ajouté avec succès!", Alert.AlertType.INFORMATION);
+                showAlert("Succès", "Dispositif 'DPS-" + id + "' ajouté avec succès!", Alert.AlertType.INFORMATION);
             } else {
                 showAlert("Erreur", "Erreur lors de l'ajout du dispositif en base de données.", Alert.AlertType.ERROR);
             }
             
-        } catch (NumberFormatException e) {
-            showAlert("Erreur", "Les coordonnées doivent être des nombres valides.\nFormat attendu: XX.XXXX", Alert.AlertType.ERROR);
         } catch (Exception e) {
             showAlert("Erreur", "Erreur lors de l'ajout du dispositif: " + e.getMessage(), Alert.AlertType.ERROR);
             System.err.println("Erreur lors de l'ajout: " + e.getMessage());
@@ -355,11 +408,11 @@ public class AdminDispositifsController {
         
         if (selectedDevice != null) {
             try {
-                String nomDispositif = selectedDevice.getNom();
+                long idDispositif = selectedDevice.getId();
                 boolean success = model.supprimerDispositif(selectedDevice);
                 
                 if (success) {
-                    showAlert("Succès", "Dispositif '" + nomDispositif + "' supprimé avec succès!", Alert.AlertType.INFORMATION);
+                    showAlert("Succès", "Dispositif 'DPS-" + idDispositif + "' supprimé avec succès!", Alert.AlertType.INFORMATION);
                 } else {
                     showAlert("Erreur", "Erreur lors de la suppression en base de données.", Alert.AlertType.ERROR);
                 }
