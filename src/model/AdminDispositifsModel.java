@@ -2,8 +2,6 @@ package model;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.DoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import model.dao.DPSDAO;
@@ -16,11 +14,14 @@ import model.data.Sport;
 import model.data.Journee;
 import java.sql.Time;
 import java.util.List;
+import java.util.Comparator;
 
 public class AdminDispositifsModel {
     
     private final StringProperty nomUtilisateur = new SimpleStringProperty("");
     private final ObservableList<DispositifView> dispositifs = FXCollections.observableArrayList();
+    private final ObservableList<Site> sites = FXCollections.observableArrayList();
+    private final ObservableList<Sport> sports = FXCollections.observableArrayList();
     
     // DAOs
     private final DPSDAO dpsDAO;
@@ -46,17 +47,33 @@ public class AdminDispositifsModel {
     }
     
     private void loadDataFromDatabase() {
+        // Charger les dispositifs
         dispositifs.clear();
         List<DPS> dpsList = dpsDAO.findAll();
         
         for (DPS dps : dpsList) {
-            String nom = "DPS-" + dps.getId() + "-" + dps.getSite().getNom();
-            double latitude = dps.getSite().getLatitude();
-            double longitude = dps.getSite().getLongitude();
-            
-            DispositifView dispositifView = new DispositifView(nom, latitude, longitude, dps);
+            DispositifView dispositifView = new DispositifView(
+                dps.getId(),
+                dps.getHoraireDep(),
+                dps.getHoraireFin(),
+                dps.getSite(),
+                dps.getSport(),
+                dps.getJournee()
+            );
             dispositifs.add(dispositifView);
         }
+        
+        // Charger les sites, triés par nom
+        sites.clear();
+        List<Site> siteList = siteDAO.findAll();
+        siteList.sort(Comparator.comparing(Site::getNom));
+        sites.addAll(siteList);
+        
+        // Charger les sports, triés par nom
+        sports.clear();
+        List<Sport> sportList = sportDAO.findAll();
+        sportList.sort(Comparator.comparing(Sport::getNom));
+        sports.addAll(sportList);
     }
     
     // Getters pour les propriétés
@@ -66,6 +83,14 @@ public class AdminDispositifsModel {
     
     public ObservableList<DispositifView> getDispositifs() {
         return dispositifs;
+    }
+    
+    public ObservableList<Site> getSites() {
+        return sites;
+    }
+    
+    public ObservableList<Sport> getSports() {
+        return sports;
     }
     
     // Getters pour les valeurs
@@ -79,45 +104,16 @@ public class AdminDispositifsModel {
     }
     
     // Méthodes CRUD pour les dispositifs
-    public boolean ajouterDispositif(String nom, double latitude, double longitude) {
+    public boolean ajouterDispositif(long id, Time horaireDep, Time horaireFin, Site site, Sport sport, int jour, int mois, int annee) {
         try {
-            // Créer ou récupérer le site
-            String codeSite = "SITE_" + System.currentTimeMillis();
-            Site site = new Site(codeSite, nom, (float) longitude, (float) latitude);
-            
-            // Vérifier si le site existe déjà, sinon le créer
-            Site existingSite = siteDAO.findByID(codeSite);
-            if (existingSite == null) {
-                siteDAO.create(site);
-            } else {
-                site = existingSite;
-            }
-            
-            // Créer ou récupérer un sport par défaut
-            String codeSport = "SECOURS";
-            Sport sport = sportDAO.findByID(codeSport);
-            if (sport == null) {
-                sport = new Sport(codeSport, "Secours général");
-                sportDAO.create(sport);
-            }
-            
-            // Créer une journée (date actuelle)
-            java.util.Calendar cal = java.util.Calendar.getInstance();
-            int jour = cal.get(java.util.Calendar.DAY_OF_MONTH);
-            int mois = cal.get(java.util.Calendar.MONTH) + 1;
-            int annee = cal.get(java.util.Calendar.YEAR);
-            
+            // Vérifier ou créer la journée
             Journee journee = journeeDAO.findByID(jour, mois, annee);
             if (journee == null) {
                 journee = new Journee(jour, mois, annee);
                 journeeDAO.create(journee);
             }
             
-            // Créer le DPS avec des horaires par défaut
-            long id = System.currentTimeMillis();
-            Time horaireDep = Time.valueOf("08:00:00");
-            Time horaireFin = Time.valueOf("18:00:00");
-            
+            // Créer le DPS
             DPS nouveauDPS = new DPS(id, horaireDep, horaireFin, site, sport, journee);
             
             // Sauvegarder en base
@@ -125,7 +121,7 @@ public class AdminDispositifsModel {
             
             if (result > 0) {
                 // Ajouter à la liste observable
-                DispositifView dispositifView = new DispositifView(nom, latitude, longitude, nouveauDPS);
+                DispositifView dispositifView = new DispositifView(id, horaireDep, horaireFin, site, sport, journee);
                 dispositifs.add(dispositifView);
                 return true;
             }
@@ -152,38 +148,6 @@ public class AdminDispositifsModel {
         return false;
     }
     
-    public boolean modifierDispositif(int index, String nom, double latitude, double longitude) {
-        if (index >= 0 && index < dispositifs.size()) {
-            try {
-                DispositifView dispositifView = dispositifs.get(index);
-                DPS dps = dispositifView.getDps();
-                
-                if (dps != null) {
-                    // Modifier le site
-                    Site site = dps.getSite();
-                    site.setNom(nom);
-                    site.setLatitude((float) latitude);
-                    site.setLongitude((float) longitude);
-                    
-                    // Mettre à jour en base
-                    siteDAO.update(site);
-                    int result = dpsDAO.update(dps);
-                    
-                    if (result > 0) {
-                        // Mettre à jour la vue
-                        dispositifView.setNom(nom);
-                        dispositifView.setLatitude(latitude);
-                        dispositifView.setLongitude(longitude);
-                        return true;
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return false;
-    }
-    
     // Méthode pour rafraîchir depuis la base
     public void refreshFromDatabase() {
         loadDataFromDatabase();
@@ -191,38 +155,36 @@ public class AdminDispositifsModel {
     
     // Classe pour l'affichage dans la vue (wrapper autour de DPS)
     public static class DispositifView {
-        private final StringProperty nom = new SimpleStringProperty();
-        private final DoubleProperty latitude = new SimpleDoubleProperty();
-        private final DoubleProperty longitude = new SimpleDoubleProperty();
-        private DPS dps;
+        private final long id;
+        private final Time horaireDep;
+        private final Time horaireFin;
+        private final Site site;
+        private final Sport sport;
+        private final Journee journee;
+        private final DPS dps;
         
-        public DispositifView(String nom, double latitude, double longitude, DPS dps) {
-            this.nom.set(nom);
-            this.latitude.set(latitude);
-            this.longitude.set(longitude);
-            this.dps = dps;
+        public DispositifView(long id, Time horaireDep, Time horaireFin, Site site, Sport sport, Journee journee) {
+            this.id = id;
+            this.horaireDep = horaireDep;
+            this.horaireFin = horaireFin;
+            this.site = site;
+            this.sport = sport;
+            this.journee = journee;
+            this.dps = new DPS(id, horaireDep, horaireFin, site, sport, journee);
         }
         
-        // Getters pour les propriétés
-        public StringProperty nomProperty() { return nom; }
-        public DoubleProperty latitudeProperty() { return latitude; }
-        public DoubleProperty longitudeProperty() { return longitude; }
-        
-        // Getters pour les valeurs
-        public String getNom() { return nom.get(); }
-        public double getLatitude() { return latitude.get(); }
-        public double getLongitude() { return longitude.get(); }
+        // Getters
+        public long getId() { return id; }
+        public Time getHoraireDep() { return horaireDep; }
+        public Time getHoraireFin() { return horaireFin; }
+        public Site getSite() { return site; }
+        public Sport getSport() { return sport; }
+        public Journee getJournee() { return journee; }
         public DPS getDps() { return dps; }
-        
-        // Setters
-        public void setNom(String nom) { this.nom.set(nom); }
-        public void setLatitude(double latitude) { this.latitude.set(latitude); }
-        public void setLongitude(double longitude) { this.longitude.set(longitude); }
-        public void setDps(DPS dps) { this.dps = dps; }
         
         @Override
         public String toString() {
-            return nom.get() + " (" + String.format("%.4f", latitude.get()) + ", " + String.format("%.4f", longitude.get()) + ")";
+            return "DPS-" + id + " (" + site.getNom() + ", " + sport.getNom() + ", " + journee.toString() + ")";
         }
     }
 }
