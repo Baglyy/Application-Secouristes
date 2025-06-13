@@ -615,3 +615,12 @@
     -fx-background-color: #e0e0e0;
     -fx-text-fill: #333333;
 }
+
+.small-button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 12px;
+    -fx-padding: 2 8;
+    -fx-background-radius: 3;
+    -fx-cursor: hand;
+}
