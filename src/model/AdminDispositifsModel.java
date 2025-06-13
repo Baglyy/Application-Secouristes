@@ -15,6 +15,8 @@ import model.data.Journee;
 import java.sql.Time;
 import java.util.List;
 import java.util.Comparator;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class AdminDispositifsModel {
     
@@ -106,31 +108,45 @@ public class AdminDispositifsModel {
     // Méthodes CRUD pour les dispositifs
     public boolean ajouterDispositif(long id, Time horaireDep, Time horaireFin, Site site, Sport sport, int jour, int mois, int annee) {
         try {
-            // Vérifier ou créer la journée
-            Journee journee = journeeDAO.findByID(jour, mois, annee);
-            if (journee == null) {
-                journee = new Journee(jour, mois, annee);
-                journeeDAO.create(journee);
+            // Valider la journée
+            Journee journee = new Journee(jour, mois, annee); // Validation de la date
+            
+            // Vérifier si la journée existe dans la base
+            Journee existingJournee = journeeDAO.findByID(jour, mois, annee);
+            if (existingJournee == null) {
+                System.err.println(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()) + 
+                    " La journée " + jour + "/" + mois + "/" + annee + " n'existe pas dans la base.");
+                return false; // Ne pas créer la journée, retourner false
             }
+            journee = existingJournee;
             
             // Créer le DPS
             DPS nouveauDPS = new DPS(id, horaireDep, horaireFin, site, sport, journee);
             
             // Sauvegarder en base
-            int result = dpsDAO.create(nouveauDPS);
+            int dpsResult = dpsDAO.create(nouveauDPS);
             
-            if (result > 0) {
+            if (dpsResult > 0) {
                 // Ajouter à la liste observable
                 DispositifView dispositifView = new DispositifView(id, horaireDep, horaireFin, site, sport, journee);
                 dispositifs.add(dispositifView);
                 return true;
+            } else {
+                System.err.println(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()) + 
+                    " Échec de la création du DPS ID: " + id);
+                return false;
             }
             
+        } catch (IllegalArgumentException e) {
+            System.err.println(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()) + 
+                " Erreur de validation de la date: " + e.getMessage());
+            return false;
         } catch (Exception e) {
+            System.err.println(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()) + 
+                " Erreur lors de l'ajout du dispositif: " + e.getMessage());
             e.printStackTrace();
+            return false;
         }
-        
-        return false;
     }
     
     public boolean supprimerDispositif(DispositifView dispositif) {
@@ -143,6 +159,8 @@ public class AdminDispositifsModel {
                 }
             }
         } catch (Exception e) {
+            System.err.println(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(LocalDateTime.now()) + 
+                " Erreur lors de la suppression: " + e.getMessage());
             e.printStackTrace();
         }
         return false;
