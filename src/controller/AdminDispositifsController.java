@@ -8,11 +8,11 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListCell;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import javafx.concurrent.Worker;
 import javafx.application.Platform;
-import javafx.scene.control.ListCell;
 import model.AdminDispositifsModel;
 import model.data.Site;
 import model.data.Sport;
@@ -167,7 +167,7 @@ public class AdminDispositifsController {
                 <script>
                     var map = L.map('map').setView([46.603354, 1.888334], 5);
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                        attribution: 'Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
                         maxZoom: 18
                     }).addTo(map);
                     
@@ -393,11 +393,18 @@ public class AdminDispositifsController {
                 
                 showAlert("Succès", "Dispositif 'DPS-" + id + "' ajouté avec succès!", Alert.AlertType.INFORMATION);
             } else {
-                showAlert("Erreur", "Erreur lors de l'ajout du dispositif en base de données.", Alert.AlertType.ERROR);
+                // Vérifier si l'échec est dû à une journée inexistante
+                if (model.getDispositifs().stream().noneMatch(d -> d.getJournee().getJour() == jour && 
+                                                                  d.getJournee().getMois() == mois && 
+                                                                  d.getJournee().getAnnee() == annee)) {
+                    showAlert("Erreur", "La journée " + jour + "/" + mois + "/" + annee + " n'existe pas dans la base de données.", Alert.AlertType.ERROR);
+                } else {
+                    showAlert("Erreur", "Erreur lors de l'ajout du dispositif.", Alert.AlertType.ERROR);
+                }
             }
             
         } catch (Exception e) {
-            showAlert("Erreur", "Erreur lors de l'ajout du dispositif: " + e.getMessage(), Alert.AlertType.ERROR);
+            showAlert("Erreur", "Erreur inattendue lors de l'ajout du dispositif: " + e.getMessage(), Alert.AlertType.ERROR);
             System.err.println("Erreur lors de l'ajout: " + e.getMessage());
             e.printStackTrace();
         }
