@@ -4,6 +4,8 @@ import java.sql.*;
 import java.util.*;
 
 import model.data.Secouriste;
+import model.data.Competence;
+
 
 public class SecouristeDAO extends DAO<Secouriste> {
 
@@ -94,30 +96,52 @@ public class SecouristeDAO extends DAO<Secouriste> {
 
     @Override
     public List<Secouriste> findAll() {
-        List<Secouriste> secouristes = new LinkedList<>();
-        String query = "SELECT * FROM Secouriste";
+        // Utiliser ArrayList est souvent un meilleur choix par défaut que LinkedList pour ce cas.
+        List<Secouriste> secouristesList = new ArrayList<>();
+        // Map pour regrouper les données et éviter de créer plusieurs fois le même objet Secouriste
+        Map<Long, Secouriste> secouristesMap = new HashMap<>();
+
+        String query = "SELECT s.ID as secouriste_id, s.NOM as secouriste_nom, s.PRENOM, s.DATENAISSANCE, " +
+                    "s.EMAIL, s.TEL, s.ADRESSE, c.intitule as competence_intitule " +
+                    "FROM Secouriste s " +
+                    "LEFT JOIN Possede p ON s.ID = p.idSecouriste " +
+                    "LEFT JOIN Competence c ON p.competence = c.intitule " +
+                    "ORDER BY s.ID"; // L'ordre est utile pour le traitement
 
         try (Connection con = getConnection();
-             Statement st = con.createStatement();
-             ResultSet rs = st.executeQuery(query)) {
+            Statement st = con.createStatement();
+            ResultSet rs = st.executeQuery(query)) {
 
             while (rs.next()) {
-                long id = rs.getLong("ID");
-                String nom = rs.getString("NOM");
-                String prenom = rs.getString("PRENOM");
-                String dateDeNaissance = rs.getString("DATENAISSANCE");
-                String email = rs.getString("EMAIL");
-                String tel = rs.getString("TEL");
-                String adresse = rs.getString("ADRESSE");
+                long secouristeId = rs.getLong("secouriste_id");
+                Secouriste secouriste = secouristesMap.get(secouristeId);
 
-                secouristes.add(new Secouriste(id, nom, prenom, dateDeNaissance, email, tel, adresse));
+                if (secouriste == null) {
+                    secouriste = new Secouriste(
+                            secouristeId,
+                            rs.getString("secouriste_nom"),
+                            rs.getString("PRENOM"), // Utiliser les noms de colonnes exacts de votre BDD
+                            rs.getString("DATENAISSANCE"),
+                            rs.getString("EMAIL"),
+                            rs.getString("TEL"),
+                            rs.getString("ADRESSE")
+                    );
+                    // La liste de compétences est initialisée à vide par getCompetences() la première fois.
+                    secouristesMap.put(secouristeId, secouriste);
+                    secouristesList.add(secouriste);
+                }
+
+                String competenceIntitule = rs.getString("competence_intitule");
+                if (competenceIntitule != null) {
+                    // Crée un objet Competence et l'ajoute à la liste du secouriste
+                    // La méthode getCompetences() s'assure que la liste n'est pas null
+                    secouriste.getCompetences().add(new Competence(competenceIntitule));
+                }
             }
-
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(); // Envisagez un meilleur logging ou la propagation de l'exception
         }
-
-        return secouristes;
+        return secouristesList;
     }
 
     @Override
