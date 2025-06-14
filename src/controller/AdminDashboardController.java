@@ -11,6 +11,9 @@ import view.AdminSecouristesView;
 import view.AdminAffectationsView;
 import view.AdminDispositifsView;
 import view.LoginView;
+import java.sql.SQLException;
+
+import model.ExportCSV;
 
 public class AdminDashboardController {
     
@@ -19,15 +22,17 @@ public class AdminDashboardController {
     private Button secouristesButton;
     private Button deconnexionButton;
     private Label nomUtilisateurLabel;
+    private Button exportCsvButton;
     private AdminDashboardModel model;
     
     public AdminDashboardController(Button dispositifsButton, Button affectationsSecouristesButton, 
-                                   Button secouristesButton, Button deconnexionButton, Label nomUtilisateurLabel) {
+                                   Button secouristesButton, Button deconnexionButton, Label nomUtilisateurLabel, Button exportCsvButton) {
         this.dispositifsButton = dispositifsButton;
         this.affectationsSecouristesButton = affectationsSecouristesButton;
         this.secouristesButton = secouristesButton;
         this.deconnexionButton = deconnexionButton;
         this.nomUtilisateurLabel = nomUtilisateurLabel;
+        this.exportCsvButton = exportCsvButton;
         this.model = new AdminDashboardModel();
         
         setupBindings();
@@ -36,9 +41,9 @@ public class AdminDashboardController {
     }
     
     public AdminDashboardController(Button dispositifsButton, Button affectationsSecouristesButton, 
-                                   Button secouristesButton, Button deconnexionButton, Label nomUtilisateurLabel, 
+                                   Button secouristesButton, Button deconnexionButton, Label nomUtilisateurLabel, Button exportCsvButton,
                                    String nomUtilisateur) {
-        this(dispositifsButton, affectationsSecouristesButton, secouristesButton, deconnexionButton, nomUtilisateurLabel);
+        this(dispositifsButton, affectationsSecouristesButton, secouristesButton, deconnexionButton, nomUtilisateurLabel, exportCsvButton);
         model.setNomUtilisateur(nomUtilisateur);
     }
     
@@ -58,6 +63,7 @@ public class AdminDashboardController {
         affectationsSecouristesButton.setOnAction(this::handleAffectationsSecouristes);
         secouristesButton.setOnAction(this::handleSecouristes);
         deconnexionButton.setOnAction(this::handleDeconnexion);
+        exportCsvButton.setOnAction(this::handleExportBDD);
     }
     
     private void handleDispositifs(ActionEvent event) {
@@ -154,13 +160,25 @@ public class AdminDashboardController {
         
         System.out.println("Retour à la page de connexion réussi !");
     }
+
+    private void handleExportBDD(ActionEvent event) {
+        try {
+            ExportCSV.exporterTouteLaBase(); // Appel de la méthode statique
+            System.out.println("Exportation réalisée avec succès.");
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        } catch (Exception e) {
+                System.out.println(e.getMessage());
+        }
+    }
     
     private void updateButtonStyles() {
         // Réinitialiser tous les boutons
         dispositifsButton.getStyleClass().removeAll("active-button");
         affectationsSecouristesButton.getStyleClass().removeAll("active-button");
         secouristesButton.getStyleClass().removeAll("active-button");
-        
+        exportCsvButton.getStyleClass().removeAll("active-button");
+
         // Ajouter la classe active au bouton sélectionné
         switch (model.getSectionActive()) {
             case "dispositifs":
@@ -176,6 +194,11 @@ public class AdminDashboardController {
             case "secouristes":
                 if (!secouristesButton.getStyleClass().contains("active-button")) {
                     secouristesButton.getStyleClass().add("active-button");
+                }
+                break;
+            case "export":
+                if (!exportCsvButton.getStyleClass().contains("active-button")) {
+                    exportCsvButton.getStyleClass().add("active-button");
                 }
                 break;
         }
