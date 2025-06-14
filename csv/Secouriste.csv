@@ -1,0 +1,6 @@
+id;nom;prenom;dateNaissance;email;tel;adresse
+1;Dupont;Jean;1990-05-15;jean.dupont@email.com;0601020304;1 rue de la Paix, Paris
+2;Martin;Sophie;1995-11-20;sophie.martin@email.com;0611223344;10 avenue des Fleurs, Lyon
+3;Bernard;Luc;1988-02-10;luc.bernard@email.com;0655667788;5 chemin du Moulin, Marseille
+4;Petit;Alice;1998-07-01;alice.petit@email.com;0612345678;2 boulevard de la Liberté, Lille
+5;Durand;Paul;1992-09-25;paul.durand@email.com;0698765432;7 place du Marché, Toulouse
