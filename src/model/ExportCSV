@@ -1,0 +1,117 @@
+package model;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+public class ExportCSV {
+
+    // Configuration de la connexion à la base de données
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/AppSecouriste?useSSL=false&serverTimezone=UTC";
+    private static final String DB_USER = "root";
+    private static final String DB_PASSWORD = "";
+
+    private static final String CSV_SEPARATOR = ";"; // Point-virgule pour meilleure compatibilité Excel FR
+    private static final String LINE_SEPARATOR = System.lineSeparator();
+    public static final String EXPORT_DIRECTORY = "csv/"; // Dossier où les CSV seront sauvegardés
+
+    /**
+     * Échappe les données pour une cellule CSV.
+     * Encadre de guillemets si la donnée contient le séparateur, des guillemets ou un saut de ligne.
+     * Double les guillemets internes.
+     */
+    private static String escapeData(String data) {
+        if (data == null) {
+            return ""; // Gère les valeurs NULL de la BDD comme des chaînes vides
+        }
+        if (data.contains(CSV_SEPARATOR) || data.contains("\"") || data.contains("\n") || data.contains("\r")) {
+            return "\"" + data.replace("\"", "\"\"") + "\"";
+        }
+        return data;
+    }
+
+    /**
+     * Exporte toutes les tables spécifiées de la base de données en fichiers CSV séparés.
+     */
+    public static void exporterTouteLaBase() throws SQLException { // Laisse SQLException être gérée par l'appelant
+        // Liste des tables à exporter (adaptez à votre schéma)
+        String[] tablesAExporter = {"Secouriste", "Competence", "Journee", "Site", "Sport", "DPS", "Besoin", "Possede", "Disponibilite", "Affectation"};
+
+        // Charger le driver JDBC une seule fois (optionnel si déjà géré par l'environnement)
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver"); // Pour MySQL 8+
+        } catch (ClassNotFoundException e) {
+            System.err.println("ERREUR: Driver JDBC MySQL non trouvé. Assurez-vous qu'il est dans le classpath.");
+            e.printStackTrace();
+            throw new SQLException("Driver JDBC MySQL non trouvé.", e);
+        }
+
+        for (String tableName : tablesAExporter) {
+            exporterUneTable(tableName, EXPORT_DIRECTORY);
+        }
+        System.out.println("Exportation CSV de toutes les tables terminée.");
+    }
+
+    /**
+     * Exporte une table spécifique vers un fichier CSV.
+     * @param tableName Le nom de la table à exporter.
+     * @param directoryPath Le chemin du répertoire où sauvegarder le fichier.
+     */
+    private static void exporterUneTable(String tableName, String directoryPath) throws SQLException {
+        String csvFilePath = directoryPath + tableName + ".csv";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT * FROM " + tableName);
+             Writer writer = new BufferedWriter(new FileWriter(csvFilePath, StandardCharsets.UTF_8))) {
+
+            ResultSetMetaData metaData = rs.getMetaData();
+            int columnCount = metaData.getColumnCount();
+
+            // Écrire la ligne d'en-tête
+            for (int i = 1; i <= columnCount; i++) {
+                writer.append(escapeData(metaData.getColumnLabel(i))); // Utiliser getColumnLabel pour les alias
+                if (i < columnCount) {
+                    writer.append(CSV_SEPARATOR);
+                }
+            }
+            writer.append(LINE_SEPARATOR);
+
+            // Écrire les lignes de données
+            while (rs.next()) {
+                for (int i = 1; i <= columnCount; i++) {
+                    writer.append(escapeData(rs.getString(i))); // rs.getString gère la plupart des types
+                    if (i < columnCount) {
+                        writer.append(CSV_SEPARATOR);
+                    }
+                }
+                writer.append(LINE_SEPARATOR);
+            }
+            writer.flush();
+            System.out.println("  Table '" + tableName + "' exportée avec succès vers : " + csvFilePath);
+
+        } catch (IOException e) {
+            System.err.println("  ERREUR IO lors de l'exportation de la table '" + tableName + "': " + e.getMessage());
+            // Vous pourriez relancer une exception ici si vous voulez que l'appelant le sache
+        }
+        // SQLException est déjà déclarée dans la signature de la méthode
+    }
+
+    // Optionnel: une méthode main pour tester l'export directement depuis cette classe
+    public static void main(String[] args) {
+        try {
+            exporterTouteLaBase();
+        } catch (SQLException e) {
+            System.err.println("Une erreur SQL majeure est survenue lors de l'exportation :");
+            e.printStackTrace();
+        }
+    }
+}
