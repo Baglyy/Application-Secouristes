@@ -3,10 +3,7 @@ package model.dao;
 import java.sql.*;
 import java.util.*;
 
-import model.data.DPS;
-import model.data.Site;
-import model.data.Sport;
-import model.data.Journee;
+import model.data.*;
 
 public class DPSDAO extends DAO<DPS> {
 
@@ -83,7 +80,7 @@ public class DPSDAO extends DAO<DPS> {
 
     @Override
     public List<DPS> findAll() {
-        List<DPS> dpss = new LinkedList<>();
+        List<DPS> dpsList = new ArrayList<>(); 
         String query = "SELECT * FROM DPS";
 
         try (Connection con = getConnection();
@@ -104,19 +101,22 @@ public class DPSDAO extends DAO<DPS> {
                 Sport sport = sportDAO.findByID(codeSport);
                 Journee journee = journeeDAO.findByID(jour, mois, annee);
 
-                dpss.add(new DPS(id, horaireDep, horaireFin, site, sport, journee));
+                DPS dps = new DPS(id, horaireDep, horaireFin, site, sport, journee);
+                chargerBesoinsPourDPS(dps, con);
+                dpsList.add(dps);            
             }
 
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
 
-        return dpss;
+        return dpsList;
     }
 
     @Override
     public DPS findByID(Object... keys) {
         long id = (long) keys[0];
+        DPS dps = null;
 
         String query = "SELECT * FROM DPS WHERE ID = ?";
         try (Connection con = getConnection();
@@ -136,8 +136,10 @@ public class DPSDAO extends DAO<DPS> {
                     Site site = siteDAO.findByID(codeSite);
                     Sport sport = sportDAO.findByID(codeSport);
                     Journee journee = journeeDAO.findByID(jour, mois, annee);
+                    dps = new DPS(id, horaireDep, horaireFin, site, sport, journee);
+                    chargerBesoinsPourDPS(dps, con);
 
-                    return new DPS(id, horaireDep, horaireFin, site, sport, journee);
+                    return dps;
                 }
             }
 
@@ -147,4 +149,30 @@ public class DPSDAO extends DAO<DPS> {
 
         return null;
     }
+
+    private void chargerBesoinsPourDPS(DPS dps, Connection con) throws SQLException {
+        if (dps == null) return;
+
+        // La liste des besoins dans DPS est déjà initialisée par le constructeur de DPS
+        // dps.setBesoins(new ArrayList<>()); // Plus nécessaire si le constructeur de DPS le fait
+
+        String queryBesoins = "SELECT b.intituleComp, b.nombre " + // Récupère l'intitulé et le nombre
+                              "FROM Besoin b " +
+                              "WHERE b.idDPS = ?"; // Filtre par l'ID du DPS
+
+        try (PreparedStatement pstBesoins = con.prepareStatement(queryBesoins)) {
+            pstBesoins.setLong(1, dps.getId());
+            try (ResultSet rsBesoins = pstBesoins.executeQuery()) {
+                while (rsBesoins.next()) {
+                    Competence competenceDuBesoin = new Competence(rsBesoins.getString("intituleComp"));
+                    int nombreNecessaire = rsBesoins.getInt("nombre");
+
+                    // Votre constructeur Besoin(DPS dps, Competence competence, int nombre)
+                    Besoin besoin = new Besoin(dps, competenceDuBesoin, nombreNecessaire);
+                    dps.getBesoins().add(besoin); // Ajoute le besoin à la liste du DPS
+                }
+            }
+        }
+    }
+
 }
