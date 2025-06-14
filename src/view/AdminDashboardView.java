@@ -9,19 +9,21 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.Priority;
-import controller.AdminDashboardController;
+import controller.DashboardController;
 
-public class AdminDashboardView {
+public class DashboardView {
     
     private AnchorPane root;
-    private Button dispositifsButton;
-    private Button affectationsSecouristesButton;
-    private Button secouristesButton;
+    private Button affectationsButton;
+    private Button planningButton;
+    private Button disponibilitesButton;
     private Button deconnexionButton;
     private Label nomUtilisateurLabel;
-    private AdminDashboardController controller;
+    private DashboardController controller;
+
+
     
-    public AdminDashboardView(String nomUtilisateur) {
+    public DashboardView(String nomUtilisateur) {
         createView();
         setupController(nomUtilisateur);
         loadStylesheet();
@@ -44,8 +46,8 @@ public class AdminDashboardView {
         headerContent.setPadding(new Insets(15, 30, 15, 30));
         headerContent.setSpacing(20);
         
-        // Titre "Tableau de bord - Administrateur"
-        Label titleLabel = new Label("Tableau de bord - Administrateur");
+        // Titre "Tableau de bord"
+        Label titleLabel = new Label("Tableau de bord");
         titleLabel.getStyleClass().add("dashboard-title");
         
         // Spacer pour pousser les éléments utilisateur à droite
@@ -95,75 +97,75 @@ public class AdminDashboardView {
         mainContent.setSpacing(40);
         mainContent.setPadding(new Insets(60, 50, 50, 50));
         
-        // Première ligne de boutons (Dispositifs de secours et Affectations secouristes)
+        // Première ligne de boutons (Affectations et Planning)
         HBox firstRow = new HBox();
         firstRow.setAlignment(Pos.CENTER);
         firstRow.setSpacing(60);
         
-        // Bouton Dispositifs de secours
-        dispositifsButton = new Button();
-        dispositifsButton.setPrefSize(280, 100);
-        dispositifsButton.getStyleClass().addAll("dashboard-button", "active-button");
+        // Bouton Affectations
+        affectationsButton = new Button();
+        affectationsButton.setPrefSize(280, 100);
+        affectationsButton.getStyleClass().addAll("dashboard-button", "active-button");
         
-        // Container pour le contenu du bouton Dispositifs
-        VBox dispositifsContent = new VBox();
-        dispositifsContent.setAlignment(Pos.CENTER);
-        dispositifsContent.setSpacing(8);
+        // Container pour le contenu du bouton Affectations
+        VBox affectationsContent = new VBox();
+        affectationsContent.setAlignment(Pos.CENTER);
+        affectationsContent.setSpacing(8);
         
-        Label dispositifsIcon = new Label("🚑");
-        dispositifsIcon.getStyleClass().add("button-icon");
+        Label affectationsIcon = new Label("👁");
+        affectationsIcon.getStyleClass().add("button-icon");
         
-        Label dispositifsText = new Label("Dispositifs de secours");
-        dispositifsText.getStyleClass().add("button-text");
+        Label affectationsText = new Label("Affectations");
+        affectationsText.getStyleClass().add("button-text");
         
-        dispositifsContent.getChildren().addAll(dispositifsIcon, dispositifsText);
-        dispositifsButton.setGraphic(dispositifsContent);
+        affectationsContent.getChildren().addAll(affectationsIcon, affectationsText);
+        affectationsButton.setGraphic(affectationsContent);
         
-        // Bouton Affectations secouristes
-        affectationsSecouristesButton = new Button();
-        affectationsSecouristesButton.setPrefSize(280, 100);
-        affectationsSecouristesButton.getStyleClass().add("dashboard-button");
+        // Bouton Planning
+        planningButton = new Button();
+        planningButton.setPrefSize(280, 100);
+        planningButton.getStyleClass().add("dashboard-button");
         
-        // Container pour le contenu du bouton Affectations secouristes
-        VBox affectationsSecouristesContent = new VBox();
-        affectationsSecouristesContent.setAlignment(Pos.CENTER);
-        affectationsSecouristesContent.setSpacing(8);
+        // Container pour le contenu du bouton Planning
+        VBox planningContent = new VBox();
+        planningContent.setAlignment(Pos.CENTER);
+        planningContent.setSpacing(8);
         
-        Label affectationsSecouristesIcon = new Label("👁");
-        affectationsSecouristesIcon.getStyleClass().add("button-icon");
+        Label planningIcon = new Label("👁");
+        planningIcon.getStyleClass().add("button-icon");
         
-        Label affectationsSecouristesText = new Label("Affectations secouristes");
-        affectationsSecouristesText.getStyleClass().add("button-text");
+        Label planningText = new Label("Planning");
+        planningText.getStyleClass().add("button-text");
         
-        affectationsSecouristesContent.getChildren().addAll(affectationsSecouristesIcon, affectationsSecouristesText);
-        affectationsSecouristesButton.setGraphic(affectationsSecouristesContent);
+        planningContent.getChildren().addAll(planningIcon, planningText);
+        planningButton.setGraphic(planningContent);
         
-        firstRow.getChildren().addAll(dispositifsButton, affectationsSecouristesButton);
+        firstRow.getChildren().addAll(affectationsButton, planningButton);
         
-        // Deuxième ligne (Secouristes - centré)
+        // Deuxième ligne (Disponibilités - centré)
         HBox secondRow = new HBox();
         secondRow.setAlignment(Pos.CENTER);
         
-        // Bouton Secouristes
-        secouristesButton = new Button();
-        secouristesButton.setPrefSize(280, 100);
-        secouristesButton.getStyleClass().add("dashboard-button");
+        // Bouton Disponibilités
+        disponibilitesButton = new Button();
+        disponibilitesButton.setPrefSize(280, 100);
+        disponibilitesButton.getStyleClass().add("dashboard-button");
         
-        // Container pour le contenu du bouton Secouristes
-        VBox secouristesContent = new VBox();
-        secouristesContent.setAlignment(Pos.CENTER);
-        secouristesContent.setSpacing(8);
+        // Container pour le contenu du bouton Disponibilités
+        VBox disponibilitesContent = new VBox();
+        disponibilitesContent.setAlignment(Pos.CENTER);
+        disponibilitesContent.setSpacing(8);
         
-        Label secouristesIcon = new Label("👨‍⚕️");
-        secouristesIcon.getStyleClass().add("button-icon");
+        Label disponibilitesIcon = new Label("✏");
+        disponibilitesIcon.getStyleClass().add("button-icon");
         
-        Label secouristesText = new Label("Secouristes");
-        secouristesText.getStyleClass().add("button-text");
+        Label disponibilitesText = new Label("Disponibilités");
+        disponibilitesText.getStyleClass().add("button-text");
         
-        secouristesContent.getChildren().addAll(secouristesIcon, secouristesText);
-        secouristesButton.setGraphic(secouristesContent);
+        disponibilitesContent.getChildren().addAll(disponibilitesIcon, disponibilitesText);
+        disponibilitesButton.setGraphic(disponibilitesContent);
         
-        secondRow.getChildren().add(secouristesButton);
+        secondRow.getChildren().add(disponibilitesButton);       
         
         // Ajout des lignes au contenu principal
         mainContent.getChildren().addAll(firstRow, secondRow);
@@ -181,9 +183,14 @@ public class AdminDashboardView {
         root.getChildren().addAll(header, mainContent);
     }
     
+    private void setupController() {
+        controller = new DashboardController(affectationsButton, planningButton, 
+                                           disponibilitesButton, deconnexionButton, nomUtilisateurLabel);
+    }
+    
     private void setupController(String nomUtilisateur) {
-        controller = new AdminDashboardController(dispositifsButton, affectationsSecouristesButton, 
-                                                 secouristesButton, deconnexionButton, nomUtilisateurLabel, nomUtilisateur);
+        controller = new DashboardController(affectationsButton, planningButton, 
+                                           disponibilitesButton, deconnexionButton, nomUtilisateurLabel, nomUtilisateur);
     }
     
     private void loadStylesheet() {
@@ -191,7 +198,7 @@ public class AdminDashboardView {
             String cssPath = getClass().getResource("../style.css").toExternalForm();
             root.getStylesheets().add(cssPath);
         } catch (Exception e) {
-            System.err.println("Impossible de charger le fichier CSS style.css");
+            System.err.println("Impossible de charger le fichier CSS dashboard.css");
             e.printStackTrace();
         }
     }
@@ -200,7 +207,7 @@ public class AdminDashboardView {
         return root;
     }
     
-    public AdminDashboardController getController() {
+    public DashboardController getController() {
         return controller;
     }
 }
