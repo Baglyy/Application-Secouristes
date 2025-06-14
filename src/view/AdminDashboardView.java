@@ -11,7 +11,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.Priority;
 import controller.DashboardController;
 
-public class DashboardView {
+public class AdminDashboardView {
     
     private AnchorPane root;
     private Button affectationsButton;
