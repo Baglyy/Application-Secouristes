@@ -18,6 +18,7 @@ public class Secouriste{
     private List<Competence> competences;
     private List<DPS> dpsAffectes;
 
+
     public Secouriste(long id, String nom, String prenom, String dateDeNaissance, String email, String tel, String adresse){
         if (id <= 0) {
             throw new IllegalArgumentException("L'ID doit être un nombre positif non null");
@@ -42,6 +43,8 @@ public class Secouriste{
         this.email = email;
         this.tel = tel;
         this.adresse = adresse;
+        this.competences = new ArrayList<>(); 
+        this.dpsAffectes = new ArrayList<>();
     }
 
     public int calculerAge(){
