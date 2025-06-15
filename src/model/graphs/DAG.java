@@ -12,25 +12,32 @@ public class DAG {
     }
     
     private void initialiserGrapheCompetences() {
-        prerequis.put("PSC1", new ArrayList<>());
-        prerequis.put("PSE1", Arrays.asList("PSC1"));
-        prerequis.put("PSE2", Arrays.asList("PSE1"));
-        prerequis.put("PAE", Arrays.asList("PSE2"));
-        prerequis.put("SECOURISME_MONTAGNE", Arrays.asList("PSE1"));
-        prerequis.put("SECOURISME_AQUATIQUE", Arrays.asList("PSE1"));
+        prerequis.put("SSA", new ArrayList<>());
+        prerequis.put("VPSP", new ArrayList<>());
+        prerequis.put("PBF", new ArrayList<>()); 
+
+        prerequis.put("PSE1", Arrays.asList("SSA")); 
+        prerequis.put("PSE2", Arrays.asList("PSE1", "VPSP")); 
+        prerequis.put("CE", Arrays.asList("PSE2"));
+        prerequis.put("CP", Arrays.asList("CE"));
+        prerequis.put("CO", Arrays.asList("CP"));
+        prerequis.put("PBC", Arrays.asList("PBF"));
     }
     
     public boolean verifierDAG() {
-        Set<String> blanc = new HashSet<>(prerequis.keySet());
-        Set<String> gris = new HashSet<>();
-        Set<String> noir = new HashSet<>();
-        
-        for (String competence : blanc) {
-            if (detecterCycle(competence, blanc, gris, noir)) {
-                return false;
+        Set<String> toutesLesCompetencesInitiales = new HashSet<>(prerequis.keySet()); 
+        Set<String> ensembleBlanc = new HashSet<>(prerequis.keySet()); 
+        Set<String> ensembleGris = new HashSet<>();
+        Set<String> ensembleNoir = new HashSet<>();
+
+        for (String competence : toutesLesCompetencesInitiales) {
+            if (ensembleBlanc.contains(competence)) {
+                if (detecterCycle(competence, ensembleBlanc, ensembleGris, ensembleNoir)) {
+                    return false;
+                }
             }
         }
-        return true;
+        return true; 
     }
     
     private boolean detecterCycle(String competence, Set<String> blanc, Set<String> gris, Set<String> noir) {
