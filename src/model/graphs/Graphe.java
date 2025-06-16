@@ -178,11 +178,11 @@ public class Graphe {
         dpsTries.sort((d1, d2) -> Integer.compare(d2.getNbSecouristesRequis(), d1.getNbSecouristesRequis())); // Tri des DPS par ordre décroissant du nombre total de secouristes requis
 
         for (DPS d : dpsTries) { // Pour chaque DPS dans dpsTries
-            List<Secouriste> affectes = new ArrayList<>(); // Liste pour stocker les secouristes affectés au DPS actuel
-            List<Secouriste> secouristesDisponiblesPourCeDPS = new ArrayList<>(); // Liste temporaire des secouristes pas encore affectés
+            List<Secouriste> affectesPourCeDps = new ArrayList<>(); // Liste pour stocker les secouristes affectés au DPS actuel
+            List<Secouriste> secouristesEligiblesPourCeDps = new ArrayList<>(); // Liste temporaire des secouristes pas encore affectés
             for(Secouriste s : secouristes) { // Pour chaque secouriste
                 if (!dejaAffectes.contains(s)) { // S'il n'est pas affecté à au autre DPS
-                    secouristesDisponiblesPourCeDPS.add(s); // On l'ajoute à la liste des secouristes disponibles
+                    secouristesEligiblesPourCeDps.add(s); // On l'ajoute à la liste des secouristes disponibles
                 }
             }
 
@@ -190,19 +190,37 @@ public class Graphe {
                 int nbRequis = besoin.getNombre(); // Récupérer le nombre de secouristes nécessaire
                 String compRequise = besoin.getCompetence().getIntitule(); // Récupérer les compétences requises
 
-                for (Secouriste s : affectes) { // Pour chaque secouriste disponible pour ce DPS
+                int nbDejaCouvert = 0;
+
+                for (Secouriste s : affectesPourCeDps) { // Pour chaque secouriste disponible pour ce DPS
                     if (nbRequis == 0) break; // Si le besoin est satisfait, passer au suivant
-                    if (dag.possederCompetence(s, compRequise) && !affectes.contains(s)) { // Si le secouriste possède la compétence requise et n'est pas affecté au DPS 
-                        affectes.add(s); // On l'affecte au DPS
-                        nbRequis--; // Le nombre requis diminue
+                    if (dag.possederCompetence(s, compRequise) && !affectesPourCeDps.contains(s)) { // Si le secouriste possède la compétence requise et n'est pas affecté au DPS 
+                        affectesPourCeDps.add(s); // On l'affecte au DPS
+                        nbDejaCouvert++; // Le nombre requis augmente
+                    }
+                }
+
+                int nbEncoreAMobiliserPourCeBesoin = nbRequis - nbDejaCouvert;
+
+                if (nbEncoreAMobiliserPourCeBesoin > 0) {              
+                    for (Secouriste candidat : secouristesEligiblesPourCeDps) { 
+                        if (nbEncoreAMobiliserPourCeBesoin <= 0) {
+                            break; // Assez de secouristes trouvés pour ce besoin spécifique
+                        }
+
+                        // S'il n'est pas affecté au DPS et qu'il a la compétence requise
+                        if (!affectesPourCeDps.contains(candidat) && dag.possederCompetence(candidat, compRequise)) {
+                            affectesPourCeDps.add(candidat); // On l'affecte au DPS
+                            nbEncoreAMobiliserPourCeBesoin--; // Le nombre requis pour ce besoin spécifique diminue
+                        }
                     }
                 }
             }
             // Après avoir traité tous les besoins du DPS
-            for (Secouriste s : affectes) { // Pour chaque secouriste affectés au DPS 
+            for (Secouriste s : affectesPourCeDps) { // Pour chaque secouriste affecté à ce DPS
                 dejaAffectes.add(s); // On l'ajoute à la liste des secouristes affectés globalement
             }
-            affectation.put(d, affectes); // Enregistre l'affectation pour ce DPS dans la Map finale
+            affectation.put(d, affectesPourCeDps); // Enregistre l'affectation pour ce DPS dans la Map finale
         }
 
         return affectation;
@@ -212,14 +230,17 @@ public class Graphe {
         int score = 0; // Score de l'affectation
 
         for (DPS dps : affectation.keySet()) { // Pour chaque DPS dans la Map
-            List<Secouriste> affectes = affectation.get(dps); // Récupère les secouristes affectés à ce DPS.
+            List<Secouriste> secouristesAffectesAuDps = affectation.get(dps); // Récupère les secouristes affectés à ce DPS.
+            if (secouristesAffectesAuDps == null){
+                secouristesAffectesAuDps = new ArrayList<>();
+            } 
 
             for (Besoin besoin : dps.getBesoins()) { // Pour chaque besoin d'un DPS
                 String compRequise = besoin.getCompetence().getIntitule(); // Nom de la compétence requise
                 int nbRequis = besoin.getNombre(); // Nombre de secouristes nécessaires pouyr cette compétence
                 int nbCouvert = 0; // Compteur pour le nombre de secouristes qui satisfont le besoin
 
-                for (Secouriste s : affectes) { // Pour chaque secouriste affectés au DPS
+                for (Secouriste s : secouristesAffectesAuDps) { // Pour chaque secouriste affectés au DPS
                     if (dag.possederCompetence(s, compRequise)) { // Si le secouriste possède la compétence requise
                         nbCouvert++; // Un secouriste de plus satisfait le besoin
                     }
