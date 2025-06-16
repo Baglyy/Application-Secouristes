@@ -2,20 +2,16 @@ package view;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 import controller.AdminAffectationsController;
 import model.AdminAffectationsModel;
-import model.data.DPS;
-import model.data.Secouriste;
 
 public class AdminAffectationsView {
     
     private AnchorPane root;
-    private Button createButton;
+    private Button greedyButton;
+    private Button exhaustiveButton;
     private TableView<AdminAffectationsModel.Affectation> tableView;
     private TableColumn<AdminAffectationsModel.Affectation, String> colDate;
     private TableColumn<AdminAffectationsModel.Affectation, String> colSitesOlympiques;
@@ -92,12 +88,17 @@ public class AdminAffectationsView {
         
         VBox buttonContainer = new VBox();
         buttonContainer.setAlignment(Pos.TOP_LEFT);
+        buttonContainer.setSpacing(10);
         
-        createButton = new Button("➕\nCréer une affectation");
-        createButton.getStyleClass().addAll("dashboard-button", "active-button");
-        createButton.setPrefSize(200, 60);
+        greedyButton = new Button("Générer via Algorithme Glouton");
+        greedyButton.getStyleClass().addAll("dashboard-button", "active-button");
+        greedyButton.setPrefSize(200, 60);
         
-        buttonContainer.getChildren().add(createButton);
+        exhaustiveButton = new Button("Générer via Algorithme Exhaustif");
+        exhaustiveButton.getStyleClass().addAll("dashboard-button", "active-button");
+        exhaustiveButton.setPrefSize(200, 60);
+        
+        buttonContainer.getChildren().addAll(greedyButton, exhaustiveButton);
         
         VBox tableContainer = new VBox();
         tableContainer.setAlignment(Pos.TOP_LEFT);
@@ -156,66 +157,6 @@ public class AdminAffectationsView {
         }
     }
     
-    public void showCreateAffectationDialog(AdminAffectationsController controller) {
-        Stage dialog = new Stage();
-        dialog.initModality(Modality.APPLICATION_MODAL);
-        dialog.setTitle("Créer une affectation");
-        
-        VBox dialogVbox = new VBox(20);
-        dialogVbox.setPadding(new Insets(20));
-        
-        ComboBox<DPS> dpsCombo = new ComboBox<>();
-        dpsCombo.setPromptText("Sélectionner un DPS");
-        dpsCombo.setItems(controller.getModel().getAllDPS());
-        dpsCombo.setPrefWidth(300);
-        
-        DatePicker datePicker = new DatePicker();
-        datePicker.setPromptText("Date de l'affectation");
-        
-        ListView<Secouriste> secouristesList = new ListView<>();
-        secouristesList.setPrefHeight(200);
-        secouristesList.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        
-        Button searchButton = new Button("Rechercher des secouristes compétents");
-        Button confirmButton = new Button("Créer l'affectation");
-        confirmButton.setDisable(true);
-        
-        searchButton.setOnAction(e -> {
-            DPS selectedDPS = dpsCombo.getValue();
-            if (selectedDPS != null && datePicker.getValue() != null) {
-                secouristesList.setItems(controller.searchCompetentSecouristes(selectedDPS, datePicker.getValue()));
-            }
-        });
-        
-        secouristesList.getSelectionModel().selectedItemProperty().addListener((obs, old, newVal) -> {
-            DPS selectedDPS = dpsCombo.getValue();
-            if (selectedDPS != null) {
-                int required = selectedDPS.getNbSecouristesRequis();
-                int selected = secouristesList.getSelectionModel().getSelectedItems().size();
-                confirmButton.setDisable(selected != required);
-            }
-        });
-        
-        confirmButton.setOnAction(e -> {
-            controller.createAffectation(
-                dpsCombo.getValue(),
-                datePicker.getValue(),
-                secouristesList.getSelectionModel().getSelectedItems()
-            );
-            dialog.close();
-        });
-        
-        dialogVbox.getChildren().addAll(
-            new Label("Dispositif:"), dpsCombo,
-            new Label("Date:"), datePicker,
-            searchButton, secouristesList, confirmButton
-        );
-        
-        Scene dialogScene = new Scene(dialogVbox, 400, 500);
-        dialog.setScene(dialogScene);
-        dialog.showAndWait();
-    }
-    
     public AnchorPane getRoot() {
         return root;
     }
@@ -224,13 +165,18 @@ public class AdminAffectationsView {
         return controller;
     }
     
-    public Button getCreateButton() {
-        return createButton;
+    public Button getGreedyButton() {
+        return greedyButton;
+    }
+    
+    public Button getExhaustiveButton() {
+        return exhaustiveButton;
     }
     
     private void setupController(String nomUtilisateur) {
         controller = new AdminAffectationsController(
-                createButton,
+                greedyButton,
+                exhaustiveButton,
                 tableView,
                 colDate,
                 colSitesOlympiques,
