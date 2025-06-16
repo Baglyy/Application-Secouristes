@@ -219,7 +219,7 @@ public class Graphe {
                 int nbRequis = besoin.getNombre(); // Nombre de secouristes nécessaires pouyr cette compétence
                 int nbCouvert = 0; // Compteur pour le nombre de secouristes qui satisfont le besoin
 
-                for (Secouriste s : secouristesUniquesDansDPS) { // Pour chaque secouriste affectés au DPS
+                for (Secouriste s : affectes) { // Pour chaque secouriste affectés au DPS
                     if (dag.possederCompetence(s, compRequise)) { // Si le secouriste possède la compétence requise
                         nbCouvert++; // Un secouriste de plus satisfait le besoin
                     }
