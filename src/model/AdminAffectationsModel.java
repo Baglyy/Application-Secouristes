@@ -73,7 +73,7 @@ public class AdminAffectationsModel {
         return FXCollections.observableArrayList(available);
     }
     
-    private boolean isSecouristeAvailable(Secouriste secouriste, LocalDate date) {
+    public boolean isSecouristeAvailable(Secouriste secouriste, LocalDate date) {
         return affectationDAO.isSecouristeAvailable(
             secouriste.getId(), 
             date.getDayOfMonth(), 
@@ -96,6 +96,14 @@ public class AdminAffectationsModel {
     
     public void setNomUtilisateur(String nomUtilisateur) {
         this.nomUtilisateur.set(nomUtilisateur);
+    }
+    
+    public Graphe getGraphe() {
+        return graphe;
+    }
+    
+    public SecouristeDAO getSecouristeDAO() {
+        return secouristeDAO;
     }
     
     public static class Affectation {
