@@ -82,6 +82,19 @@ public class AdminAffectationsController {
     }
     
     public void generateAffectations(boolean useGreedy) {
+
+        System.out.println("Contrôleur: Tentative de suppression des affectations existantes...");
+        boolean nettoyageReussi = model.nettoyerAffectations();
+        if (!nettoyageReussi) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Erreur de Préparation");
+            alert.setHeaderText("Nettoyage Échoué");
+            alert.setContentText("Impossible de supprimer les affectations précédentes de la base de données. Veuillez vérifier les logs.");
+            alert.showAndWait();
+            return;
+        }
+        System.out.println("Contrôleur: Affectations existantes supprimées (ou aucune à supprimer).");
+
         ObservableList<DPS> allDPS = model.getAllDPS();
         if (allDPS.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
