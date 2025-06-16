@@ -65,25 +65,12 @@ public class AdminSecouristesView {
         nomUtilisateurLabel = new Label("NOM PRÉNOM DE L'UTILISATEUR");
         nomUtilisateurLabel.getStyleClass().add("user-name");
         
-        // Icône de notification
-        Label notificationIcon = new Label("🔔");
-        notificationIcon.getStyleClass().add("profile-icon");
-        
-        // Badge rouge sur la notification
-        Label notificationBadge = new Label("1");
-        notificationBadge.getStyleClass().add("notification-badge");
-        
-        // Container pour notification avec badge
-        AnchorPane notificationContainer = new AnchorPane();
-        notificationContainer.getChildren().addAll(notificationIcon, notificationBadge);
-        AnchorPane.setTopAnchor(notificationBadge, -5.0);
-        AnchorPane.setRightAnchor(notificationBadge, -5.0);
         
         // Icône maison
-        homeIcon = new Label("🏠");
-        homeIcon.getStyleClass().add("profile-icon");
+        homeIcon = new Label("");
+        homeIcon.getStyleClass().add("return-icon");
         
-        userInfo.getChildren().addAll(nomUtilisateurLabel, notificationContainer, homeIcon);
+        userInfo.getChildren().addAll(nomUtilisateurLabel, homeIcon);
         headerContent.getChildren().addAll(titleLabel, spacer, userInfo);
         
         // Ajout du contenu au header

@@ -62,25 +62,13 @@ public class AdminDashboardView {
         nomUtilisateurLabel = new Label("NOM PRÉNOM DE L'UTILISATEUR");
         nomUtilisateurLabel.getStyleClass().add("user-name");
         
-        // Icône de notification
-        Label notificationIcon = new Label("🔔");
-        notificationIcon.getStyleClass().add("profile-icon");
         
-        // Badge rouge sur la notification
-        Label notificationBadge = new Label("1");
-        notificationBadge.getStyleClass().add("notification-badge");
-        
-        // Container pour notification avec badge
-        AnchorPane notificationContainer = new AnchorPane();
-        notificationContainer.getChildren().addAll(notificationIcon, notificationBadge);
-        AnchorPane.setTopAnchor(notificationBadge, -5.0);
-        AnchorPane.setRightAnchor(notificationBadge, -5.0);
         
         // Bouton de déconnexion (remplace l'icône de profil)
-        deconnexionButton = new Button("Déconnexion");
-        deconnexionButton.getStyleClass().add("profile-icon");
+        deconnexionButton = new Button(".");
+        deconnexionButton.getStyleClass().add("leave-icon");
         
-        userInfo.getChildren().addAll(nomUtilisateurLabel, notificationContainer, deconnexionButton);
+        userInfo.getChildren().addAll(nomUtilisateurLabel, deconnexionButton);
         headerContent.getChildren().addAll(titleLabel, spacer, userInfo);
         
         // Ajout du contenu au header
