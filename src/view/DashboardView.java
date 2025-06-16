@@ -66,8 +66,8 @@ public class DashboardView {
         
         
         // Bouton de déconnexion (remplace l'icône de profil)
-        deconnexionButton = new Button("Déconnexion");
-        deconnexionButton.getStyleClass().add("profile-icon");
+        deconnexionButton = new Button("");
+        deconnexionButton.getStyleClass().add("leave-icon");
         
         userInfo.getChildren().addAll(nomUtilisateurLabel, deconnexionButton);
         headerContent.getChildren().addAll(titleLabel, spacer, userInfo);
