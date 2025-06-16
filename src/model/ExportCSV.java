@@ -15,9 +15,9 @@ import java.sql.Statement;
 public class ExportCSV {
 
     // Configuration de la connexion à la base de données
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/AppSecouriste?useSSL=false&serverTimezone=UTC";
-    private static final String DB_USER = "root";
-    private static final String DB_PASSWORD = "";
+    private static final String DB_URL = "jdbc:mysql://localhost/AppSecouristes";
+    private static final String DB_USER = "client";
+    private static final String DB_PASSWORD = "root";
 
     private static final String CSV_SEPARATOR = ";"; 
     private static final String LINE_SEPARATOR = System.lineSeparator();
