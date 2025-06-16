@@ -109,44 +109,33 @@ public class Graphe {
         String compRequise = besoinActuel.getCompetence().getIntitule(); // Récupération du nom de la compétence requise pour ce besoin
         int nbRequis = besoinActuel.getNombre(); // Obtention du nombre de secouristes requis pour cette compétence
 
-        List<Secouriste> candidatsPourCeBesoin = new ArrayList<>(); // Liste des secouristes potentiels pour ce besoin
-        for (Secouriste s : tousLesSecouristes) { // Pour chaque secouriste disponibles
-            // Si le secouriste n'est pas déjà affecté, pas déjà utilisé pour ce DPS et possède la compétence requise
-            if (!dejaAffectesGlobal.contains(s) && !currentDPSTempUsed.contains(s) && dag.possederCompetence(s, compRequise)) {
-                candidatsPourCeBesoin.add(s); // Ajout du secouriste à la liste des candidats 
+        if (nbRequis > 0) {
+
+            List<Secouriste> candidatsPourCeBesoin = new ArrayList<>(); // Liste des secouristes potentiels pour ce besoin
+            for (Secouriste s : tousLesSecouristes) { // Pour chaque secouriste disponibles
+                // Si le secouriste n'est pas déjà affecté, pas déjà utilisé pour ce DPS et possède la compétence requise
+                if (!dejaAffectesGlobal.contains(s) && !currentDPSTempUsed.contains(s) && dag.possederCompetence(s, compRequise)) {
+                    candidatsPourCeBesoin.add(s); // Ajout du secouriste à la liste des candidats 
+                }
+            }
+
+            // Générer toutes les combinaisons de 'nbRequis' secouristes parmi les candidats
+            List<List<Secouriste>> combinaisonsSimples = new ArrayList<>(); // Liste des sous-combinaisons de secouristes répondant au besoin
+            genererCombinaisonsSimples(candidatsPourCeBesoin, nbRequis, 0, new ArrayList<>(), combinaisonsSimples); // Trouver toutes les façons possibles de choisir un 'nbRequis' secouriste parmis les candidats
+
+            for (List<Secouriste> choix : combinaisonsSimples) { // Pour chaque combinaison de secouristes trouvée pour le besoin actuel
+                currentDPSAssignment.addAll(choix); // Ajout des secouristes à l'affectation temporaire du DPS
+                currentDPSTempUsed.addAll(choix); // Marquer ces secouristes comme utilisés pour ce DPS (on évite de les réutiliser pour d'autres besoins du DPS)
+
+                // Appel récursif pour le besoin suivant
+                genererCombinaisonsRec(besoins, besoinIndex + 1, tousLesSecouristes, dejaAffectesGlobal, currentDPSAssignment, currentDPSTempUsed, resultats);
+
+                // Retirer les secouristes pour explorer d'autres choix (backtrack)
+                currentDPSAssignment.removeAll(choix); // Retire les secouristes de l'affectation temporaire du DPS
+                currentDPSTempUsed.removeAll(choix); // Rend disponible tous les ecouristes pour d'autres combinaisons de ce DPS
             }
         }
-
-        // Si pas assez de candidats pour satisfaire le besoin
-        if (candidatsPourCeBesoin.size() < nbRequis) {
-            // Si on ne peut pas couvrir le besoin, on ne peut pas former cette combinaison.
-            // On ne peut pas simplement retourner ici comme avant, car cela bloquerait la recherche
-            // de la MEILLEURE affectation. Il faut permettre d'explorer des chemins où ce besoin
-            // n'est pas entièrement couvert, si d'autres combinaisons sont possibles plus tard.
-            // Cependant, pour l'approche "exhaustive" qui cherche à couvrir au mieux,
-            // si un besoin MINIMUM n'est pas rempli, cette branche ne sera pas optimale.
-            // Pour l'instant, nous supposons qu'il faut au moins le nombre requis pour le besoin spécifique.
-            // Si vous voulez des affectations partielles, il faudrait modifier la logique pour
-            // choisir le minimum de secouristes disponibles jusqu'à nbRequis.
-            // Pour le moment, nous allons simplement ne rien ajouter à `resultats` si le besoin minimum n'est pas couvert.
-            return; // Cette branche n'est pas viable pour ce besoin spécifique.
-        }
-
-        // Générer toutes les combinaisons de 'nbRequis' secouristes parmi les candidats
-        List<List<Secouriste>> combinaisonsSimples = new ArrayList<>(); // Liste des sous-combinaisons de secouristes répondant au besoin
-        genererCombinaisonsSimples(candidatsPourCeBesoin, nbRequis, 0, new ArrayList<>(), combinaisonsSimples); // Trouver toutes les façons possibles de choisir un 'nbRequis' secouriste parmis les candidats
-
-        for (List<Secouriste> choix : combinaisonsSimples) { // Pour chaque combinaison de secouristes trouvée pour le besoin actuel
-            currentDPSAssignment.addAll(choix); // Ajout des secouristes à l'affectation temporaire du DPS
-            currentDPSTempUsed.addAll(choix); // Marquer ces secouristes comme utilisés pour ce DPS (on évite de les réutiliser pour d'autres besoins du DPS)
-
-            // Appel récursif pour le besoin suivant
-            genererCombinaisonsRec(besoins, besoinIndex + 1, tousLesSecouristes, dejaAffectesGlobal, currentDPSAssignment, currentDPSTempUsed, resultats);
-
-            // Retirer les secouristes pour explorer d'autres choix (backtrack)
-            currentDPSAssignment.removeAll(choix); // Retire les secouristes de l'affectation temporaire du DPS
-            currentDPSTempUsed.removeAll(choix); // Rend disponible tous les ecouristes pour d'autres combinaisons de ce DPS
-        }
+        genererCombinaisonsRec(besoins, besoinIndex + 1, tousLesSecouristes, dejaAffectesGlobal, currentDPSAssignment, currentDPSTempUsed, resultats);
     }
 
 
