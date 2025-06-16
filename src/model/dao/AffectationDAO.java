@@ -15,6 +15,21 @@ public class AffectationDAO extends DAO<Object> {
     private JourneeDAO journeeDAO = new JourneeDAO();
     private SiteDAO siteDAO = new SiteDAO();
 
+    public int deleteAllAffectations() {
+        String query = "DELETE FROM Affectation";
+        try (Connection con = getConnection();
+             PreparedStatement pst = con.prepareStatement(query)) {
+            System.out.println("Suppression de toutes les affectations existantes...");
+            int rowsAffected = pst.executeUpdate();
+            System.out.println(rowsAffected + " affectation(s) supprimée(s).");
+            return rowsAffected;
+        } catch (SQLException e) {
+            System.err.println("Erreur lors de la suppression de toutes les affectations: " + e.getMessage());
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
     public List<AdminAffectationsModel.Affectation> findAffectationsForSecoursiteAndMonth(long idSecouriste, int month, int year) {
         List<AdminAffectationsModel.Affectation> affectations = new ArrayList<>();
         
