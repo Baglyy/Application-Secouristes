@@ -61,23 +61,12 @@ public class AffectationsView {
         nomUtilisateurLabel = new Label("NOM PRÉNOM DE L'UTILISATEUR");
         nomUtilisateurLabel.getStyleClass().add("user-name");
         
-        // Icône de notification avec badge
-        Label notificationIcon = new Label("🔔");
-        notificationIcon.getStyleClass().add("profile-icon");
-        
-        Label notificationBadge = new Label("1");
-        notificationBadge.getStyleClass().add("notification-badge");
-        
-        AnchorPane notificationContainer = new AnchorPane();
-        notificationContainer.getChildren().addAll(notificationIcon, notificationBadge);
-        AnchorPane.setTopAnchor(notificationBadge, -5.0);
-        AnchorPane.setRightAnchor(notificationBadge, -5.0);
         
         // Bouton Home
-        homeButton = new Button("🏠");
-        homeButton.getStyleClass().add("profile-icon");
+        homeButton = new Button("");
+        homeButton.getStyleClass().add("return-icon");
         
-        userInfo.getChildren().addAll(nomUtilisateurLabel, notificationContainer, homeButton);
+        userInfo.getChildren().addAll(nomUtilisateurLabel, homeButton);
         headerContent.getChildren().addAll(titleLabel, spacer, userInfo);
         
         AnchorPane.setLeftAnchor(headerContent, 0.0);
