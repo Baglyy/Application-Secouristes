@@ -190,7 +190,7 @@ public class Graphe {
                 int nbRequis = besoin.getNombre(); // Récupérer le nombre de secouristes nécessaire
                 String compRequise = besoin.getCompetence().getIntitule(); // Récupérer les compétences requises
 
-                for (Secouriste s : secouristesDisponiblesPourCeDPS) { // Pour chaque secouriste disponible pour ce DPS
+                for (Secouriste s : affectes) { // Pour chaque secouriste disponible pour ce DPS
                     if (nbRequis == 0) break; // Si le besoin est satisfait, passer au suivant
                     if (dag.possederCompetence(s, compRequise) && !affectes.contains(s)) { // Si le secouriste possède la compétence requise et n'est pas affecté au DPS 
                         affectes.add(s); // On l'affecte au DPS
