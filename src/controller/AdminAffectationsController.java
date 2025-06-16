@@ -4,18 +4,22 @@ import javafx.event.ActionEvent;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.collections.ObservableList;
+import javafx.collections.FXCollections;
 import model.AdminAffectationsModel;
 import model.data.DPS;
 import model.data.Secouriste;
-import view.AdminAffectationsView;
 import view.AdminDashboardView;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class AdminAffectationsController {
     
-    private Button createButton;
+    private Button greedyButton;
+    private Button exhaustiveButton;
     private TableView<AdminAffectationsModel.Affectation> tableView;
     private Label nomUtilisateurLabel;
     private Label homeIcon;
@@ -26,7 +30,8 @@ public class AdminAffectationsController {
     private TableColumn<AdminAffectationsModel.Affectation, String> colSecouristes;
     
     public AdminAffectationsController(
-            Button createButton,
+            Button greedyButton,
+            Button exhaustiveButton,
             TableView<AdminAffectationsModel.Affectation> tableView,
             TableColumn<AdminAffectationsModel.Affectation, String> colDate,
             TableColumn<AdminAffectationsModel.Affectation, String> colSitesOlympiques,
@@ -34,7 +39,8 @@ public class AdminAffectationsController {
             Label nomUtilisateurLabel,
             Label homeIcon,
             String nomUtilisateur) {
-        this.createButton = createButton;
+        this.greedyButton = greedyButton;
+        this.exhaustiveButton = exhaustiveButton;
         this.tableView = tableView;
         this.colDate = colDate;
         this.colSitesOlympiques = colSitesOlympiques;
@@ -54,7 +60,8 @@ public class AdminAffectationsController {
     
     private void setupListeners() {
         homeIcon.setOnMouseClicked(event -> handleRetour());
-        createButton.setOnAction(this::handleCreate);
+        greedyButton.setOnAction(e -> handleGenerate(true));
+        exhaustiveButton.setOnAction(e -> handleGenerate(false));
     }
     
     private void handleRetour() {
@@ -70,18 +77,80 @@ public class AdminAffectationsController {
         }
     }
     
-    private void handleCreate(ActionEvent event) {
-        AdminAffectationsView view = new AdminAffectationsView(model.getNomUtilisateur());
-        view.showCreateAffectationDialog(this);
+    private void handleGenerate(boolean useGreedy) {
+        generateAffectations(useGreedy);
     }
     
-    public void createAffectation(DPS dps, LocalDate date, ObservableList<Secouriste> secouristes) {
-        model.createAffectation(dps, date, secouristes);
+    public void generateAffectations(boolean useGreedy) {
+        ObservableList<DPS> allDPS = model.getAllDPS();
+        if (allDPS.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Aucun DPS");
+            alert.setHeaderText("Impossible de générer les affectations");
+            alert.setContentText("Aucun dispositif (DPS) n'est disponible dans la base de données.");
+            alert.showAndWait();
+            return;
+        }
+        
+        // Get all secouristes
+        ObservableList<Secouriste> allSecouristes = FXCollections.observableArrayList(model.getSecouristeDAO().findAll());
+        if (allSecouristes.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Aucun secouriste");
+            alert.setHeaderText("Impossible de générer les affectations");
+            alert.setContentText("Aucun secouriste n'est disponible dans la base de données.");
+            alert.showAndWait();
+            return;
+        }
+        
+        // Call the appropriate algorithm
+        Map<DPS, List<Secouriste>> assignments;
+        if (useGreedy) {
+            assignments = model.getGraphe().affectationGloutonne(allSecouristes, allDPS);
+        } else {
+            assignments = model.getGraphe().affectationExhaustive(allSecouristes, allDPS);
+        }
+        
+        if (assignments.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Échec des affectations");
+            alert.setHeaderText("Aucune affectation générée");
+            alert.setContentText("L'algorithme n'a pas pu générer d'affectations valides.");
+            alert.showAndWait();
+            return;
+        }
+        
+        // Process each DPS and save affectations
+        int totalAffectations = 0;
+        for (Map.Entry<DPS, List<Secouriste>> entry : assignments.entrySet()) {
+            DPS dps = entry.getKey();
+            List<Secouriste> secouristes = entry.getValue();
+            
+            if (secouristes != null && !secouristes.isEmpty()) {
+                // Convert Journee to LocalDate
+                LocalDate date = LocalDate.of(
+                    dps.getJournee().getAnnee(),
+                    dps.getJournee().getMois(),
+                    dps.getJournee().getJour()
+                );
+                
+                // Filter secouristes by availability
+                List<Secouriste> availableSecouristes = secouristes.stream()
+                    .filter(s -> model.isSecouristeAvailable(s, date))
+                    .collect(Collectors.toList());
+                
+                if (!availableSecouristes.isEmpty()) {
+                    // Save to database and update model
+                    model.createAffectation(dps, date, FXCollections.observableArrayList(availableSecouristes));
+                    totalAffectations += availableSecouristes.size();
+                }
+            }
+        }
         
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Succès");
-        alert.setHeaderText("Affectation créée");
-        alert.setContentText("L'affectation a été créée avec succès.");
+        alert.setHeaderText("Affectations générées");
+        alert.setContentText(totalAffectations + " affectations ont été générées et enregistrées avec succès.");
         alert.showAndWait();
     }
     
