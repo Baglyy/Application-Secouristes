@@ -143,7 +143,7 @@ public class AdminDashboardView {
         secouristesContent.setAlignment(Pos.CENTER);
         secouristesContent.setSpacing(8);
         
-        Label secouristesIcon = new Label("👨‍⚕️");
+        Label secouristesIcon = new Label("👤");
         secouristesIcon.getStyleClass().add("button-icon");
         
         Label secouristesText = new Label("Secouristes");
