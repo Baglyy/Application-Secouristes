@@ -7,7 +7,6 @@ import java.sql.Time;
 
 public class DPS {
 
-    private static long compteur = 0;
     private long id;
     private Time horaireDep;
     private Time horaireFin;
@@ -79,6 +78,10 @@ public class DPS {
     // Getters et Setters
     public long getId() {
         return id;
+    }
+
+    public void setId(long id){
+        this.id = id;
     }
 
     public Time getHoraireDep() {
