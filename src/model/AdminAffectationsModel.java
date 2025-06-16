@@ -40,7 +40,11 @@ public class AdminAffectationsModel {
 
     public boolean nettoyerAffectations() {
         int result = affectationDAO.deleteAllAffectations();
-        return result >= 0; 
+        if (result >= 0) {
+            affectations.clear(); // Clear the ObservableList to update the table view
+            return true;
+        }
+        return false;
     }
     
     public void createAffectation(DPS dps, LocalDate date, ObservableList<Secouriste> secouristes) {
