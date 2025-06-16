@@ -37,6 +37,11 @@ public class AdminAffectationsModel {
         List<Affectation> dbAffectations = affectationDAO.findAllAffectations();
         affectations.addAll(dbAffectations);
     }
+
+    public boolean nettoyerAffectations() {
+        int result = affectationDAO.deleteAllAffectations();
+        return result >= 0; 
+    }
     
     public void createAffectation(DPS dps, LocalDate date, ObservableList<Secouriste> secouristes) {
         String dateStr = date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
