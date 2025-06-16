@@ -126,24 +126,36 @@
     -fx-font-size: 14px;
 }
 
-.notification-icon {
+.return-icon {
     -fx-background-color: white;
-    -fx-background-radius: 15px;
+    -fx-background-image: url("../asset/return.png");
+    -fx-background-size: 26px 26px;
+    -fx-background-radius: 7px;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center center;
     -fx-padding: 5px;
     -fx-font-size: 12px;
     -fx-cursor: hand;
+    -fx-min-width: 32px;  /* 🔧 taille du bouton */
+    -fx-min-height: 32px;
+    -fx-pref-width: 32px;
+    -fx-pref-height: 32px;
 }
 
-.notification-badge {
-    -fx-background-color: #ff4444;
-    -fx-background-radius: 8px;
-    -fx-text-fill: white;
-    -fx-font-size: 10px;
-    -fx-font-weight: bold;
-    -fx-padding: 2px 4px 2px 4px;
-    -fx-min-width: 16px;
-    -fx-min-height: 16px;
-    -fx-alignment: center;
+.leave-icon {
+    -fx-background-color: white;
+    -fx-background-image: url("../asset/leave.png");
+    -fx-background-size: 26px 26px;
+    -fx-background-radius: 7px;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center center;
+    -fx-padding: 5px;
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+    -fx-min-width: 32px;  /* 🔧 taille du bouton */
+    -fx-min-height: 32px;
+    -fx-pref-width: 32px;
+    -fx-pref-height: 32px;
 }
 
 .profile-icon {
