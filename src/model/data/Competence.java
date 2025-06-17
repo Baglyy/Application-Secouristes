@@ -2,6 +2,7 @@ package model.data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Représente une compétence pouvant être associée à des secouristes et à des besoins de missions.
@@ -29,6 +30,7 @@ public class Competence {
         if (intitule == null || intitule.isEmpty())
             throw new IllegalArgumentException("Erreur : l'intitulé de la compétence doit être renseigné.");
         this.intitule = intitule;
+        this.prerequis = new ArrayList<>();
     }
 
         public List<Competence> getPrerequis() {
