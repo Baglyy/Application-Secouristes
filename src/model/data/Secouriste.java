@@ -42,7 +42,6 @@ public class Secouriste{
         this.tel = tel;
         this.adresse = adresse;
         this.competences = new ArrayList<>(); 
-        this.dpsAffectes = new ArrayList<>();
     }
 
     public int calculerAge(){
