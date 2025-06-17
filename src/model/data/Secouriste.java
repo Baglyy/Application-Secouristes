@@ -16,8 +16,6 @@ public class Secouriste{
     private String tel;
     private String adresse;
     private List<Competence> competences;
-    private List<DPS> dpsAffectes;
-
 
     public Secouriste(long id, String nom, String prenom, String dateDeNaissance, String email, String tel, String adresse){
         if (id <= 0) {
@@ -139,14 +137,6 @@ public class Secouriste{
 
     public void setCompetences(List<Competence> competences) {
         this.competences = competences;
-    }
-
-    public List<DPS> getDpsAffectes() {
-        return this.dpsAffectes;
-    }
-
-    public void setDpsAffectes(List<DPS> dpsAffectes) {
-        this.dpsAffectes = dpsAffectes;
     }
 
     @Override
