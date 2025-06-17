@@ -9,14 +9,12 @@ public class AdminDashboardModel {
     private final StringProperty sectionActive = new SimpleStringProperty("dispositifs");
     
     public AdminDashboardModel() {
-        // Constructeur par défaut
     }
     
     public AdminDashboardModel(String nomUtilisateur) {
         this.nomUtilisateur.set(nomUtilisateur);
     }
     
-    // Getters pour les propriétés
     public StringProperty nomUtilisateurProperty() {
         return nomUtilisateur;
     }
@@ -25,7 +23,6 @@ public class AdminDashboardModel {
         return sectionActive;
     }
     
-    // Getters pour les valeurs
     public String getNomUtilisateur() {
         return nomUtilisateur.get();
     }
@@ -34,7 +31,6 @@ public class AdminDashboardModel {
         return sectionActive.get();
     }
     
-    // Setters
     public void setNomUtilisateur(String nomUtilisateur) {
         this.nomUtilisateur.set(nomUtilisateur);
     }
@@ -43,7 +39,6 @@ public class AdminDashboardModel {
         this.sectionActive.set(sectionActive);
     }
     
-    // Méthodes pour gérer les sections admin
     public boolean isDispositifsActive() {
         return "dispositifs".equals(getSectionActive());
     }
@@ -56,6 +51,10 @@ public class AdminDashboardModel {
         return "secouristes".equals(getSectionActive());
     }
     
+    public boolean isCompetencesActive() {
+        return "competences".equals(getSectionActive());
+    }
+    
     public void activerDispositifs() {
         setSectionActive("dispositifs");
     }
@@ -66,5 +65,9 @@ public class AdminDashboardModel {
     
     public void activerSecouristes() {
         setSectionActive("secouristes");
+    }
+    
+    public void activerCompetences() {
+        setSectionActive("competences");
     }
 }
