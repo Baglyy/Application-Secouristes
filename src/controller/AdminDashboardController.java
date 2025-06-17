@@ -10,9 +10,9 @@ import view.AdminDashboardView;
 import view.AdminSecouristesView;
 import view.AdminAffectationsView;
 import view.AdminDispositifsView;
+import view.AdminCompetencesView; // Ajout de l'import
 import view.LoginView;
 import java.sql.SQLException;
-
 import model.ExportCSV;
 
 public class AdminDashboardController {
@@ -20,16 +20,19 @@ public class AdminDashboardController {
     private Button dispositifsButton;
     private Button affectationsSecouristesButton;
     private Button secouristesButton;
+    private Button competencesButton; // Nouveau bouton
     private Button deconnexionButton;
     private Label nomUtilisateurLabel;
     private Button exportCsvButton;
     private AdminDashboardModel model;
     
     public AdminDashboardController(Button dispositifsButton, Button affectationsSecouristesButton, 
-                                   Button secouristesButton, Button deconnexionButton, Label nomUtilisateurLabel, Button exportCsvButton) {
+                                   Button secouristesButton, Button competencesButton, 
+                                   Button deconnexionButton, Label nomUtilisateurLabel, Button exportCsvButton) {
         this.dispositifsButton = dispositifsButton;
         this.affectationsSecouristesButton = affectationsSecouristesButton;
         this.secouristesButton = secouristesButton;
+        this.competencesButton = competencesButton;
         this.deconnexionButton = deconnexionButton;
         this.nomUtilisateurLabel = nomUtilisateurLabel;
         this.exportCsvButton = exportCsvButton;
@@ -41,27 +44,26 @@ public class AdminDashboardController {
     }
     
     public AdminDashboardController(Button dispositifsButton, Button affectationsSecouristesButton, 
-                                   Button secouristesButton, Button deconnexionButton, Label nomUtilisateurLabel, Button exportCsvButton,
+                                   Button secouristesButton, Button competencesButton, 
+                                   Button deconnexionButton, Label nomUtilisateurLabel, Button exportCsvButton,
                                    String nomUtilisateur) {
-        this(dispositifsButton, affectationsSecouristesButton, secouristesButton, deconnexionButton, nomUtilisateurLabel, exportCsvButton);
+        this(dispositifsButton, affectationsSecouristesButton, secouristesButton, competencesButton, 
+             deconnexionButton, nomUtilisateurLabel, exportCsvButton);
         model.setNomUtilisateur(nomUtilisateur);
     }
     
     private void setupBindings() {
-        // Liaison du nom d'utilisateur avec le label
         nomUtilisateurLabel.textProperty().bind(model.nomUtilisateurProperty());
-        
-        // Écouter les changements de section pour mettre à jour les styles
         model.sectionActiveProperty().addListener((obs, oldSection, newSection) -> {
             updateButtonStyles();
         });
     }
     
     private void setupListeners() {
-        // Listeners pour les boutons
         dispositifsButton.setOnAction(this::handleDispositifs);
         affectationsSecouristesButton.setOnAction(this::handleAffectationsSecouristes);
         secouristesButton.setOnAction(this::handleSecouristes);
+        competencesButton.setOnAction(this::handleCompetences); // Nouveau listener
         deconnexionButton.setOnAction(this::handleDeconnexion);
         exportCsvButton.setOnAction(this::handleExportBDD);
     }
@@ -70,21 +72,13 @@ public class AdminDashboardController {
         System.out.println("Navigation vers Dispositifs de secours");
         model.activerDispositifs();
         
-        // Récupérer la fenêtre actuelle
         Stage currentStage = (Stage) dispositifsButton.getScene().getWindow();
-        
-        // Créer la nouvelle vue
         AdminDispositifsView adminDispositifsView = new AdminDispositifsView(model.getNomUtilisateur());
-        
-        // Configurer le retour vers le dashboard
         adminDispositifsView.getController().setOnRetourCallback(() -> {
-            // Recréer la vue du dashboard
             AdminDashboardView dashboardView = new AdminDashboardView(model.getNomUtilisateur());
             Scene dashboardScene = new Scene(dashboardView.getRoot(), 1024, 600);
             currentStage.setScene(dashboardScene);
         });
-        
-        // Changer la scène
         Scene dispositifsScene = new Scene(adminDispositifsView.getRoot(), 1024, 600);
         currentStage.setScene(dispositifsScene);
     }
@@ -93,21 +87,13 @@ public class AdminDashboardController {
         System.out.println("Navigation vers Affectations secouristes");
         model.activerAffectationsSecouristes();
         
-        // Récupérer la fenêtre actuelle
         Stage currentStage = (Stage) affectationsSecouristesButton.getScene().getWindow();
-        
-        // Créer la nouvelle vue
         AdminAffectationsView adminAffectationsView = new AdminAffectationsView(model.getNomUtilisateur());
-        
-        // Configurer le retour vers le dashboard
         adminAffectationsView.getController().setOnRetourCallback(() -> {
-            // Recréer la vue du dashboard
             AdminDashboardView dashboardView = new AdminDashboardView(model.getNomUtilisateur());
             Scene dashboardScene = new Scene(dashboardView.getRoot(), 1024, 600);
             currentStage.setScene(dashboardScene);
         });
-        
-        // Changer la scène
         Scene affectationsScene = new Scene(adminAffectationsView.getRoot(), 1024, 600);
         currentStage.setScene(affectationsScene);
     }
@@ -116,70 +102,68 @@ public class AdminDashboardController {
         System.out.println("Navigation vers Secouristes");
         model.activerSecouristes();
         
-        // Récupérer la fenêtre actuelle
         Stage currentStage = (Stage) secouristesButton.getScene().getWindow();
-        
-        // Créer la nouvelle vue
         AdminSecouristesView adminSecouristesView = new AdminSecouristesView(model.getNomUtilisateur());
-        
-        // Configurer le retour vers le dashboard
         adminSecouristesView.getController().setOnRetourCallback(() -> {
-            // Recréer la vue du dashboard
             AdminDashboardView dashboardView = new AdminDashboardView(model.getNomUtilisateur());
             Scene dashboardScene = new Scene(dashboardView.getRoot(), 1024, 600);
             currentStage.setScene(dashboardScene);
         });
-        
-        // Changer la scène
         Scene secouristesScene = new Scene(adminSecouristesView.getRoot(), 1024, 600);
         currentStage.setScene(secouristesScene);
+    }
+    
+    private void handleCompetences(ActionEvent event) {
+        System.out.println("Navigation vers Compétences");
+        model.setSectionActive("competences");
+        
+        Stage currentStage = (Stage) competencesButton.getScene().getWindow();
+        AdminCompetencesView adminCompetencesView = new AdminCompetencesView(model.getNomUtilisateur());
+        adminCompetencesView.getController().setOnRetourCallback(() -> {
+            AdminDashboardView dashboardView = new AdminDashboardView(model.getNomUtilisateur());
+            Scene dashboardScene = new Scene(dashboardView.getRoot(), 1024, 600);
+            currentStage.setScene(dashboardScene);
+        });
+        Scene competencesScene = new Scene(adminCompetencesView.getRoot(), 1024, 600);
+        currentStage.setScene(competencesScene);
     }
     
     private void handleDeconnexion(ActionEvent event) {
         System.out.println("Déconnexion de l'utilisateur");
         
-        // Récupérer la fenêtre actuelle
         Stage currentStage = (Stage) deconnexionButton.getScene().getWindow();
-        
-        // Créer la vue de connexion
         LoginView loginView = new LoginView(currentStage);
-        
-        // Créer une nouvelle scène avec la vue de connexion
         Scene loginScene = new Scene(loginView.getRoot(), 1024, 600);
         
-        // Essayer d'appliquer le CSS pour le login
         try {
             loginScene.getStylesheets().add(getClass().getResource("../style.css").toExternalForm());
         } catch (Exception cssException) {
             System.out.println("Attention: Fichier CSS style.css non trouvé, styles par défaut appliqués");
         }
         
-        // Changer la scène
         currentStage.setScene(loginScene);
         currentStage.setTitle("SecuOptix - Connexion");
-        
         System.out.println("Retour à la page de connexion réussi !");
     }
-
+    
     private void handleExportBDD(ActionEvent event) {
         try {
-            ExportCSV.exporterTouteLaBase(); // Appel de la méthode statique
+            ExportCSV.exporterTouteLaBase();
             System.out.println("Exportation réalisée avec succès.");
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         } catch (Exception e) {
-                System.out.println(e.getMessage());
+            System.out.println(e.getMessage());
         }
     }
     
     private void updateButtonStyles() {
-        // Réinitialiser tous les boutons
         dispositifsButton.getStyleClass().removeAll("active-button");
         affectationsSecouristesButton.getStyleClass().removeAll("active-button");
         secouristesButton.getStyleClass().removeAll("active-button");
+        competencesButton.getStyleClass().removeAll("active-button");
         exportCsvButton.getStyleClass().removeAll("active-button");
-
-        // Ajouter la classe active au bouton sélectionné
+        
         switch (model.getSectionActive()) {
             case "dispositifs":
                 if (!dispositifsButton.getStyleClass().contains("active-button")) {
@@ -196,6 +180,11 @@ public class AdminDashboardController {
                     secouristesButton.getStyleClass().add("active-button");
                 }
                 break;
+            case "competences":
+                if (!competencesButton.getStyleClass().contains("active-button")) {
+                    competencesButton.getStyleClass().add("active-button");
+                }
+                break;
             case "export":
                 if (!exportCsvButton.getStyleClass().contains("active-button")) {
                     exportCsvButton.getStyleClass().add("active-button");
@@ -204,7 +193,6 @@ public class AdminDashboardController {
         }
     }
     
-    // Méthodes publiques pour interaction externe
     public void setNomUtilisateur(String nomUtilisateur) {
         model.setNomUtilisateur(nomUtilisateur);
     }
