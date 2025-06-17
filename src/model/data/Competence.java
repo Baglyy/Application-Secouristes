@@ -17,6 +17,8 @@ public class Competence {
     /** Liste des besoins liés à cette compétence */
     private List<Besoin> besoins;
 
+    private List<Competence> prerequis;
+
     /**
      * Construit une compétence avec un intitulé donné.
      *
@@ -27,6 +29,23 @@ public class Competence {
         if (intitule == null || intitule.isEmpty())
             throw new IllegalArgumentException("Erreur : l'intitulé de la compétence doit être renseigné.");
         this.intitule = intitule;
+    }
+
+        public List<Competence> getPrerequis() {
+        if (this.prerequis == null) { 
+            this.prerequis = new ArrayList<>();
+        }
+        return this.prerequis;
+    }
+
+    public void setPrerequis(List<Competence> prerequis) {
+        this.prerequis = (prerequis != null) ? new ArrayList<>(prerequis) : new ArrayList<>();
+    }
+
+    public void ajouterPrerequis(Competence competencePrerequise) {
+        if (competencePrerequise != null && !this.prerequis.contains(competencePrerequise)) {
+            this.prerequis.add(competencePrerequise);
+        }
     }
 
     /**
@@ -95,5 +114,18 @@ public class Competence {
     @Override
     public String toString() {
         return "Compétence : " + intitule;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Competence that = (Competence) o;
+        return Objects.equals(intitule, that.intitule);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(intitule);
     }
 }
