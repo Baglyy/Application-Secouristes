@@ -17,6 +17,7 @@ public class AdminDashboardView {
     private Button dispositifsButton;
     private Button affectationsSecouristesButton;
     private Button secouristesButton;
+    private Button competencesButton; // Nouveau bouton
     private Button deconnexionButton;
     private Label nomUtilisateurLabel;
     private Button exportCsv;
@@ -62,9 +63,7 @@ public class AdminDashboardView {
         nomUtilisateurLabel = new Label("NOM PRÉNOM DE L'UTILISATEUR");
         nomUtilisateurLabel.getStyleClass().add("user-name");
         
-        
-        
-        // Bouton de déconnexion (remplace l'icône de profil)
+        // Bouton de déconnexion
         deconnexionButton = new Button(".");
         deconnexionButton.getStyleClass().add("leave-icon");
         
@@ -129,9 +128,10 @@ public class AdminDashboardView {
         
         firstRow.getChildren().addAll(dispositifsButton, affectationsSecouristesButton);
         
-        // Deuxième ligne (Secouristes - centré)
+        // Deuxième ligne (Secouristes et Compétences)
         HBox secondRow = new HBox();
         secondRow.setAlignment(Pos.CENTER);
+        secondRow.setSpacing(60);
         
         // Bouton Secouristes
         secouristesButton = new Button();
@@ -152,19 +152,38 @@ public class AdminDashboardView {
         secouristesContent.getChildren().addAll(secouristesIcon, secouristesText);
         secouristesButton.setGraphic(secouristesContent);
         
-        secondRow.getChildren().add(secouristesButton);
+        // Bouton Compétences
+        competencesButton = new Button();
+        competencesButton.setPrefSize(280, 100);
+        competencesButton.getStyleClass().add("dashboard-button");
+        
+        // Container pour le contenu du bouton Compétences
+        VBox competencesContent = new VBox();
+        competencesContent.setAlignment(Pos.CENTER);
+        competencesContent.setSpacing(8);
+        
+        Label competencesIcon = new Label("📜");
+        competencesIcon.getStyleClass().add("button-icon");
+        
+        Label competencesText = new Label("Compétences");
+        competencesText.getStyleClass().add("button-text");
+        
+        competencesContent.getChildren().addAll(competencesIcon, competencesText);
+        competencesButton.setGraphic(competencesContent);
+        
+        secondRow.getChildren().addAll(secouristesButton, competencesButton);
         
         // Exportation BDD
         VBox exportSection = new VBox(10);
         exportSection.setAlignment(Pos.CENTER);
-        exportSection.setPadding(new Insets(25, 0, 0, 0)); // Un peu de marge au-dessus
-
+        exportSection.setPadding(new Insets(25, 0, 0, 0));
+        
         this.exportCsv = new Button("Exporter les données (csv)");
-        exportCsv.getStyleClass().addAll("dashboard-button", "active-button"); // Ou un style différent
-        exportCsv.setPrefWidth(350); // Ajustez la largeur si besoin
-
+        exportCsv.getStyleClass().addAll("dashboard-button", "active-button");
+        exportCsv.setPrefWidth(350);
+        
         exportSection.getChildren().add(exportCsv);
-
+        
         // Ajout des lignes au contenu principal
         mainContent.getChildren().addAll(firstRow, secondRow, exportSection);
         
@@ -182,8 +201,16 @@ public class AdminDashboardView {
     }
     
     private void setupController(String nomUtilisateur) {
-        controller = new AdminDashboardController(dispositifsButton, affectationsSecouristesButton, 
-                                                 secouristesButton, deconnexionButton, nomUtilisateurLabel, exportCsv, nomUtilisateur);
+        controller = new AdminDashboardController(
+            dispositifsButton, 
+            affectationsSecouristesButton, 
+            secouristesButton, 
+            competencesButton, // Ajout du nouveau bouton
+            deconnexionButton, 
+            nomUtilisateurLabel, 
+            exportCsv, 
+            nomUtilisateur
+        );
     }
     
     private void loadStylesheet() {
