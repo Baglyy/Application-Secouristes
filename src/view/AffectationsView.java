@@ -97,7 +97,8 @@ public class AffectationsView {
         siteHeader.getStyleClass().add("tableau-header-cell");
         siteHeader.setPrefWidth(300);
         
-        Label secouristesHeader = new Label("Secouristes");
+        // MODIFICATION: Changement de l'en-tête
+        Label secouristesHeader = new Label("Nombre de secouristes affectés");
         secouristesHeader.getStyleClass().add("tableau-header-cell");
         secouristesHeader.setPrefWidth(324);
         
