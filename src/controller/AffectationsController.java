@@ -21,10 +21,12 @@ public class AffectationsController {
     private Runnable onRetourCallback;
     
     public AffectationsController(Label nomUtilisateurLabel, Button retourButton, 
-                                VBox affectationsContainer, String nomUtilisateur) {
+                                VBox affectationsContainer, String nomUtilisateur, 
+                                Button homeButton) {
         this.nomUtilisateurLabel = nomUtilisateurLabel;
         this.retourButton = retourButton;
         this.affectationsContainer = affectationsContainer;
+        this.homeButton = homeButton;
         this.model = new AffectationsModel(nomUtilisateur);
         
         setupBindings();
@@ -32,39 +34,23 @@ public class AffectationsController {
         populateAffectations();
     }
     
-    public AffectationsController(Label nomUtilisateurLabel, Button retourButton, 
-                                VBox affectationsContainer, String nomUtilisateur, 
-                                Button homeButton) {
-        this(nomUtilisateurLabel, retourButton, affectationsContainer, nomUtilisateur);
-        this.homeButton = homeButton;
-        setupHomeButtonListener();
-    }
-    
     private void setupBindings() {
-        // Liaison du nom d'utilisateur avec le label
         if (nomUtilisateurLabel != null) {
             nomUtilisateurLabel.textProperty().bind(model.nomUtilisateurProperty());
         }
     }
     
     private void setupListeners() {
-        // Listener pour le bouton retour (si il existe)
         if (retourButton != null) {
             retourButton.setOnAction(this::handleRetour);
         }
-    }
-    
-    private void setupHomeButtonListener() {
         if (homeButton != null) {
             homeButton.setOnAction(this::handleHome);
         }
     }
     
     private void populateAffectations() {
-        // Vider le container
         affectationsContainer.getChildren().clear();
-        
-        // Ajouter chaque affectation
         for (AffectationsModel.Affectation affectation : model.getAffectations()) {
             HBox affectationRow = createAffectationRow(affectation);
             affectationsContainer.getChildren().add(affectationRow);
@@ -77,22 +63,19 @@ public class AffectationsController {
         row.setAlignment(Pos.CENTER_LEFT);
         row.setPrefHeight(50);
         
-        // Cellule Date
         Label dateCell = new Label(affectation.getDate());
         dateCell.getStyleClass().add("tableau-cell");
         dateCell.setPrefWidth(200);
         
-        // Cellule Site Olympique
         Label siteCell = new Label(affectation.getSiteOlympique());
         siteCell.getStyleClass().add("tableau-cell");
         siteCell.setPrefWidth(300);
         
-        // Cellule Type de Dispositif
-        Label typeCell = new Label(affectation.getTypeDispositif());
-        typeCell.getStyleClass().add("tableau-cell");
-        typeCell.setPrefWidth(324);
+        Label secouristesCell = new Label(affectation.getSecouristes());
+        secouristesCell.getStyleClass().add("tableau-cell");
+        secouristesCell.setPrefWidth(324);
         
-        row.getChildren().addAll(dateCell, siteCell, typeCell);
+        row.getChildren().addAll(dateCell, siteCell, secouristesCell);
         
         return row;
     }
@@ -113,12 +96,10 @@ public class AffectationsController {
     
     private void navigateToDashboard() {
         try {
-            // Récupérer la fenêtre actuelle
             Stage currentStage = (Stage) (homeButton != null ? homeButton.getScene().getWindow() : 
                                          (retourButton != null ? retourButton.getScene().getWindow() : null));
             
             if (currentStage != null) {
-                // Créer la nouvelle vue du dashboard
                 DashboardView dashboardView = new DashboardView(model.getNomUtilisateur());
                 Scene dashboardScene = new Scene(dashboardView.getRoot(), 1024, 600);
                 currentStage.setScene(dashboardScene);
@@ -129,7 +110,6 @@ public class AffectationsController {
         }
     }
     
-    // Méthodes publiques pour interaction externe
     public void setNomUtilisateur(String nomUtilisateur) {
         model.setNomUtilisateur(nomUtilisateur);
     }
