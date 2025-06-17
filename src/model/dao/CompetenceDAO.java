@@ -10,16 +10,22 @@ public class CompetenceDAO extends DAO<Competence> {
     @Override
     public int create(Competence competence) {
         String query = "INSERT INTO Competence(INTITULE) VALUES (?)";
+        int competenceResult = 0;
         try (Connection con = getConnection(); 
             PreparedStatement pst = con.prepareStatement(query)) {
 
             pst.setString(1, competence.getIntitule());
-            return pst.executeUpdate();
+            competenceResult = pst.executeUpdate();
+
+            if (competenceResult > 0 && competence.getPrerequis() != null && !competence.getPrerequis().isEmpty()) {
+                createPrerequis(competence);
+            }
 
         } catch (SQLException ex) {
             ex.printStackTrace();
             return -1;
         }
+        return competenceResult;
     }
 
     @Override
@@ -89,16 +95,27 @@ public class CompetenceDAO extends DAO<Competence> {
 
     public int createPrerequis(Competence competence) {
         String query = "INSERT INTO Necessite(COMPETENCE, COMPETENCEREQUISE) VALUES (?, ?)";
+        int totalLignesAffectees = 0;
         try (Connection con = getConnection(); 
             PreparedStatement pst = con.prepareStatement(query)) {
 
-            pst.setString(1, competence.getIntitule());
-            pst.setString(2, competence.getPrerequis());
-            return pst.executeUpdate();
+            for (Competence prerequis : competence.getPrerequis()) {
+                if (prerequis != null && prerequis.getIntitule() != null) {
+                    pst.setString(1, competence.getIntitule()); // La compétence qui a ce prérequis
+                    pst.setString(2, prerequis.getIntitule());  // La compétence qui EST le prérequis
+
+                    // Exécuter l'insertion pour CE prérequis
+                    int lignesPourCePrerequis = pst.executeUpdate();
+                    if (lignesPourCePrerequis > 0) {
+                        totalLignesAffectees += lignesPourCePrerequis;
+                    }
+                }
+            }
 
         } catch (SQLException ex) {
             ex.printStackTrace();
             return -1;
         }
+        return totalLignesAffectees;
     }
 }
