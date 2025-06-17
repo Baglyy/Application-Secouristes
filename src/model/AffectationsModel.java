@@ -7,7 +7,6 @@ import javafx.collections.ObservableList;
 import model.dao.AffectationDAO;
 import model.dao.SecouristeDAO;
 import model.data.Secouriste;
-import model.AdminAffectationsModel;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
