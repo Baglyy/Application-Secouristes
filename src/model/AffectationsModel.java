@@ -4,30 +4,75 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import model.dao.AffectationDAO;
+import model.dao.SecouristeDAO;
+import model.data.Secouriste;
+import model.AdminAffectationsModel;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 public class AffectationsModel {
     
     private final StringProperty nomUtilisateur = new SimpleStringProperty("");
     private final ObservableList<Affectation> affectations = FXCollections.observableArrayList();
-    
-    public AffectationsModel() {
-        initializeAffectations();
-    }
+    private final AffectationDAO affectationDAO = new AffectationDAO();
+    private final SecouristeDAO secouristeDAO = new SecouristeDAO();
+    private long idSecouriste = -1;
     
     public AffectationsModel(String nomUtilisateur) {
         this.nomUtilisateur.set(nomUtilisateur);
+        initializeSecouristeId();
         initializeAffectations();
     }
     
-    private void initializeAffectations() {
-        // Initialisation avec les données de l'image
-        affectations.add(new Affectation("06/02/2030", "Stade de Ski Alpin", "Poste de Secours Avancé"));
-        affectations.add(new Affectation("10/02/2030", "Piste de Bobsleigh", "Équipe Médicale Urgence"));
-        affectations.add(new Affectation("15/02/2030", "Village Olympique", "Poste Coordination Médicale"));
-        affectations.add(new Affectation("20/02/2030", "Site Saut à Ski", "Équipe Réanimation"));
+    private void initializeSecouristeId() {
+        Secouriste secouriste = secouristeDAO.findByNom(nomUtilisateur.get());
+        if (secouriste != null) {
+            this.idSecouriste = secouriste.getId();
+        } else {
+            System.err.println("Secouriste not found for nomUtilisateur: " + nomUtilisateur.get());
+        }
     }
     
-    // Getters pour les propriétés
+    private void initializeAffectations() {
+        if (idSecouriste == -1) {
+            return;
+        }
+        affectations.clear();
+        
+        // Fetch affectations for a reasonable range (e.g., 2024–2030)
+        List<AdminAffectationsModel.Affectation> allAffectations = new ArrayList<>();
+        for (int year = 2024; year <= 2030; year++) {
+            for (int month = 1; month <= 12; month++) {
+                List<AdminAffectationsModel.Affectation> monthAffectations = 
+                    affectationDAO.findAffectationsForSecoursiteAndMonth(idSecouriste, month, year);
+                allAffectations.addAll(monthAffectations);
+            }
+        }
+        
+        // Sort by date (earliest first)
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        allAffectations.sort((a1, a2) -> {
+            try {
+                LocalDate date1 = LocalDate.parse(a1.getDate(), formatter);
+                LocalDate date2 = LocalDate.parse(a2.getDate(), formatter);
+                return date1.compareTo(date2);
+            } catch (Exception e) {
+                return 0; // Fallback if parsing fails
+            }
+        });
+        
+        // Map to model.Affectation
+        for (AdminAffectationsModel.Affectation dbAffectation : allAffectations) {
+            affectations.add(new Affectation(
+                dbAffectation.getDate(),
+                dbAffectation.getSitesOlympiques(),
+                dbAffectation.getSecouristes()
+            ));
+        }
+    }
+    
     public StringProperty nomUtilisateurProperty() {
         return nomUtilisateur;
     }
@@ -36,39 +81,29 @@ public class AffectationsModel {
         return affectations;
     }
     
-    // Getters pour les valeurs
     public String getNomUtilisateur() {
         return nomUtilisateur.get();
     }
     
-    // Setters
     public void setNomUtilisateur(String nomUtilisateur) {
         this.nomUtilisateur.set(nomUtilisateur);
+        initializeSecouristeId();
+        initializeAffectations();
     }
     
-    // Méthodes pour gérer les affectations
-    public void ajouterAffectation(Affectation affectation) {
-        affectations.add(affectation);
-    }
-    
-    public void supprimerAffectation(Affectation affectation) {
-        affectations.remove(affectation);
-    }
-    
-    // Classe interne pour représenter une affectation
     public static class Affectation {
         private final String date;
         private final String siteOlympique;
-        private final String typeDispositif;
+        private final String secouristes;
         
-        public Affectation(String date, String siteOlympique, String typeDispositif) {
+        public Affectation(String date, String siteOlympique, String secouristes) {
             this.date = date;
             this.siteOlympique = siteOlympique;
-            this.typeDispositif = typeDispositif;
+            this.secouristes = secouristes;
         }
         
         public String getDate() { return date; }
         public String getSiteOlympique() { return siteOlympique; }
-        public String getTypeDispositif() { return typeDispositif; }
+        public String getSecouristes() { return secouristes; }
     }
 }
