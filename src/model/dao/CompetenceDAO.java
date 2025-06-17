@@ -86,4 +86,19 @@ public class CompetenceDAO extends DAO<Competence> {
 
         return null;
     }
+
+    public int createPrerequis(Competence competence) {
+        String query = "INSERT INTO Necessite(COMPETENCE, COMPETENCEREQUISE) VALUES (?, ?)";
+        try (Connection con = getConnection(); 
+            PreparedStatement pst = con.prepareStatement(query)) {
+
+            pst.setString(1, competence.getIntitule());
+            pst.setString(2, competence.getPrerequis());
+            return pst.executeUpdate();
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return -1;
+        }
+    }
 }
