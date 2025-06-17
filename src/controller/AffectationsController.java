@@ -71,7 +71,17 @@ public class AffectationsController {
         siteCell.getStyleClass().add("tableau-cell");
         siteCell.setPrefWidth(300);
         
-        Label secouristesCell = new Label(affectation.getSecouristes());
+        // MODIFICATION: Calcul du nombre de secouristes + 1 (pour inclure l'utilisateur actuel)
+        String secouristesStr = affectation.getSecouristes();
+        int nombreSecouristes = 1; // L'utilisateur actuel est toujours compté
+        
+        if (secouristesStr != null && !secouristesStr.trim().isEmpty()) {
+            // Compter le nombre de lignes (retours à la ligne) pour avoir le nombre de secouristes
+            String[] lignes = secouristesStr.split("\n");
+            nombreSecouristes = lignes.length + 1; // +1 pour inclure l'utilisateur actuel
+        }
+        
+        Label secouristesCell = new Label(String.valueOf(nombreSecouristes));
         secouristesCell.getStyleClass().add("tableau-cell");
         secouristesCell.setPrefWidth(324);
         
