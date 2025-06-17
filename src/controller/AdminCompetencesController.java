@@ -82,11 +82,12 @@ public class AdminCompetencesController {
         intituleField.setPromptText("Intitulé de la compétence");
         
         // Liste des prérequis
-        Label prerequisLabel = new Label("Prérequis:");
+        Label prerequisLabel = new Label("Prérequis (maintenez Ctrl pour sélectionner plusieurs):");
+        prerequisLabel.getStyleClass().add("secouriste-label");
         ListView<Competence> prerequisListView = new ListView<>();
         prerequisListView.setItems(model.getAllCompetences());
         prerequisListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        prerequisListView.setPrefHeight(150);
+        prerequisListView.setPrefHeight(200); // Augmenter la hauteur pour plus de visibilité
         
         Button saveButton = new Button("Ajouter");
         saveButton.getStyleClass().addAll("dashboard-button", "active-button");
@@ -139,7 +140,7 @@ public class AdminCompetencesController {
             saveButton
         );
         
-        Scene popupScene = new Scene(popupContent, 300, 350);
+        Scene popupScene = new Scene(popupContent, 300, 400); // Ajuster la hauteur pour la ListView
         popupScene.getStylesheets().add(getClass().getResource("../style.css").toExternalForm());
         popupStage.setScene(popupScene);
         popupStage.showAndWait();
