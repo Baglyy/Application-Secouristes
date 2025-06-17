@@ -12,9 +12,6 @@ public class Competence {
     /** Intitulé de la compétence (ex. : "Premiers secours", "Chef d’équipe") */
     private String intitule;
 
-    /** Liste des secouristes possédant cette compétence */
-    private List<Secouriste> secouristes;
-
     /** Liste des besoins liés à cette compétence */
     private List<Besoin> besoins;
 
@@ -70,24 +67,6 @@ public class Competence {
             throw new IllegalArgumentException("Intitulé invalide");
         }
         this.intitule = intitule.trim();
-    }
-
-    /**
-     * Retourne la liste des secouristes possédant cette compétence.
-     *
-     * @return liste de secouristes
-     */
-    public List<Secouriste> getSecouristes() {
-        return secouristes;
-    }
-
-    /**
-     * Définit la liste des secouristes associés à cette compétence.
-     *
-     * @param secouristes la liste des secouristes
-     */
-    public void setSecouristes(List<Secouriste> secouristes) {
-        this.secouristes = secouristes;
     }
 
     /**
