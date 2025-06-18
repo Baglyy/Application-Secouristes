@@ -5,15 +5,21 @@ import model.data.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Classe de test pour {@link Secouriste}.
+ * Vérifie les cas normaux, les erreurs attendues et les cas limites.
+ */
 public class TestSecouriste {
     public static void main(String[] args) {
 
         System.out.println("==== CAS NORMAUX ====");
         try {
+            // Création standard d’un secouriste
             Secouriste s1 = new Secouriste(1, "Martin", "Lucas", "2000-01-01", "lucas@exemple.com", "0612345678", "12 rue A");
             System.out.println("Création OK : " + s1);
             System.out.println("Âge : " + s1.calculerAge());
 
+            // Ajout de compétences
             Competence c1 = new Competence("Chef d'équipe");
             Competence c2 = new Competence("PSC1");
 
@@ -33,18 +39,21 @@ public class TestSecouriste {
 
         System.out.println("\n==== CAS ERREURS ====");
         try {
+            // Erreur : id négatif
             new Secouriste(-1, "Test", "Erreur", "2000-01-01", "test@ex.com", "0000000000", "Rue X");
         } catch (Exception e) {
             System.out.println("Erreur attendue (id négatif) : " + e.getMessage());
         }
 
         try {
+            // Erreur : nom vide
             new Secouriste(2, "", "Nom", "2000-01-01", "test@ex.com", "0000000000", "Rue X");
         } catch (Exception e) {
             System.out.println("Erreur attendue (nom vide) : " + e.getMessage());
         }
 
         try {
+            // Erreur : format de date invalide
             Secouriste s = new Secouriste(3, "Nom", "Prenom", "invalid-date", "mail@x.fr", "0612345678", "Rue");
             s.calculerAge();
         } catch (Exception e) {
@@ -52,6 +61,7 @@ public class TestSecouriste {
         }
 
         try {
+            // Erreur : nom null dans le setter
             Secouriste s = new Secouriste(4, "Nom", "Prenom", "2000-01-01", "mail@x.fr", "0612345678", "Rue");
             s.setNom(null);
         } catch (Exception e) {
@@ -60,6 +70,7 @@ public class TestSecouriste {
 
         System.out.println("\n==== CAS LIMITES ====");
         try {
+            // Secouriste très jeune (ex. : né récemment)
             Secouriste jeune = new Secouriste(5, "Bebe", "Test", "2024-06-01", "bebe@x.fr", "0611223344", "Rue bébé");
             System.out.println("Âge (limite) : " + jeune.calculerAge() + " an(s)");
         } catch (Exception e) {
