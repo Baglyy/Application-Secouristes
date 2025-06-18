@@ -10,8 +10,11 @@ import javafx.stage.Stage;
 import javafx.collections.ObservableList;
 import model.AdminCompetencesModel;
 import model.data.Competence;
+import model.graphs.DAG;
 import view.AdminDashboardView;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class AdminCompetencesController {
     
@@ -94,7 +97,6 @@ public class AdminCompetencesController {
         TextField intituleField = new TextField(selectedCompetence.getIntitule());
         intituleField.setPromptText("Intitulé de la compétence");
         
-        // Liste des prérequis
         Label prerequisLabel = new Label("Prérequis (maintenez Ctrl pour sélectionner plusieurs):");
         prerequisLabel.getStyleClass().add("secouriste-label");
         ListView<Competence> prerequisListView = new ListView<>();
@@ -102,9 +104,9 @@ public class AdminCompetencesController {
         prerequisListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         prerequisListView.setPrefHeight(200);
         
-        // Pré-sélectionner les prérequis existants
         if (selectedCompetence.getPrerequis() != null) {
             for (Competence prereq : selectedCompetence.getPrerequis()) {
+                prereq.setIntitule(prereq.getIntitule());
                 prerequisListView.getSelectionModel().select(prereq);
             }
         }
@@ -118,7 +120,6 @@ public class AdminCompetencesController {
                     throw new IllegalArgumentException("L'intitulé doit être requis.");
                 }
                 
-                // Vérifier si l'intitulé existe déjà (sauf pour la compétence actuelle)
                 if (!newIntitule.equals(selectedCompetence.getIntitule()) && model.competenceExists(newIntitule)) {
                     Alert alert = new Alert(Alert.AlertType.WARNING);
                     alert.setTitle("Erreur");
@@ -128,12 +129,32 @@ public class AdminCompetencesController {
                     return;
                 }
                 
-                // Créer une nouvelle compétence avec les nouvelles données
                 Competence updatedCompetence = new Competence(newIntitule);
                 ObservableList<Competence> selectedPrerequis = prerequisListView.getSelectionModel().getSelectedItems();
                 updatedCompetence.setPrerequis(new ArrayList<>(selectedPrerequis));
                 
-                // Utiliser la méthode de modification sécurisée
+                // Check for cycles using DAG
+                DAG dag = new DAG();
+                for (Competence comp : model.getAllCompetences()) {
+                    if (!comp.equals(selectedCompetence)) {
+                        List<String> prereqIntitules = comp.getPrerequis().stream()
+                            .map(Competence::getIntitule)
+                            .collect(Collectors.toList());
+                        dag.ajouterCompetence(comp.getIntitule(), prereqIntitules);
+                    }
+                }
+                List<String> newPrereqIntitules = updatedCompetence.getPrerequis().stream()
+                    .map(Competence::getIntitule)
+                    .collect(Collectors.toList());
+                if (!dag.ajouterCompetence(newIntitule, newPrereqIntitules)) {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("Erreur");
+                    alert.setHeaderText("Cycle détecté");
+                    alert.setContentText("La modification de cette compétence créerait un cycle dans les prérequis.");
+                    alert.showAndWait();
+                    return;
+                }
+                
                 model.modifierCompetence(selectedCompetence, updatedCompetence);
                 listView.refresh();
                 
@@ -185,7 +206,6 @@ public class AdminCompetencesController {
         TextField intituleField = new TextField();
         intituleField.setPromptText("Intitulé de la compétence");
         
-        // Liste des prérequis
         Label prerequisLabel = new Label("Prérequis (maintenez Ctrl pour sélectionner plusieurs):");
         prerequisLabel.getStyleClass().add("secouriste-label");
         ListView<Competence> prerequisListView = new ListView<>();
@@ -202,7 +222,6 @@ public class AdminCompetencesController {
                     throw new IllegalArgumentException("L'intitulé de la compétence est requis.");
                 }
                 
-                // Vérifier si la compétence existe déjà
                 if (model.competenceExists(intitule)) {
                     Alert alert = new Alert(Alert.AlertType.WARNING);
                     alert.setTitle("Erreur");
@@ -215,6 +234,26 @@ public class AdminCompetencesController {
                 Competence newCompetence = new Competence(intitule);
                 ObservableList<Competence> selectedPrerequis = prerequisListView.getSelectionModel().getSelectedItems();
                 newCompetence.setPrerequis(new ArrayList<>(selectedPrerequis));
+                
+                // Check for cycles using DAG
+                DAG dag = new DAG();
+                for (Competence comp : model.getAllCompetences()) {
+                    List<String> prereqIntitules = comp.getPrerequis().stream()
+                        .map(Competence::getIntitule)
+                        .collect(Collectors.toList());
+                    dag.ajouterCompetence(comp.getIntitule(), prereqIntitules);
+                }
+                List<String> newPrereqIntitules = newCompetence.getPrerequis().stream()
+                    .map(Competence::getIntitule)
+                    .collect(Collectors.toList());
+                if (!dag.ajouterCompetence(intitule, newPrereqIntitules)) {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("Erreur");
+                    alert.setHeaderText("Cycle détecté");
+                    alert.setContentText("L'ajout de cette compétence créerait un cycle dans les prérequis.");
+                    alert.showAndWait();
+                    return;
+                }
                 
                 model.ajouterCompetence(newCompetence);
                 popupStage.close();
@@ -261,7 +300,6 @@ public class AdminCompetencesController {
             return;
         }
         
-        // Vérifier si la compétence peut être supprimée
         if (!model.canDeleteCompetence(selectedCompetence)) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setTitle("Suppression impossible");
