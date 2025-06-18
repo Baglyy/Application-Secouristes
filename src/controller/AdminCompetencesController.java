@@ -128,16 +128,13 @@ public class AdminCompetencesController {
                     return;
                 }
                 
-                // Supprimer l'ancienne compétence
-                model.supprimerCompetence(selectedCompetence);
-                
                 // Créer une nouvelle compétence avec les nouvelles données
                 Competence updatedCompetence = new Competence(newIntitule);
                 ObservableList<Competence> selectedPrerequis = prerequisListView.getSelectionModel().getSelectedItems();
                 updatedCompetence.setPrerequis(new ArrayList<>(selectedPrerequis));
                 
-                // Ajouter la nouvelle compétence
-                model.ajouterCompetence(updatedCompetence);
+                // Utiliser la méthode de modification sécurisée
+                model.modifierCompetence(selectedCompetence, updatedCompetence);
                 listView.refresh();
                 
                 popupStage.close();
@@ -154,6 +151,12 @@ public class AdminCompetencesController {
                 alert.setHeaderText("Données invalides");
                 alert.setContentText(ex.getMessage());
                 alert.showAndWait();
+            } catch (Exception ex) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Erreur");
+                alert.setHeaderText("Erreur de modification");
+                alert.setContentText("Impossible de modifier la compétence : " + ex.getMessage());
+                alert.showAndWait();
             }
         });
         
@@ -165,7 +168,7 @@ public class AdminCompetencesController {
             saveButton
         );
         
-        Scene popupScene = new Scene(popupContent, 300, 400);
+        Scene popupScene = new Scene(popupContent, 300, 600);
         popupScene.getStylesheets().add(getClass().getResource("../style.css").toExternalForm());
         popupStage.setScene(popupScene);
         popupStage.showAndWait();
@@ -241,7 +244,7 @@ public class AdminCompetencesController {
             saveButton
         );
         
-        Scene popupScene = new Scene(popupContent, 300, 400);
+        Scene popupScene = new Scene(popupContent, 300, 600);
         popupScene.getStylesheets().add(getClass().getResource("../style.css").toExternalForm());
         popupStage.setScene(popupScene);
         popupStage.showAndWait();
@@ -258,6 +261,16 @@ public class AdminCompetencesController {
             return;
         }
         
+        // Vérifier si la compétence peut être supprimée
+        if (!model.canDeleteCompetence(selectedCompetence)) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Suppression impossible");
+            alert.setHeaderText("Compétence utilisée comme prérequis");
+            alert.setContentText("Cette compétence ne peut pas être supprimée car elle est utilisée comme prérequis par d'autres compétences.");
+            alert.showAndWait();
+            return;
+        }
+        
         Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
         confirmAlert.setTitle("Confirmation de suppression");
         confirmAlert.setHeaderText("Supprimer la compétence");
@@ -265,12 +278,20 @@ public class AdminCompetencesController {
         
         confirmAlert.showAndWait().ifPresent(response -> {
             if (response.getButtonData().isDefaultButton()) {
-                model.supprimerCompetence(selectedCompetence);
-                Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
-                successAlert.setTitle("Compétence supprimée");
-                successAlert.setHeaderText("Suppression réussie");
-                successAlert.setContentText("La compétence a été supprimée de la liste.");
-                successAlert.showAndWait();
+                try {
+                    model.supprimerCompetence(selectedCompetence);
+                    Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
+                    successAlert.setTitle("Compétence supprimée");
+                    successAlert.setHeaderText("Suppression réussie");
+                    successAlert.setContentText("La compétence a été supprimée de la liste.");
+                    successAlert.showAndWait();
+                } catch (Exception ex) {
+                    Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                    errorAlert.setTitle("Erreur de suppression");
+                    errorAlert.setHeaderText("Impossible de supprimer");
+                    errorAlert.setContentText("Erreur lors de la suppression : " + ex.getMessage());
+                    errorAlert.showAndWait();
+                }
             }
         });
     }
