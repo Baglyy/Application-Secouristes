@@ -2,46 +2,53 @@ package test;
 
 import model.data.Competence;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TestCompetence {
     public static void main(String[] args) {
 
         System.out.println("=== CAS NORMAUX ===");
         try {
-            Competence c1 = new Competence("Premiers secours");
+            Competence c1 = new Competence("Chef d'équipe");
             System.out.println("Création OK : " + c1);
 
-            Competence c2 = new Competence("Logistique");
-            System.out.println("Création OK : " + c2);
+            c1.setIntitule("Secourisme avancé");
+            System.out.println("Modification intitulé OK : " + c1.getIntitule());
+
+            Competence prerequis = new Competence("Secourisme de base");
+            c1.ajouterPrerequis(prerequis);
+            System.out.println("Ajout prérequis OK : " + c1.getPrerequis());
+
         } catch (Exception e) {
             System.out.println("Erreur inattendue : " + e.getMessage());
         }
 
         System.out.println("\n=== CAS ERREURS ===");
         try {
-            Competence cErr1 = new Competence(null);
+            new Competence(null);
         } catch (Exception e) {
-            System.out.println("Erreur attendue (null) : " + e.getMessage());
+            System.out.println("Erreur attendue (intitulé null) : " + e.getMessage());
         }
 
         try {
-            Competence cErr2 = new Competence("");
+            Competence c2 = new Competence("Aide");
+            c2.setIntitule("  "); // vide après trim
         } catch (Exception e) {
-            System.out.println("Erreur attendue (vide) : " + e.getMessage());
+            System.out.println("Erreur attendue (intitulé vide) : " + e.getMessage());
         }
 
         System.out.println("\n=== CAS LIMITES ===");
         try {
-            Competence cLimite1 = new Competence("  Médical  "); // avec espaces
-            System.out.println("Trim appliqué : " + cLimite1);
-        } catch (Exception e) {
-            System.out.println("Erreur inattendue (limite 1) : " + e.getMessage());
-        }
+            Competence c3 = new Competence("A");
+            System.out.println("Intitulé minimal OK : " + c3);
 
-        try {
-            Competence cLimite2 = new Competence("Sécurité-Alpha");
-            System.out.println("Intitulé spécial OK : " + cLimite2);
+            List<Competence> prerequisList = new ArrayList<>();
+            c3.setPrerequis(prerequisList);
+            System.out.println("Liste vide de prérequis OK : " + c3.getPrerequis());
+
         } catch (Exception e) {
-            System.out.println("Erreur inattendue (limite 2) : " + e.getMessage());
+            System.out.println("Erreur inattendue : " + e.getMessage());
         }
     }
 }
