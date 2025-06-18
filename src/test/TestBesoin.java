@@ -4,10 +4,13 @@ import model.data.*;
 
 public class TestBesoin {
     public static void main(String[] args) {
-        int[] dep = {9, 30};
-        int[] fin = {12, 0};
-        DPS dps = new DPS(dep, fin);
+        Time dep = Time.valueOf("09:30:00");
+        Time fin = Time.valueOf("12:00:00");
+        Site site = new Site("ST01", "Alpes Arena", 6.65f, 45.1f);
+        Sport sport = new Sport("SKI", "Ski Alpin");
+        Journee journee = new Journee(10, 2, 2026);
 
+        DPS dps = new DPS(1L, dep, fin, site, sport, journee);
         Competence comp = new Competence("Secourisme");
 
         System.out.println("=== CAS NORMAUX ===");
@@ -42,7 +45,7 @@ public class TestBesoin {
 
         System.out.println("\n=== CAS LIMITES ===");
         try {
-            Besoin bLim = new Besoin(dps, comp, 1); // borne basse valide
+            Besoin bLim = new Besoin(dps, comp, 1);
             bLim.setNombre(10); // test setter
             System.out.println("Modification OK : " + bLim.getNombre());
         } catch (Exception e) {
