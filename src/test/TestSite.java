@@ -2,11 +2,16 @@ package test;
 
 import model.data.*;
 
+/**
+ * Classe de test pour la classe {@link Site}.
+ * Vérifie les cas normaux, les cas d’erreurs attendues et les cas limites liés à un site géographique.
+ */
 public class TestSite {
     public static void main(String[] args) {
 
         System.out.println("==== CAS NORMAUX ====");
         try {
+            // Création d'un site valide
             Site site = new Site("S001", "Stade de Glace", 6.86f, 45.91f);
             System.out.println("Création OK : " + site);
 
@@ -20,6 +25,7 @@ public class TestSite {
             site.ajouterDPS(dps);
             System.out.println("Ajout DPS OK : " + site);
 
+            // Modifications des attributs du site
             site.setNom("Arène de Patinage");
             site.setLatitude(46.0f);
             site.setLongitude(6.9f);
@@ -31,18 +37,21 @@ public class TestSite {
 
         System.out.println("\n==== CAS ERREURS ====");
         try {
+            // Erreur : code null
             new Site(null, "Nom", 0, 0);
         } catch (Exception e) {
             System.out.println("Erreur attendue (code null) : " + e.getMessage());
         }
 
         try {
+            // Erreur : nom vide
             new Site("C", "", 0, 0);
         } catch (Exception e) {
             System.out.println("Erreur attendue (nom vide) : " + e.getMessage());
         }
 
         try {
+            // Erreur : latitude hors borne
             Site site = new Site("S", "Test", 0, 0);
             site.setLatitude(-100);
         } catch (Exception e) {
@@ -50,6 +59,7 @@ public class TestSite {
         }
 
         try {
+            // Erreur : longitude hors borne
             Site site = new Site("S", "Test", 0, 0);
             site.setLongitude(200);
         } catch (Exception e) {
@@ -57,6 +67,7 @@ public class TestSite {
         }
 
         try {
+            // Erreur : ajout d’un DPS null
             Site site = new Site("S", "Test", 0, 0);
             site.ajouterDPS(null);
         } catch (Exception e) {
@@ -65,9 +76,11 @@ public class TestSite {
 
         System.out.println("\n==== CAS LIMITES ====");
         try {
+            // Création d’un site avec les coordonnées maximales
             Site extremSite = new Site("MAX", "Stade Nordique", 180, 90);
             System.out.println("Création avec coordonnées max OK : " + extremSite);
 
+            // Modification vers les coordonnées minimales
             extremSite.setLatitude(-90);
             extremSite.setLongitude(-180);
             System.out.println("Modification avec coordonnées min OK : " + extremSite);
