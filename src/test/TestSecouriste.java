@@ -1,58 +1,67 @@
 package test;
 
-import model.data.Secouriste;
+import model.data.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TestSecouriste {
     public static void main(String[] args) {
 
-        System.out.println("=== CAS NORMAUX ===");
+        System.out.println("==== CAS NORMAUX ====");
         try {
-            Secouriste s1 = new Secouriste(1, "Dupont", "Jean", "2000-05-15", "jean@mail.com", "0612345678", "10 rue de Paris");
+            Secouriste s1 = new Secouriste(1, "Martin", "Lucas", "2000-01-01", "lucas@exemple.com", "0612345678", "12 rue A");
             System.out.println("Création OK : " + s1);
             System.out.println("Âge : " + s1.calculerAge());
+
+            Competence c1 = new Competence("Chef d'équipe");
+            Competence c2 = new Competence("PSC1");
+
+            List<Competence> liste = new ArrayList<>();
+            liste.add(c1);
+            liste.add(c2);
+            s1.setCompetences(liste);
+
+            System.out.println("Compétences : ");
+            for (Competence c : s1.getCompetences()) {
+                System.out.println("- " + c);
+            }
+
         } catch (Exception e) {
             System.out.println("Erreur inattendue : " + e.getMessage());
         }
 
+        System.out.println("\n==== CAS ERREURS ====");
         try {
-            Secouriste s2 = new Secouriste(2, "Martin", "Sophie", "1995-12-01", "sophie@mail.com", "0699988776", "5 avenue Lyon");
-            System.out.println("Création OK : " + s2);
-            System.out.println("Âge : " + s2.calculerAge());
+            new Secouriste(-1, "Test", "Erreur", "2000-01-01", "test@ex.com", "0000000000", "Rue X");
         } catch (Exception e) {
-            System.out.println("Erreur inattendue : " + e.getMessage());
-        }
-
-        System.out.println("\n=== CAS ERREURS ===");
-        try {
-            Secouriste err1 = new Secouriste(0, "Durand", "Alice", "2000-01-01", "alice@mail.com", "0600000000", ""); // ID invalide
-        } catch (Exception e) {
-            System.out.println("Erreur attendue (ID) : " + e.getMessage());
+            System.out.println("Erreur attendue (id négatif) : " + e.getMessage());
         }
 
         try {
-            Secouriste err2 = new Secouriste(3, "Leroy", "Max", "2000-13-01", "max@mail.com", "0600000000", "Rue X"); // Date invalide
-            System.out.println("Créé ? : " + err2);
-            System.out.println("Âge : " + err2.calculerAge()); // Va planter ici
+            new Secouriste(2, "", "Nom", "2000-01-01", "test@ex.com", "0000000000", "Rue X");
         } catch (Exception e) {
-            System.out.println("Erreur attendue (date) : " + e.getMessage());
-        }
-
-        System.out.println("\n=== CAS LIMITES ===");
-        try {
-            // Borne basse âge : 1900 → très vieux
-            Secouriste limite1 = new Secouriste(4, "Old", "Man", "1900-01-01", "old@mail.com", "0600000000", "Rue des dinos");
-            System.out.println("Limite basse OK : " + limite1);
-            System.out.println("Âge : " + limite1.calculerAge());
-        } catch (Exception e) {
-            System.out.println("Erreur inattendue : " + e.getMessage());
+            System.out.println("Erreur attendue (nom vide) : " + e.getMessage());
         }
 
         try {
-            // Limite haute (juste aujourd’hui)
-            String today = java.time.LocalDate.now().toString();
-            Secouriste limite2 = new Secouriste(5, "New", "Born", today, "baby@mail.com", "0611223344", "Maternité");
-            System.out.println("Limite haute OK : " + limite2);
-            System.out.println("Âge : " + limite2.calculerAge());
+            Secouriste s = new Secouriste(3, "Nom", "Prenom", "invalid-date", "mail@x.fr", "0612345678", "Rue");
+            s.calculerAge();
+        } catch (Exception e) {
+            System.out.println("Erreur attendue (format date) : " + e.getMessage());
+        }
+
+        try {
+            Secouriste s = new Secouriste(4, "Nom", "Prenom", "2000-01-01", "mail@x.fr", "0612345678", "Rue");
+            s.setNom(null);
+        } catch (Exception e) {
+            System.out.println("Erreur attendue (nom null) : " + e.getMessage());
+        }
+
+        System.out.println("\n==== CAS LIMITES ====");
+        try {
+            Secouriste jeune = new Secouriste(5, "Bebe", "Test", "2024-06-01", "bebe@x.fr", "0611223344", "Rue bébé");
+            System.out.println("Âge (limite) : " + jeune.calculerAge() + " an(s)");
         } catch (Exception e) {
             System.out.println("Erreur inattendue : " + e.getMessage());
         }
