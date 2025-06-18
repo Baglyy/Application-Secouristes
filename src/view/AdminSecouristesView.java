@@ -92,7 +92,7 @@ public class AdminSecouristesView {
         
         // Bouton Modifier compétences
         modifierCompetencesButton = new Button("Modifier compétences");
-        modifierCompetencesButton.getStyleClass().addAll("action-button", "edit-button");
+        modifierCompetencesButton.getStyleClass().addAll("dashboard-button", "active-button");
         modifierCompetencesButton.setPrefSize(300, 40);
         modifierCompetencesButton.setDisable(true); // Désactivé par défaut
         
