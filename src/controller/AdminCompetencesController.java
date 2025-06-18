@@ -128,13 +128,16 @@ public class AdminCompetencesController {
                     return;
                 }
                 
+                // Supprimer l'ancienne compétence
+                model.supprimerCompetence(selectedCompetence);
+                
                 // Créer une nouvelle compétence avec les nouvelles données
                 Competence updatedCompetence = new Competence(newIntitule);
                 ObservableList<Competence> selectedPrerequis = prerequisListView.getSelectionModel().getSelectedItems();
                 updatedCompetence.setPrerequis(new ArrayList<>(selectedPrerequis));
                 
-                // Mettre à jour la compétence
-                model.updateCompetence(selectedCompetence, updatedCompetence);
+                // Ajouter la nouvelle compétence
+                model.ajouterCompetence(updatedCompetence);
                 listView.refresh();
                 
                 popupStage.close();
