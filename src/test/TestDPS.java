@@ -1,7 +1,6 @@
 package test;
 
 import model.data.*;
-
 import java.sql.Time;
 
 /**
@@ -35,7 +34,7 @@ public class TestDPS {
 
             System.out.println("Besoin ajouté : " + dps.getBesoins().get(0));
             System.out.println("Compétences requises : " + dps.getCompetencesRequises());
-            System.out.println("Total secouristes requis : " + dps.getNbSecouristesRequises());
+            System.out.println("Total secouristes requis : " + dps.getNbSecouristesRequis());
 
             // Ajout d’un secouriste
             Secouriste s = new Secouriste(1, "Doe", "John", "2000-01-01", "john@example.com", "0601020304", "1 rue de Paris");
