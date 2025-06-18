@@ -8,15 +8,14 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.collections.ObservableList;
-
-import java.util.ArrayList;
-
 import model.AdminCompetencesModel;
 import model.data.Competence;
 import view.AdminDashboardView;
+import java.util.ArrayList;
 
 public class AdminCompetencesController {
     
+    private Button modifierButton;
     private Button ajouterButton;
     private Button supprimerButton;
     private ListView<Competence> listView;
@@ -26,12 +25,14 @@ public class AdminCompetencesController {
     private Runnable onRetourCallback;
     
     public AdminCompetencesController(
+            Button modifierButton,
             Button ajouterButton,
             Button supprimerButton,
             ListView<Competence> listView,
             Label nomUtilisateurLabel,
             Label homeIcon,
             String nomUtilisateur) {
+        this.modifierButton = modifierButton;
         this.ajouterButton = ajouterButton;
         this.supprimerButton = supprimerButton;
         this.listView = listView;
@@ -48,12 +49,14 @@ public class AdminCompetencesController {
         listView.setItems(model.getCompetences());
         listView.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             boolean isSelected = newSelection != null;
+            modifierButton.setDisable(!isSelected);
             supprimerButton.setDisable(!isSelected);
         });
     }
     
     private void setupListeners() {
         homeIcon.setOnMouseClicked(event -> handleRetour());
+        modifierButton.setOnAction(this::handleModifier);
         ajouterButton.setOnAction(this::handleAjouter);
         supprimerButton.setOnAction(this::handleSupprimer);
     }
@@ -68,6 +71,101 @@ public class AdminCompetencesController {
             Scene dashboardScene = new Scene(dashboardView.getRoot(), 1024, 600);
             currentStage.setScene(dashboardScene);
         }
+    }
+    
+    private void handleModifier(ActionEvent event) {
+        Competence selectedCompetence = listView.getSelectionModel().getSelectedItem();
+        if (selectedCompetence == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Aucune sélection");
+            alert.setHeaderText("Aucune compétence sélectionnée");
+            alert.setContentText("Veuillez sélectionner une compétence à modifier.");
+            alert.showAndWait();
+            return;
+        }
+        
+        Stage popupStage = new Stage();
+        popupStage.initModality(Modality.APPLICATION_MODAL);
+        popupStage.setTitle("Modifier la compétence");
+        
+        VBox popupContent = new VBox(10);
+        popupContent.setPadding(new Insets(20));
+        
+        TextField intituleField = new TextField(selectedCompetence.getIntitule());
+        intituleField.setPromptText("Intitulé de la compétence");
+        
+        // Liste des prérequis
+        Label prerequisLabel = new Label("Prérequis (maintenez Ctrl pour sélectionner plusieurs):");
+        prerequisLabel.getStyleClass().add("secouriste-label");
+        ListView<Competence> prerequisListView = new ListView<>();
+        prerequisListView.setItems(model.getAllCompetences());
+        prerequisListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        prerequisListView.setPrefHeight(200);
+        
+        // Pré-sélectionner les prérequis existants
+        if (selectedCompetence.getPrerequis() != null) {
+            for (Competence prereq : selectedCompetence.getPrerequis()) {
+                prerequisListView.getSelectionModel().select(prereq);
+            }
+        }
+        
+        Button saveButton = new Button("Enregistrer");
+        saveButton.getStyleClass().addAll("dashboard-button", "active-button");
+        saveButton.setOnAction(e -> {
+            try {
+                String newIntitule = intituleField.getText().trim();
+                if (newIntitule.isEmpty()) {
+                    throw new IllegalArgumentException("L'intitulé doit être requis.");
+                }
+                
+                // Vérifier si l'intitulé existe déjà (sauf pour la compétence actuelle)
+                if (!newIntitule.equals(selectedCompetence.getIntitule()) && model.competenceExists(newIntitule)) {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("Erreur");
+                    alert.setHeaderText("Compétence existante");
+                    alert.setContentText("Une compétence avec cet intitulé existe déjà.");
+                    alert.showAndWait();
+                    return;
+                }
+                
+                // Créer une nouvelle compétence avec les nouvelles données
+                Competence updatedCompetence = new Competence(newIntitule);
+                ObservableList<Competence> selectedPrerequis = prerequisListView.getSelectionModel().getSelectedItems();
+                updatedCompetence.setPrerequis(new ArrayList<>(selectedPrerequis));
+                
+                // Mettre à jour la compétence
+                model.updateCompetence(selectedCompetence, updatedCompetence);
+                listView.refresh();
+                
+                popupStage.close();
+                
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Succès");
+                alert.setHeaderText("Compétence modifiée");
+                alert.setContentText("La compétence a été modifiée avec succès.");
+                alert.showAndWait();
+                
+            } catch (IllegalArgumentException ex) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Erreur");
+                alert.setHeaderText("Données invalides");
+                alert.setContentText(ex.getMessage());
+                alert.showAndWait();
+            }
+        });
+        
+        popupContent.getChildren().addAll(
+            new Label("Modifier la compétence"),
+            intituleField,
+            prerequisLabel,
+            prerequisListView,
+            saveButton
+        );
+        
+        Scene popupScene = new Scene(popupContent, 300, 400);
+        popupScene.getStylesheets().add(getClass().getResource("../style.css").toExternalForm());
+        popupStage.setScene(popupScene);
+        popupStage.showAndWait();
     }
     
     private void handleAjouter(ActionEvent event) {
@@ -87,7 +185,7 @@ public class AdminCompetencesController {
         ListView<Competence> prerequisListView = new ListView<>();
         prerequisListView.setItems(model.getAllCompetences());
         prerequisListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        prerequisListView.setPrefHeight(200); // Augmenter la hauteur pour plus de visibilité
+        prerequisListView.setPrefHeight(200);
         
         Button saveButton = new Button("Ajouter");
         saveButton.getStyleClass().addAll("dashboard-button", "active-button");
@@ -140,7 +238,7 @@ public class AdminCompetencesController {
             saveButton
         );
         
-        Scene popupScene = new Scene(popupContent, 300, 400); // Ajuster la hauteur pour la ListView
+        Scene popupScene = new Scene(popupContent, 300, 400);
         popupScene.getStylesheets().add(getClass().getResource("../style.css").toExternalForm());
         popupStage.setScene(popupScene);
         popupStage.showAndWait();
