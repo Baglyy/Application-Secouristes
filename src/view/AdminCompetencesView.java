@@ -91,18 +91,15 @@ public class AdminCompetencesView {
         // Bouton Modifier compétence
         modifierButton = new Button("Modifier compétence");
         modifierButton.getStyleClass().addAll("dashboard-button", "active-button");
-        modifierButton.setPrefSize(200, 40);
         modifierButton.setDisable(true); // Désactivé par défaut
         
         // Bouton Ajouter une compétence
         ajouterButton = new Button("Ajouter une compétence");
         ajouterButton.getStyleClass().addAll("dashboard-button", "active-button");
-        ajouterButton.setPrefSize(200, 40);
         
         // Bouton Supprimer une compétence
         supprimerButton = new Button("Supprimer une compétence");
         supprimerButton.getStyleClass().addAll("dashboard-button", "active-button");
-        supprimerButton.setPrefSize(200, 40);
         supprimerButton.setDisable(true); // Désactivé par défaut
         
         buttonsContainer.getChildren().addAll(modifierButton, ajouterButton, supprimerButton);
