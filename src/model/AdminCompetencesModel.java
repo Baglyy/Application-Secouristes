@@ -6,6 +6,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import model.dao.CompetenceDAO;
 import model.data.Competence;
+import java.util.ArrayList;
 
 public class AdminCompetencesModel {
     
@@ -52,6 +53,24 @@ public class AdminCompetencesModel {
     public void supprimerCompetence(Competence competence) {
         if (competenceDAO.delete(competence) > 0) {
             competences.remove(competence);
+        }
+    }
+    
+    public void updateCompetence(Competence oldCompetence, Competence newCompetence) {
+        // Supprimer l'ancienne compétence
+        if (competenceDAO.delete(oldCompetence) > 0) {
+            competences.remove(oldCompetence);
+            // Créer la nouvelle compétence
+            if (competenceDAO.create(newCompetence) > 0) {
+                competences.add(newCompetence);
+            } else {
+                // En cas d'échec de la création, tenter de recréer l'ancienne compétence
+                competenceDAO.create(oldCompetence);
+                competences.add(oldCompetence);
+                throw new RuntimeException("Échec de la création de la nouvelle compétence.");
+            }
+        } else {
+            throw new RuntimeException("Échec de la suppression de l'ancienne compétence.");
         }
     }
     
