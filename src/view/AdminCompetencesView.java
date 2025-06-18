@@ -16,6 +16,7 @@ import model.data.Competence;
 public class AdminCompetencesView {
     
     private AnchorPane root;
+    private Button modifierButton;
     private Button ajouterButton;
     private Button supprimerButton;
     private ListView<Competence> listView;
@@ -87,6 +88,12 @@ public class AdminCompetencesView {
         buttonsContainer.setAlignment(Pos.CENTER_LEFT);
         buttonsContainer.setSpacing(20);
         
+        // Bouton Modifier compétence
+        modifierButton = new Button("Modifier compétence");
+        modifierButton.getStyleClass().addAll("dashboard-button", "active-button");
+        modifierButton.setPrefSize(200, 40);
+        modifierButton.setDisable(true); // Désactivé par défaut
+        
         // Bouton Ajouter une compétence
         ajouterButton = new Button("Ajouter une compétence");
         ajouterButton.getStyleClass().addAll("dashboard-button", "active-button");
@@ -98,7 +105,7 @@ public class AdminCompetencesView {
         supprimerButton.setPrefSize(200, 40);
         supprimerButton.setDisable(true); // Désactivé par défaut
         
-        buttonsContainer.getChildren().addAll(ajouterButton, supprimerButton);
+        buttonsContainer.getChildren().addAll(modifierButton, ajouterButton, supprimerButton);
         
         // ListView pour afficher les compétences
         listView = new ListView<>();
@@ -136,6 +143,7 @@ public class AdminCompetencesView {
     
     private void setupController(String nomUtilisateur) {
         controller = new AdminCompetencesController(
+                modifierButton,
                 ajouterButton,
                 supprimerButton,
                 listView,
