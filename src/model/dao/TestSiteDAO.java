@@ -2,7 +2,20 @@ package model.dao;
 
 import model.data.Site;
 
+/**
+ * Classe de test pour le DAO {@link SiteDAO}.
+ * <p>
+ * Ce test permet de vérifier les principales opérations CRUD sur l'entité {@link Site}.
+ * Il teste la création, la lecture (findByID, findAll), la mise à jour et la suppression.
+ * </p>
+ */
 public class TestSiteDAO {
+
+    /**
+     * Méthode principale exécutant les tests du DAO {@link SiteDAO}.
+     *
+     * @param args arguments de la ligne de commande (non utilisés ici)
+     */
     public static void main(String[] args) {
         SiteDAO dao = new SiteDAO();
 
