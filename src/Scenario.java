@@ -12,8 +12,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
+/**
+ * Cette classe simule un scénario complet de test pour l'application SecuOptix.
+ * Elle effectue une connexion en tant qu'administrateur, accède au tableau de bord,
+ * navigue vers la gestion des dispositifs (DPS), saisit manuellement un nouveau DPS 
+ * avec ses besoins, puis tente d'enregistrer ces données dans la base via les DAO.
+ * <p>
+ * Ce scénario est utile pour valider l'intégration entre les différentes couches : 
+ * modèle, DAO, et logique métier côté administration.
+ * </p>
+ */
 public class Scenario {
 
+    /**
+     * Point d'entrée principal du scénario de test.
+     * 
+     * @param args Arguments passés en ligne de commande (non utilisés ici).
+     */
     public static void main(String[] args) {
         System.out.println("--- DÉBUT DU SCÉNARIO COMPLET : Connexion, Navigation et Création DPS ---");
 
