@@ -6,14 +6,22 @@ import java.util.*;
 import model.data.Secouriste;
 import model.data.Competence;
 
-
+/**
+ * DAO (Data Access Object) pour la gestion des entités Secouriste.
+ * Permet les opérations CRUD ainsi que des recherches personnalisées.
+ */
 public class SecouristeDAO extends DAO<Secouriste> {
 
-
+    /**
+     * Recherche un secouriste par son identifiant et son nom.
+     * @param id identifiant du secouriste
+     * @param nom nom du secouriste
+     * @return le secouriste trouvé ou null si aucun correspondant
+     */
     public Secouriste findByIdAndNom(long id, String nom) {
         String query = "SELECT * FROM Secouriste WHERE ID = ? AND NOM = ?";
         try (Connection con = getConnection();
-            PreparedStatement pst = con.prepareStatement(query)) {
+             PreparedStatement pst = con.prepareStatement(query)) {
 
             pst.setLong(1, id);
             pst.setString(2, nom);
@@ -34,6 +42,11 @@ public class SecouristeDAO extends DAO<Secouriste> {
         return null;
     }
 
+    /**
+     * Crée un nouveau secouriste en base.
+     * @param secouriste le secouriste à enregistrer
+     * @return 1 si succès, -1 sinon
+     */
     @Override
     public int create(Secouriste secouriste) {
         String query = "INSERT INTO Secouriste(ID, NOM, PRENOM, DATENAISSANCE, EMAIL, TEL, ADRESSE) VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -56,6 +69,11 @@ public class SecouristeDAO extends DAO<Secouriste> {
         }
     }
 
+    /**
+     * Met à jour un secouriste existant.
+     * @param secouriste secouriste à mettre à jour
+     * @return nombre de lignes affectées ou -1 si erreur
+     */
     @Override
     public int update(Secouriste secouriste) {
         String query = "UPDATE Secouriste SET NOM = ?, PRENOM = ?, DATENAISSANCE = ?, EMAIL = ?, TEL = ?, ADRESSE = ? WHERE ID = ?";
@@ -78,6 +96,11 @@ public class SecouristeDAO extends DAO<Secouriste> {
         }
     }
 
+    /**
+     * Supprime un secouriste de la base.
+     * @param secouriste secouriste à supprimer
+     * @return 1 si succès, -1 sinon
+     */
     @Override
     public int delete(Secouriste secouriste) {
         String query = "DELETE FROM Secouriste WHERE ID = ?";
@@ -94,56 +117,62 @@ public class SecouristeDAO extends DAO<Secouriste> {
         }
     }
 
+    /**
+     * Récupère tous les secouristes avec leurs compétences.
+     * @return liste de secouristes
+     */
     @Override
     public List<Secouriste> findAll() {
-        // Utiliser ArrayList est souvent un meilleur choix par défaut que LinkedList pour ce cas.
         List<Secouriste> secouristesList = new ArrayList<>();
-        // Map pour regrouper les données et éviter de créer plusieurs fois le même objet Secouriste
         Map<Long, Secouriste> secouristesMap = new HashMap<>();
 
         String query = "SELECT s.ID as secouriste_id, s.NOM as secouriste_nom, s.PRENOM, s.DATENAISSANCE, " +
-                    "s.EMAIL, s.TEL, s.ADRESSE, c.intitule as competence_intitule " +
-                    "FROM Secouriste s " +
-                    "LEFT JOIN Possede p ON s.ID = p.idSecouriste " +
-                    "LEFT JOIN Competence c ON p.competence = c.intitule " +
-                    "ORDER BY s.ID"; // L'ordre est utile pour le traitement
+                       "s.EMAIL, s.TEL, s.ADRESSE, c.intitule as competence_intitule " +
+                       "FROM Secouriste s " +
+                       "LEFT JOIN Possede p ON s.ID = p.idSecouriste " +
+                       "LEFT JOIN Competence c ON p.competence = c.intitule " +
+                       "ORDER BY s.ID";
 
         try (Connection con = getConnection();
-            Statement st = con.createStatement();
-            ResultSet rs = st.executeQuery(query)) {
+             Statement st = con.createStatement();
+             ResultSet rs = st.executeQuery(query)) {
 
             while (rs.next()) {
-                long secouristeId = rs.getLong("secouriste_id");
-                Secouriste secouriste = secouristesMap.get(secouristeId);
+                long id = rs.getLong("secouriste_id");
+                Secouriste secouriste = secouristesMap.get(id);
 
                 if (secouriste == null) {
                     secouriste = new Secouriste(
-                            secouristeId,
-                            rs.getString("secouriste_nom"),
-                            rs.getString("PRENOM"), // Utiliser les noms de colonnes exacts de votre BDD
-                            rs.getString("DATENAISSANCE"),
-                            rs.getString("EMAIL"),
-                            rs.getString("TEL"),
-                            rs.getString("ADRESSE")
+                        id,
+                        rs.getString("secouriste_nom"),
+                        rs.getString("PRENOM"),
+                        rs.getString("DATENAISSANCE"),
+                        rs.getString("EMAIL"),
+                        rs.getString("TEL"),
+                        rs.getString("ADRESSE")
                     );
-                    // La liste de compétences est initialisée à vide par getCompetences() la première fois.
-                    secouristesMap.put(secouristeId, secouriste);
+                    secouristesMap.put(id, secouriste);
                     secouristesList.add(secouriste);
                 }
 
-                String competenceIntitule = rs.getString("competence_intitule");
-                if (competenceIntitule != null) {
-                    // Crée un objet Competence et l'ajoute à la liste du secouriste
-                    // La méthode getCompetences() s'assure que la liste n'est pas null
-                    secouriste.getCompetences().add(new Competence(competenceIntitule));
+                String comp = rs.getString("competence_intitule");
+                if (comp != null) {
+                    secouriste.getCompetences().add(new Competence(comp));
                 }
             }
+
         } catch (SQLException ex) {
-            ex.printStackTrace(); // Envisagez un meilleur logging ou la propagation de l'exception
+            ex.printStackTrace();
         }
+
         return secouristesList;
     }
 
+    /**
+     * Recherche un secouriste par son ID.
+     * @param keys un tableau avec l'identifiant du secouriste
+     * @return le secouriste trouvé ou null
+     */
     @Override
     public Secouriste findByID(Object... keys) {
         long id = (long) keys[0];
@@ -155,14 +184,15 @@ public class SecouristeDAO extends DAO<Secouriste> {
             pst.setLong(1, id);
             try (ResultSet rs = pst.executeQuery()) {
                 if (rs.next()) {
-                    String nom = rs.getString("NOM");
-                    String prenom = rs.getString("PRENOM");
-                    String dateDeNaissance = rs.getString("DATENAISSANCE");
-                    String email = rs.getString("EMAIL");
-                    String tel = rs.getString("TEL");
-                    String adresse = rs.getString("ADRESSE");
-
-                    return new Secouriste(id, nom, prenom, dateDeNaissance, email, tel, adresse);
+                    return new Secouriste(
+                        id,
+                        rs.getString("NOM"),
+                        rs.getString("PRENOM"),
+                        rs.getString("DATENAISSANCE"),
+                        rs.getString("EMAIL"),
+                        rs.getString("TEL"),
+                        rs.getString("ADRESSE")
+                    );
                 }
             }
 
@@ -173,20 +203,28 @@ public class SecouristeDAO extends DAO<Secouriste> {
         return null;
     }
 
+    /**
+     * Recherche un secouriste par son nom.
+     * @param nom le nom du secouriste
+     * @return le secouriste ou null
+     */
     public Secouriste findByNom(String nom) {
         String query = "SELECT * FROM Secouriste WHERE NOM = ?";
         try (Connection con = getConnection();
              PreparedStatement pst = con.prepareStatement(query)) {
+
             pst.setString(1, nom);
             try (ResultSet rs = pst.executeQuery()) {
                 if (rs.next()) {
-                    long id = rs.getLong("ID");
-                    String prenom = rs.getString("PRENOM");
-                    String dateDeNaissance = rs.getString("DATENAISSANCE");
-                    String email = rs.getString("EMAIL");
-                    String tel = rs.getString("TEL");
-                    String adresse = rs.getString("ADRESSE");
-                    return new Secouriste(id, nom, prenom, dateDeNaissance, email, tel, adresse);
+                    return new Secouriste(
+                        rs.getLong("ID"),
+                        nom,
+                        rs.getString("PRENOM"),
+                        rs.getString("DATENAISSANCE"),
+                        rs.getString("EMAIL"),
+                        rs.getString("TEL"),
+                        rs.getString("ADRESSE")
+                    );
                 }
             }
         } catch (SQLException e) {
@@ -197,25 +235,30 @@ public class SecouristeDAO extends DAO<Secouriste> {
     }
 
     /**
-     * Trouve un secouriste par son prénom et nom
+     * Recherche un secouriste par prénom et nom, sans tenir compte de la casse.
+     * @param prenom prénom du secouriste
+     * @param nom nom du secouriste
+     * @return le secouriste ou null
      */
     public Secouriste findByPrenomAndNom(String prenom, String nom) {
         String query = "SELECT * FROM Secouriste WHERE UPPER(PRENOM) = ? AND UPPER(NOM) = ?";
         try (Connection con = getConnection();
-            PreparedStatement pst = con.prepareStatement(query)) {
-            
+             PreparedStatement pst = con.prepareStatement(query)) {
+
             pst.setString(1, prenom.toUpperCase().trim());
             pst.setString(2, nom.toUpperCase().trim());
-            
+
             try (ResultSet rs = pst.executeQuery()) {
                 if (rs.next()) {
-                    long id = rs.getLong("ID");
-                    String dateDeNaissance = rs.getString("DATENAISSANCE");
-                    String email = rs.getString("EMAIL");
-                    String tel = rs.getString("TEL");
-                    String adresse = rs.getString("ADRESSE");
-                    
-                    return new Secouriste(id, nom, prenom, dateDeNaissance, email, tel, adresse);
+                    return new Secouriste(
+                        rs.getLong("ID"),
+                        nom,
+                        prenom,
+                        rs.getString("DATENAISSANCE"),
+                        rs.getString("EMAIL"),
+                        rs.getString("TEL"),
+                        rs.getString("ADRESSE")
+                    );
                 }
             }
         } catch (SQLException e) {
@@ -226,31 +269,30 @@ public class SecouristeDAO extends DAO<Secouriste> {
     }
 
     /**
-     * Trouve un secouriste par son nom complet au format "PRÉNOM NOM"
-     * Compatible avec le format utilisé dans l'application
+     * Recherche un secouriste à partir de son nom complet.
+     * @param fullName le nom complet "Prénom Nom"
+     * @return le secouriste ou null
      */
     public Secouriste findByFullName(String fullName) {
         try {
-            String[] parts = fullName.trim().split("\\s+"); // Split sur les espaces
+            String[] parts = fullName.trim().split("\\s+");
             if (parts.length >= 2) {
                 String prenom = parts[0];
-                String nom = parts[parts.length - 1]; // Dernier mot = nom de famille
-                
-                System.out.println("Recherche secouriste - Prénom: '" + prenom + "', Nom: '" + nom + "'");
+                String nom = parts[parts.length - 1];
                 return findByPrenomAndNom(prenom, nom);
             } else {
                 System.err.println("Format de nom invalide: '" + fullName + "' (doit contenir prénom et nom)");
-                return null;
             }
         } catch (Exception e) {
             System.err.println("Erreur lors de l'analyse du nom complet '" + fullName + "' : " + e.getMessage());
-            return null;
         }
+        return null;
     }
 
     /**
-     * Récupère uniquement l'ID d'un secouriste par son nom complet
-     * Méthode optimisée si on n'a besoin que de l'ID
+     * Récupère uniquement l'ID d’un secouriste à partir de son nom complet.
+     * @param fullName nom complet "Prénom Nom"
+     * @return l'ID du secouriste ou null
      */
     public Long getIdByFullName(String fullName) {
         try {
@@ -258,14 +300,14 @@ public class SecouristeDAO extends DAO<Secouriste> {
             if (parts.length >= 2) {
                 String prenom = parts[0];
                 String nom = parts[parts.length - 1];
-                
+
                 String query = "SELECT ID FROM Secouriste WHERE UPPER(PRENOM) = ? AND UPPER(NOM) = ?";
                 try (Connection con = getConnection();
-                    PreparedStatement pst = con.prepareStatement(query)) {
-                    
+                     PreparedStatement pst = con.prepareStatement(query)) {
+
                     pst.setString(1, prenom.toUpperCase().trim());
                     pst.setString(2, nom.toUpperCase().trim());
-                    
+
                     try (ResultSet rs = pst.executeQuery()) {
                         if (rs.next()) {
                             return rs.getLong("ID");
