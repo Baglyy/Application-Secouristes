@@ -3,8 +3,18 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import view.LoginView;
 
+/**
+ * Classe principale de l'application SecuOptix.
+ * Lance l'application JavaFX et initialise la vue de connexion.
+ */
 public class Main extends Application {
     
+    /**
+     * Point d'entrée principal pour JavaFX.
+     * Initialise la scène principale avec l'écran de connexion.
+     *
+     * @param primaryStage la fenêtre principale de l'application
+     */
     @Override
     public void start(Stage primaryStage) {
         try {
@@ -28,6 +38,11 @@ public class Main extends Application {
         }
     }
     
+    /**
+     * Méthode main qui lance l'application.
+     *
+     * @param args arguments de la ligne de commande
+     */
     public static void main(String[] args) {
         launch(args);
     }
