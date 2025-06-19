@@ -97,8 +97,7 @@ public class LoginModel {
      * @return true si les identifiants correspondent à des valeurs de test prédéfinies, false sinon.
      */
     public boolean validerAdminPourTest(String testUsername, String testPassword) {
-        // Logique de test simple: vérifie si c'est "admin" / "password"
-        // Dans une vraie appli, ceci interrogerait la BDD via un DAO.
+        // Logique de test simple: vérifie si c'est "admin" / "JO2030"
         if ("admin".equals(testUsername) && "JO2030".equals(testPassword)) {
             this.utilisateurConnecteSimule = testUsername; // Stocker le nom pour getUtilisateurConnectePourTest
             return true;
