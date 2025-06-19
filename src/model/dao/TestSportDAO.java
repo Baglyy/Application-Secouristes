@@ -2,7 +2,20 @@ package model.dao;
 
 import model.data.Sport;
 
+/**
+ * Classe de test pour le DAO {@link SportDAO}.
+ * <p>
+ * Ce test permet de vérifier les opérations CRUD sur l'entité {@link Sport}.
+ * Elle teste successivement la création, la lecture (par ID et tous), la mise à jour, puis la suppression.
+ * </p>
+ */
 public class TestSportDAO {
+
+    /**
+     * Méthode principale exécutant les tests du DAO {@link SportDAO}.
+     *
+     * @param args arguments de la ligne de commande (non utilisés ici)
+     */
     public static void main(String[] args) {
         SportDAO dao = new SportDAO();
 
