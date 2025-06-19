@@ -27,6 +27,17 @@ public class AdminCompetencesController {
     private AdminCompetencesModel model;
     private Runnable onRetourCallback;
     
+    /**
+     * Constructeur du contrôleur des compétences.
+     *
+     * @param modifierButton      bouton pour modifier une compétence
+     * @param ajouterButton       bouton pour ajouter une compétence
+     * @param supprimerButton     bouton pour supprimer une compétence
+     * @param listView            liste des compétences affichées
+     * @param nomUtilisateurLabel label pour afficher le nom de l'utilisateur
+     * @param homeIcon            icône permettant le retour à l'accueil
+     * @param nomUtilisateur      nom de l'utilisateur actuel
+     */
     public AdminCompetencesController(
             Button modifierButton,
             Button ajouterButton,
@@ -47,6 +58,9 @@ public class AdminCompetencesController {
         setupListeners();
     }
     
+    /**
+     * Initialise les bindings entre les propriétés du modèle et les composants de l'interface.
+     */
     private void setupBindings() {
         nomUtilisateurLabel.textProperty().bind(model.nomUtilisateurProperty());
         listView.setItems(model.getCompetences());
@@ -57,6 +71,9 @@ public class AdminCompetencesController {
         });
     }
     
+    /**
+     * Configure les gestionnaires d'événements pour les boutons et icônes.
+     */
     private void setupListeners() {
         homeIcon.setOnMouseClicked(event -> handleRetour());
         modifierButton.setOnAction(this::handleModifier);
@@ -64,6 +81,9 @@ public class AdminCompetencesController {
         supprimerButton.setOnAction(this::handleSupprimer);
     }
     
+    /**
+     * Gère l'action de retour au tableau de bord administrateur.
+     */
     private void handleRetour() {
         System.out.println("Retour vers le tableau de bord administrateur");
         if (onRetourCallback != null) {
@@ -76,6 +96,11 @@ public class AdminCompetencesController {
         }
     }
     
+    /**
+     * Gère la modification d'une compétence sélectionnée.
+     *
+     * @param event événement déclenché par l'action
+     */
     private void handleModifier(ActionEvent event) {
         Competence selectedCompetence = listView.getSelectionModel().getSelectedItem();
         if (selectedCompetence == null) {
@@ -195,6 +220,11 @@ public class AdminCompetencesController {
         popupStage.showAndWait();
     }
     
+    /**
+     * Gère l'ajout d'une nouvelle compétence.
+     *
+     * @param event événement déclenché par l'action
+     */
     private void handleAjouter(ActionEvent event) {
         Stage popupStage = new Stage();
         popupStage.initModality(Modality.APPLICATION_MODAL);
@@ -289,6 +319,11 @@ public class AdminCompetencesController {
         popupStage.showAndWait();
     }
     
+    /**
+     * Gère la suppression d'une compétence sélectionnée.
+     *
+     * @param event événement déclenché par l'action
+     */
     private void handleSupprimer(ActionEvent event) {
         Competence selectedCompetence = listView.getSelectionModel().getSelectedItem();
         if (selectedCompetence == null) {
@@ -334,14 +369,29 @@ public class AdminCompetencesController {
         });
     }
     
+    /**
+     * Met à jour le nom de l'utilisateur dans le modèle.
+     *
+     * @param nomUtilisateur le nouveau nom d'utilisateur
+     */
     public void setNomUtilisateur(String nomUtilisateur) {
         model.setNomUtilisateur(nomUtilisateur);
     }
     
+    /**
+     * Définit le callback à exécuter lors du retour vers le tableau de bord.
+     *
+     * @param callback action à exécuter au retour
+     */
     public void setOnRetourCallback(Runnable callback) {
         this.onRetourCallback = callback;
     }
     
+    /**
+     * Retourne le modèle associé à ce contrôleur.
+     *
+     * @return modèle AdminCompetencesModel
+     */
     public AdminCompetencesModel getModel() {
         return model;
     }
