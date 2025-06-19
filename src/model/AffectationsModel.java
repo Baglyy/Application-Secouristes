@@ -11,6 +11,11 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+/**
+ * Modèle chargé de gérer les affectations des secouristes pour un utilisateur donné.
+ * Il initialise l'ID du secouriste depuis la base, charge ses affectations,
+ * et permet de rafraîchir ou modifier l'utilisateur courant.
+ */
 public class AffectationsModel {
     
     private final StringProperty nomUtilisateur = new SimpleStringProperty("");
@@ -19,6 +24,10 @@ public class AffectationsModel {
     private final SecouristeDAO secouristeDAO = new SecouristeDAO();
     private long idSecouriste = -1;
     
+    /**
+     * Constructeur principal.
+     * @param nomUtilisateur le nom ou prénom.nom à rechercher dans la base
+     */
     public AffectationsModel(String nomUtilisateur) {
         this.nomUtilisateur.set(nomUtilisateur);
         System.out.println("Initialisation AffectationsModel pour: " + nomUtilisateur);
@@ -26,12 +35,14 @@ public class AffectationsModel {
         initializeAffectations();
     }
     
+    /**
+     * Initialise l'ID du secouriste dans la base, en essayant plusieurs formats de nom.
+     * Conserve les commentaires de débogage existants.
+     */
     private void initializeSecouristeId() {
         System.out.println("Recherche du secouriste avec le nom: '" + nomUtilisateur.get() + "'");
         
         Secouriste secouriste = null;
-        
-        // Essayer différentes méthodes de recherche selon le format du nom
         String nomUtilisateurStr = nomUtilisateur.get().trim();
         
         // 1. D'abord par nom complet si ça contient un espace (format "PRÉNOM NOM")
@@ -76,6 +87,11 @@ public class AffectationsModel {
         }
     }
     
+    /**
+     * Charge les affectations du secouriste courant dans l'ObservableList.
+     * Tri et formatage pour affichage dans l'interface.
+     * Conserve les commentaires existants.
+     */
     private void initializeAffectations() {
         if (idSecouriste == -1) {
             System.err.println("Impossible de charger les affectations - ID secouriste non trouvé");
@@ -136,16 +152,17 @@ public class AffectationsModel {
         System.out.println("Affectations ajoutées au modèle: " + affectations.size());
     }
     
+    /**
+     * Affiche les affectations existantes dans la base pour débogage.
+     */
     private void debugAffectationsDatabase() {
         System.out.println("=== DEBUG AFFECTATIONS ===");
         try {
-            // Vérifier s'il y a des affectations dans la base pour ce secouriste
             List<AdminAffectationsModel.Affectation> testAffectations = 
                 affectationDAO.findAllAffectations();
             
             System.out.println("Total affectations dans la base: " + testAffectations.size());
             
-            // Chercher des affectations contenant le nom du secouriste
             String nomUtilisateurUpper = nomUtilisateur.get().toUpperCase();
             for (AdminAffectationsModel.Affectation aff : testAffectations) {
                 if (aff.getSecouristes().toUpperCase().contains(nomUtilisateurUpper)) {
@@ -159,18 +176,25 @@ public class AffectationsModel {
         System.out.println("=== FIN DEBUG ===");
     }
     
+    /** @return propriété observable du nom d'utilisateur */
     public StringProperty nomUtilisateurProperty() {
         return nomUtilisateur;
     }
     
+    /** @return liste observable des affectations chargées */
     public ObservableList<Affectation> getAffectations() {
         return affectations;
     }
     
+    /** @return le nom courant de l'utilisateur */
     public String getNomUtilisateur() {
         return nomUtilisateur.get();
     }
     
+    /**
+     * Change l'utilisateur courant et recharge son profil et affectations.
+     * @param nomUtilisateur le nouveau nom/prénom à définir
+     */
     public void setNomUtilisateur(String nomUtilisateur) {
         System.out.println("Changement de nom utilisateur: " + nomUtilisateur);
         this.nomUtilisateur.set(nomUtilisateur);
@@ -178,12 +202,15 @@ public class AffectationsModel {
         initializeAffectations();
     }
     
-    // Méthode pour forcer le rechargement
+    /** Méthode pour forcer le rechargement des affectations */
     public void reloadAffectations() {
         System.out.println("Rechargement forcé des affectations");
         initializeAffectations();
     }
     
+    /**
+     * Représentation d'une affectation pour l'interface.
+     */
     public static class Affectation {
         private final String date;
         private final String siteOlympique;
