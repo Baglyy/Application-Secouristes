@@ -36,22 +36,38 @@ public class JourneeDAO extends DAO<Journee> {
     }
 
     /**
-     * Met à jour une journée existante dans la base.
-     *
-     * @param journee la journée avec les nouvelles valeurs
-     * @return nombre de lignes modifiées ou -1 en cas d'erreur
+     * Met à jour une journée dans la base de données.
+     * Cette méthode met à jour une ligne de la table {@code Journee} correspondant
+     * à la date indiquée dans l'objet {@code journee}. Elle remplace les valeurs
+     * de jour, mois et année par les mêmes, ce qui rend cette méthode inutile 
+     * sauf si l'on souhaite modifier la clé primaire (ce qui nécessiterait l'ancienne valeur).
+     * 
+     * @param journee l'objet {@link Journee} contenant les nouvelles valeurs à appliquer.
+     *                Les valeurs actuelles sont également utilisées dans la clause WHERE.
+     * @return le nombre de lignes affectées dans la base (1 si succès, 0 si aucun changement),
+     *         ou -1 en cas d'erreur.
      */
     @Override
     public int update(Journee journee) {
         String query = "UPDATE Journee SET JOUR = ?, MOIS = ?, ANNEE = ? WHERE JOUR = ? AND MOIS = ? AND ANNEE = ?";
-        try (Connection con = getConnection ();
-             Statement st = con.createStatement ()) {
-            return st.executeUpdate(query);
+        try (Connection con = getConnection();
+             PreparedStatement pst = con.prepareStatement(query)) {
+    
+            pst.setInt(1, journee.getJour());
+            pst.setInt(2, journee.getMois());
+            pst.setInt(3, journee.getAnnee());
+            pst.setInt(4, journee.getJour());
+            pst.setInt(5, journee.getMois());
+            pst.setInt(6, journee.getAnnee());
+    
+            return pst.executeUpdate();
+    
         } catch (SQLException ex) {
-            ex.printStackTrace ();
+            ex.printStackTrace();
             return -1;
-        }    
+        }
     }
+
 
     /**
      * Supprime une journée de la base de données.
