@@ -86,4 +86,32 @@ public class LoginModel {
     public boolean validateLogin() {
         return !getIdentifiant().trim().isEmpty() && !getMotDePasse().trim().isEmpty();
     }
+
+    
+    // --- MÉTHODES POUR FACILITER LES TESTS DE SCÉNARIO ---
+
+    /**
+     * Simule une validation de connexion pour les tests de scénario.
+     * @param testUsername Le nom d'utilisateur à tester.
+     * @param testPassword Le mot de passe à tester.
+     * @return true si les identifiants correspondent à des valeurs de test prédéfinies, false sinon.
+     */
+    public boolean validerAdminPourTest(String testUsername, String testPassword) {
+        // Logique de test simple: vérifie si c'est "admin" / "password"
+        // Dans une vraie appli, ceci interrogerait la BDD via un DAO.
+        if ("admin".equals(testUsername) && "JO2030".equals(testPassword)) {
+            this.utilisateurConnecteSimule = testUsername; // Stocker le nom pour getUtilisateurConnectePourTest
+            return true;
+        }
+        this.utilisateurConnecteSimule = null;
+        return false;
+    }
+
+    /**
+     * Retourne le nom d'utilisateur qui a été "connecté" avec succès par validerAdminPourTest.
+     * @return Le nom d'utilisateur ou null si la validation de test a échoué.
+     */
+    public String getUtilisateurConnectePourTest() {
+        return this.utilisateurConnecteSimule;
+    }
 }
