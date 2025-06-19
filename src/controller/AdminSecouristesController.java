@@ -14,8 +14,12 @@ import model.data.Secouriste;
 import model.data.Competence;
 import view.AdminDashboardView;
 
+/**
+ * Contrôleur pour la gestion des secouristes dans l'interface administrateur.
+ * Gère les actions d'ajout, suppression, et modification des compétences des secouristes.
+ */
 public class AdminSecouristesController {
-    
+
     private Button modifierCompetencesButton;
     private Button ajouterButton;
     private Button supprimerButton;
@@ -24,7 +28,18 @@ public class AdminSecouristesController {
     private Label homeIcon;
     private AdminSecouristesModel model;
     private Runnable onRetourCallback;
-    
+
+    /**
+     * Constructeur du contrôleur.
+     *
+     * @param modifierCompetencesButton bouton pour modifier les compétences
+     * @param ajouterButton             bouton pour ajouter un secouriste
+     * @param supprimerButton           bouton pour supprimer un secouriste
+     * @param listView                  liste des secouristes affichés
+     * @param nomUtilisateurLabel       label affichant le nom de l'utilisateur
+     * @param homeIcon                  icône permettant de revenir à l'accueil
+     * @param nomUtilisateur            nom de l'utilisateur connecté
+     */
     public AdminSecouristesController(
             Button modifierCompetencesButton,
             Button ajouterButton,
@@ -40,11 +55,14 @@ public class AdminSecouristesController {
         this.nomUtilisateurLabel = nomUtilisateurLabel;
         this.homeIcon = homeIcon;
         this.model = new AdminSecouristesModel(nomUtilisateur);
-        
+
         setupBindings();
         setupListeners();
     }
-    
+
+    /**
+     * Met en place les liaisons entre le modèle et la vue.
+     */
     private void setupBindings() {
         nomUtilisateurLabel.textProperty().bind(model.nomUtilisateurProperty());
         listView.setItems(model.getSecouristes());
@@ -54,14 +72,20 @@ public class AdminSecouristesController {
             supprimerButton.setDisable(!isSelected);
         });
     }
-    
+
+    /**
+     * Met en place les écouteurs d’événements.
+     */
     private void setupListeners() {
         homeIcon.setOnMouseClicked(event -> handleRetour());
         modifierCompetencesButton.setOnAction(this::handleModifierCompetences);
         ajouterButton.setOnAction(this::handleAjouter);
         supprimerButton.setOnAction(this::handleSupprimer);
     }
-    
+
+    /**
+     * Gère le retour vers le tableau de bord administrateur.
+     */
     private void handleRetour() {
         System.out.println("Retour vers le tableau de bord administrateur");
         if (onRetourCallback != null) {
@@ -73,74 +97,78 @@ public class AdminSecouristesController {
             currentStage.setScene(dashboardScene);
         }
     }
-    
+
+    /**
+     * Gère la modification des compétences d’un secouriste.
+     *
+     * @param event événement déclenché
+     */
     private void handleModifierCompetences(ActionEvent event) {
         Secouriste selectedSecouriste = listView.getSelectionModel().getSelectedItem();
         if (selectedSecouriste == null) return;
-        
+
         Stage popupStage = new Stage();
         popupStage.initModality(Modality.APPLICATION_MODAL);
         popupStage.setTitle("Modifier les compétences");
-        
+
         VBox popupContent = new VBox(10);
         popupContent.setPadding(new Insets(20));
-        
+
         Label title = new Label("Compétences de " + selectedSecouriste.getNom() + " " + selectedSecouriste.getPrenom());
-        
-        // Create a checkbox for each competence
+
         VBox competencesBox = new VBox(5);
         for (Competence comp : model.getAllCompetences()) {
             CheckBox checkBox = new CheckBox(comp.getIntitule());
-            checkBox.setUserData(comp); // Store the Competence object
-            // Pre-check if the secouriste already has this competence
-            if (selectedSecouriste.getCompetences() != null && 
+            checkBox.setUserData(comp);
+            if (selectedSecouriste.getCompetences() != null &&
                 selectedSecouriste.getCompetences().contains(comp)) {
                 checkBox.setSelected(true);
             }
             competencesBox.getChildren().add(checkBox);
         }
-        
+
         Button saveButton = new Button("Enregistrer");
         saveButton.getStyleClass().addAll("dashboard-button", "active-button");
         saveButton.setOnAction(e -> {
-            // Collect selected competences
             ObservableList<Competence> selectedCompetences = FXCollections.observableArrayList();
             for (javafx.scene.Node node : competencesBox.getChildren()) {
                 if (node instanceof CheckBox checkBox && checkBox.isSelected()) {
                     selectedCompetences.add((Competence) checkBox.getUserData());
                 }
             }
-            
-            // Update competences in the model and database
+
             model.updateSecouristeCompetences(selectedSecouriste, selectedCompetences);
-            
-            // Refresh the ListView to reflect changes
             listView.refresh();
-            
             popupStage.close();
+
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Succès");
             alert.setHeaderText("Compétences mises à jour");
             alert.setContentText("Les compétences ont été mises à jour avec succès.");
             alert.showAndWait();
         });
-        
+
         popupContent.getChildren().addAll(title, competencesBox, saveButton);
-        
+
         Scene popupScene = new Scene(popupContent, 400, 400);
         popupScene.getStylesheets().add(getClass().getResource("../style.css").toExternalForm());
         popupStage.setScene(popupScene);
         popupStage.showAndWait();
     }
-    
+
+    /**
+     * Gère l'ajout d’un nouveau secouriste.
+     *
+     * @param event événement déclenché
+     */
     private void handleAjouter(ActionEvent event) {
         Stage popupStage = new Stage();
         popupStage.initModality(Modality.APPLICATION_MODAL);
         popupStage.setTitle("Ajouter un secouriste");
-        
+
         VBox popupContent = new VBox(10);
         popupContent.setPadding(new Insets(20));
-        
+
         TextField idField = new TextField();
         idField.setPromptText("Identifiant (numérique)");
         TextField nomField = new TextField();
@@ -155,12 +183,11 @@ public class AdminSecouristesController {
         telField.setPromptText("Téléphone");
         TextField adresseField = new TextField();
         adresseField.setPromptText("Adresse");
-        
+
         Button saveButton = new Button("Ajouter");
         saveButton.getStyleClass().addAll("dashboard-button", "active-button");
         saveButton.setOnAction(e -> {
             try {
-                // Validate ID
                 String idText = idField.getText().trim();
                 long id;
                 try {
@@ -171,8 +198,7 @@ public class AdminSecouristesController {
                 } catch (NumberFormatException ex) {
                     throw new IllegalArgumentException("L'identifiant doit être un nombre valide.");
                 }
-                
-                // Check if ID is unique
+
                 if (model.idExists(id)) {
                     Alert alert = new Alert(Alert.AlertType.WARNING);
                     alert.setTitle("Erreur");
@@ -181,7 +207,7 @@ public class AdminSecouristesController {
                     alert.showAndWait();
                     return;
                 }
-                
+
                 Secouriste newSecouriste = new Secouriste(
                     id,
                     nomField.getText(),
@@ -191,7 +217,7 @@ public class AdminSecouristesController {
                     telField.getText(),
                     adresseField.getText()
                 );
-                
+
                 if (model.secouristeExists(newSecouriste.getNom(), newSecouriste.getPrenom())) {
                     Alert alert = new Alert(Alert.AlertType.WARNING);
                     alert.setTitle("Erreur");
@@ -200,16 +226,16 @@ public class AdminSecouristesController {
                     alert.showAndWait();
                     return;
                 }
-                
+
                 model.ajouterSecouriste(newSecouriste);
                 popupStage.close();
-                
+
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setTitle("Succès");
                 alert.setHeaderText("Secouriste ajouté");
                 alert.setContentText("Le secouriste a été ajouté avec succès.");
                 alert.showAndWait();
-                
+
                 listView.getSelectionModel().selectLast();
                 listView.scrollTo(newSecouriste);
             } catch (IllegalArgumentException ex) {
@@ -220,7 +246,7 @@ public class AdminSecouristesController {
                 alert.showAndWait();
             }
         });
-        
+
         popupContent.getChildren().addAll(
             new Label("Nouveau secouriste"),
             idField,
@@ -232,13 +258,18 @@ public class AdminSecouristesController {
             adresseField,
             saveButton
         );
-        
-        Scene popupScene = new Scene(popupContent, 300, 450); // Increased height for new field
+
+        Scene popupScene = new Scene(popupContent, 300, 450);
         popupScene.getStylesheets().add(getClass().getResource("../style.css").toExternalForm());
         popupStage.setScene(popupScene);
         popupStage.showAndWait();
     }
-    
+
+    /**
+     * Gère la suppression d’un secouriste sélectionné.
+     *
+     * @param event événement déclenché
+     */
     private void handleSupprimer(ActionEvent event) {
         Secouriste selectedSecouriste = listView.getSelectionModel().getSelectedItem();
         if (selectedSecouriste == null) {
@@ -249,12 +280,12 @@ public class AdminSecouristesController {
             alert.showAndWait();
             return;
         }
-        
+
         Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
         confirmAlert.setTitle("Confirmation de suppression");
         confirmAlert.setHeaderText("Supprimer le secouriste");
         confirmAlert.setContentText("Êtes-vous sûr de vouloir supprimer ce secouriste ?");
-        
+
         confirmAlert.showAndWait().ifPresent(response -> {
             if (response.getButtonData().isDefaultButton()) {
                 model.supprimerSecouriste(selectedSecouriste);
@@ -266,15 +297,30 @@ public class AdminSecouristesController {
             }
         });
     }
-    
+
+    /**
+     * Définit le nom de l'utilisateur dans le modèle.
+     *
+     * @param nomUtilisateur nom de l'utilisateur
+     */
     public void setNomUtilisateur(String nomUtilisateur) {
         model.setNomUtilisateur(nomUtilisateur);
     }
-    
+
+    /**
+     * Définit la fonction de rappel à exécuter au retour.
+     *
+     * @param callback fonction de rappel
+     */
     public void setOnRetourCallback(Runnable callback) {
         this.onRetourCallback = callback;
     }
-    
+
+    /**
+     * Retourne le modèle associé à ce contrôleur.
+     *
+     * @return modèle admin secouristes
+     */
     public AdminSecouristesModel getModel() {
         return model;
     }
