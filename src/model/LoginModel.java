@@ -11,6 +11,7 @@ public class LoginModel {
 
     private final StringProperty identifiant = new SimpleStringProperty("");
     private final StringProperty motDePasse = new SimpleStringProperty("");
+    private String utilisateurConnecteSimule = null; // Pour stocker l'utilisateur après une validation de test réussie
 
     // Getters pour les propriétés
 
