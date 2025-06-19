@@ -162,7 +162,7 @@ public class AdminDashboardView {
         competencesContent.setAlignment(Pos.CENTER);
         competencesContent.setSpacing(8);
         
-        Label competencesIcon = new Label("📜");
+        Label competencesIcon = new Label("✚");
         competencesIcon.getStyleClass().add("button-icon");
         
         Label competencesText = new Label("Compétences");
