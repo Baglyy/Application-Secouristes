@@ -4,18 +4,32 @@ import java.sql.*;
 import java.util.*;
 import model.data.Journee;
 
+/**
+ * DAO pour la gestion des disponibilités des secouristes.
+ * Permet de créer, supprimer et rechercher des disponibilités associées à une journée spécifique.
+ */
 public class DisponibiliteDAO extends DAO<Void> {
     
     private SecouristeDAO secouristeDAO = new SecouristeDAO();
     private JourneeDAO journeeDAO = new JourneeDAO();
 
+    /**
+     * Crée une nouvelle disponibilité pour un secouriste à une date donnée.
+     * Si la journée n'existe pas, elle est automatiquement créée.
+     *
+     * @param idSecouriste identifiant du secouriste
+     * @param jour jour de la disponibilité
+     * @param mois mois de la disponibilité
+     * @param annee année de la disponibilité
+     * @return true si l'insertion a réussi, false sinon
+     */
     public boolean createDisponibilite(long idSecouriste, int jour, int mois, int annee) {
         // Vérifier et créer la journée si nécessaire
         if (!ensureJourneeExists(jour, mois, annee)) {
             System.err.println("Impossible de créer ou vérifier l'existence de la journée " + jour + "/" + mois + "/" + annee);
             return false;
         }
-        
+
         String sql = 
             "INSERT INTO Disponibilite (idSecouriste, jour, mois, annee) VALUES (?, ?, ?, ?)";
         try (Connection conn = getConnection();
@@ -33,20 +47,23 @@ public class DisponibiliteDAO extends DAO<Void> {
     }
 
     /**
-     * Vérifie si une journée existe dans la table Journee, et la crée si nécessaire
+     * Vérifie si une journée existe dans la table Journee, et la crée si nécessaire.
+     *
+     * @param jour jour
+     * @param mois mois
+     * @param annee année
+     * @return true si la journée existe ou a été créée, false sinon
      */
     private boolean ensureJourneeExists(int jour, int mois, int annee) {
         try {
-            // Vérifier si la journée existe déjà
             Journee existingJournee = journeeDAO.findByID(jour, mois, annee);
             if (existingJournee != null) {
-                return true; // La journée existe déjà
+                return true;
             }
-            
-            // Créer la journée si elle n'existe pas
+
             Journee newJournee = new Journee(jour, mois, annee);
             int result = journeeDAO.create(newJournee);
-            
+
             if (result > 0) {
                 System.out.println("Journée créée automatiquement : " + jour + "/" + mois + "/" + annee);
                 return true;
@@ -54,7 +71,7 @@ public class DisponibiliteDAO extends DAO<Void> {
                 System.err.println("Échec de la création de la journée : " + jour + "/" + mois + "/" + annee);
                 return false;
             }
-            
+
         } catch (Exception e) {
             System.err.println("Erreur lors de la vérification/création de la journée : " + e.getMessage());
             e.printStackTrace();
@@ -62,6 +79,15 @@ public class DisponibiliteDAO extends DAO<Void> {
         }
     }
 
+    /**
+     * Supprime une disponibilité d’un secouriste pour une date donnée.
+     *
+     * @param idSecouriste identifiant du secouriste
+     * @param jour jour
+     * @param mois mois
+     * @param annee année
+     * @return true si une ligne a été supprimée, false sinon
+     */
     public boolean deleteDisponibilite(long idSecouriste, int jour, int mois, int annee) {
         String sql = 
             "DELETE FROM Disponibilite WHERE idSecouriste = ? AND jour = ? AND mois = ? AND annee = ?";
@@ -79,6 +105,14 @@ public class DisponibiliteDAO extends DAO<Void> {
         }
     }
 
+    /**
+     * Recherche les disponibilités d’un secouriste pour un mois et une année donnés.
+     *
+     * @param idSecouriste identifiant du secouriste
+     * @param mois mois recherché
+     * @param annee année recherchée
+     * @return liste de maps représentant chaque date disponible (jour, mois, annee)
+     */
     public List<Map<String, Object>> findDisponibilitesBySecouristeAndMonth(long idSecouriste, int mois, int annee) {
         List<Map<String, Object>> dispos = new ArrayList<>();
         String sql = 
