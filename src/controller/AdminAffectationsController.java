@@ -16,6 +16,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Contrôleur de l'interface d'administration des affectations.
+ * Permet de générer les affectations de secouristes aux dispositifs (DPS)
+ * en utilisant soit un algorithme glouton, soit un algorithme exhaustif.
+ */
 public class AdminAffectationsController {
     
     private Button greedyButton;
@@ -28,7 +33,20 @@ public class AdminAffectationsController {
     private TableColumn<AdminAffectationsModel.Affectation, String> colDate;
     private TableColumn<AdminAffectationsModel.Affectation, String> colSitesOlympiques;
     private TableColumn<AdminAffectationsModel.Affectation, String> colSecouristes;
-    
+
+    /**
+     * Constructeur du contrôleur.
+     * 
+     * @param greedyButton bouton pour lancer l'algorithme glouton
+     * @param exhaustiveButton bouton pour lancer l'algorithme exhaustif
+     * @param tableView table d'affichage des affectations
+     * @param colDate colonne pour la date
+     * @param colSitesOlympiques colonne pour le site
+     * @param colSecouristes colonne pour les secouristes
+     * @param nomUtilisateurLabel label affichant le nom de l'utilisateur
+     * @param homeIcon icône pour revenir au tableau de bord
+     * @param nomUtilisateur nom de l'utilisateur actuel
+     */
     public AdminAffectationsController(
             Button greedyButton,
             Button exhaustiveButton,
@@ -52,18 +70,27 @@ public class AdminAffectationsController {
         setupBindings();
         setupListeners();
     }
-    
+
+    /**
+     * Initialise les liaisons entre les propriétés du modèle et les composants de la vue.
+     */
     private void setupBindings() {
         nomUtilisateurLabel.textProperty().bind(model.nomUtilisateurProperty());
         tableView.setItems(model.getAffectations());
     }
-    
+
+    /**
+     * Initialise les écouteurs d'événements pour les boutons et icônes.
+     */
     private void setupListeners() {
         homeIcon.setOnMouseClicked(event -> handleRetour());
         greedyButton.setOnAction(e -> handleGenerate(true));
         exhaustiveButton.setOnAction(e -> handleGenerate(false));
     }
-    
+
+    /**
+     * Gère le retour vers le tableau de bord de l'administrateur.
+     */
     private void handleRetour() {
         System.out.println("Retour vers le tableau de bord administrateur");
         
@@ -76,11 +103,21 @@ public class AdminAffectationsController {
             currentStage.setScene(dashboardScene);
         }
     }
-    
+
+    /**
+     * Lance la génération des affectations selon l'algorithme choisi.
+     *
+     * @param useGreedy true pour l'algorithme glouton, false pour l'exhaustif
+     */
     private void handleGenerate(boolean useGreedy) {
         generateAffectations(useGreedy);
     }
-    
+
+    /**
+     * Génère les affectations des secouristes aux DPS en utilisant l'algorithme spécifié.
+     *
+     * @param useGreedy true pour utiliser l’algorithme glouton, false pour l’exhaustif
+     */
     public void generateAffectations(boolean useGreedy) {
 
         System.out.println("Contrôleur: Tentative de suppression des affectations existantes...");
@@ -104,8 +141,7 @@ public class AdminAffectationsController {
             alert.showAndWait();
             return;
         }
-        
-        // Get all secouristes
+
         ObservableList<Secouriste> allSecouristes = FXCollections.observableArrayList(model.getSecouristeDAO().findAll());
         if (allSecouristes.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
@@ -115,15 +151,14 @@ public class AdminAffectationsController {
             alert.showAndWait();
             return;
         }
-        
-        // Call the appropriate algorithm
+
         Map<DPS, List<Secouriste>> assignments;
         if (useGreedy) {
             assignments = model.getGraphe().affectationGloutonne(allSecouristes, allDPS);
         } else {
             assignments = model.getGraphe().affectationExhaustive(allSecouristes, allDPS);
         }
-        
+
         if (assignments.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setTitle("Échec des affectations");
@@ -132,57 +167,80 @@ public class AdminAffectationsController {
             alert.showAndWait();
             return;
         }
-        
-        // Process each DPS and save affectations
+
         int totalAffectations = 0;
         for (Map.Entry<DPS, List<Secouriste>> entry : assignments.entrySet()) {
             DPS dps = entry.getKey();
             List<Secouriste> secouristes = entry.getValue();
-            
+
             if (secouristes != null && !secouristes.isEmpty()) {
-                // Convert Journee to LocalDate
                 LocalDate date = LocalDate.of(
                     dps.getJournee().getAnnee(),
                     dps.getJournee().getMois(),
                     dps.getJournee().getJour()
                 );
-                
-                // Filter secouristes by availability
+
                 List<Secouriste> availableSecouristes = secouristes.stream()
                     .filter(s -> model.isSecouristeAvailable(s, date))
                     .collect(Collectors.toList());
-                
+
                 if (!availableSecouristes.isEmpty()) {
-                    // Save to database and update model
                     model.createAffectation(dps, date, FXCollections.observableArrayList(availableSecouristes));
                     totalAffectations += availableSecouristes.size();
                 }
             }
         }
-        
+
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Succès");
         alert.setHeaderText("Affectations générées");
         alert.setContentText(totalAffectations + " affectations ont été générées et enregistrées avec succès.");
         alert.showAndWait();
     }
-    
+
+    /**
+     * Récupère la liste de tous les dispositifs disponibles.
+     *
+     * @return liste observable de tous les DPS
+     */
     public ObservableList<DPS> getAllDPS() {
         return model.getAllDPS();
     }
-    
+
+    /**
+     * Recherche les secouristes compétents et disponibles pour un DPS donné à une date donnée.
+     *
+     * @param dps le dispositif concerné
+     * @param date la date du dispositif
+     * @return liste observable des secouristes compétents et disponibles
+     */
     public ObservableList<Secouriste> searchCompetentSecouristes(DPS dps, LocalDate date) {
         return model.searchCompetentSecouristes(dps, date);
     }
-    
+
+    /**
+     * Met à jour le nom de l'utilisateur.
+     *
+     * @param nomUtilisateur nouveau nom de l'utilisateur
+     */
     public void setNomUtilisateur(String nomUtilisateur) {
         model.setNomUtilisateur(nomUtilisateur);
     }
-    
+
+    /**
+     * Définit le callback à exécuter lors du retour vers le tableau de bord.
+     *
+     * @param callback action à exécuter au retour
+     */
     public void setOnRetourCallback(Runnable callback) {
         this.onRetourCallback = callback;
     }
-    
+
+    /**
+     * Récupère le modèle utilisé par ce contrôleur.
+     *
+     * @return le modèle {@link AdminAffectationsModel}
+     */
     public AdminAffectationsModel getModel() {
         return model;
     }
