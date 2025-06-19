@@ -37,7 +37,6 @@ public class JourneeDAO extends DAO<Journee> {
 
     /**
      * Met à jour une journée existante dans la base.
-     * ⚠️ Attention : cette méthode semble incorrecte car elle n'utilise pas les bons paramètres dans la requête.
      *
      * @param journee la journée avec les nouvelles valeurs
      * @return nombre de lignes modifiées ou -1 en cas d'erreur
