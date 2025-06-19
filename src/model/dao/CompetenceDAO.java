@@ -2,10 +2,21 @@ package model.dao;
 
 import java.sql.*;
 import java.util.*;
+
 import model.data.Competence;
 
+/**
+ * DAO pour gérer les opérations CRUD sur les objets {@link Competence}.
+ * Gère aussi les relations de prérequis via la table Necessite.
+ */
 public class CompetenceDAO extends DAO<Competence> {
 
+    /**
+     * Crée une compétence dans la base de données, avec ses éventuels prérequis.
+     *
+     * @param competence la compétence à créer
+     * @return 1 si succès, -1 en cas d’erreur
+     */
     @Override
     public int create(Competence competence) {
         String query = "INSERT INTO Competence(INTITULE) VALUES (?)";
@@ -27,13 +38,22 @@ public class CompetenceDAO extends DAO<Competence> {
         return competenceResult;
     }
 
+    /**
+     * Lève une exception car cette méthode n'est pas utilisée.
+     * Utiliser {@link #updateWithOldCompetence(Competence, Competence)} à la place.
+     */
     @Override
     public int update(Competence competence) {
-        // This method is not used directly for updating with old/new competence.
-        // Instead, use updateWithOldCompetence for full update logic.
         throw new UnsupportedOperationException("Use updateWithOldCompetence for updating competences.");
     }
 
+    /**
+     * Met à jour une compétence (intitulé et prérequis) en gérant les dépendances liées.
+     *
+     * @param ancienneCompetence l’ancienne compétence
+     * @param nouvelleCompetence la nouvelle compétence
+     * @return nombre de lignes modifiées, ou -1 si erreur
+     */
     public int updateWithOldCompetence(Competence ancienneCompetence, Competence nouvelleCompetence) {
         Connection con = null;
         try {
@@ -43,7 +63,7 @@ public class CompetenceDAO extends DAO<Competence> {
             String oldIntitule = ancienneCompetence.getIntitule();
             String newIntitule = nouvelleCompetence.getIntitule().trim();
 
-            // Update references in Necessite where this competence is a prerequisite
+            // Mise à jour des références dans les tables associées
             String updateNecessiteQuery = "UPDATE Necessite SET COMPETENCEREQUISE = ? WHERE COMPETENCEREQUISE = ?";
             try (PreparedStatement pst = con.prepareStatement(updateNecessiteQuery)) {
                 pst.setString(1, newIntitule);
@@ -51,15 +71,13 @@ public class CompetenceDAO extends DAO<Competence> {
                 pst.executeUpdate();
             }
 
-            // Update references in Besoin
-            String updateBesoinQuery = "UPDATE Besoin SET INTITULE seasoning = ? WHERE INTITULECOMP = ?";
+            String updateBesoinQuery = "UPDATE Besoin SET INTITULECOMP = ? WHERE INTITULECOMP = ?";
             try (PreparedStatement pst = con.prepareStatement(updateBesoinQuery)) {
                 pst.setString(1, newIntitule);
                 pst.setString(2, oldIntitule);
                 pst.executeUpdate();
             }
 
-            // Update references in Possede
             String updatePossedeQuery = "UPDATE Possede SET competence = ? WHERE competence = ?";
             try (PreparedStatement pst = con.prepareStatement(updatePossedeQuery)) {
                 pst.setString(1, newIntitule);
@@ -67,7 +85,7 @@ public class CompetenceDAO extends DAO<Competence> {
                 pst.executeUpdate();
             }
 
-            // Update the competence itself
+            // Mise à jour de la compétence elle-même
             String updateCompetenceQuery = "UPDATE Competence SET INTITULE = ? WHERE INTITULE = ?";
             int result = 0;
             try (PreparedStatement pst = con.prepareStatement(updateCompetenceQuery)) {
@@ -77,13 +95,12 @@ public class CompetenceDAO extends DAO<Competence> {
             }
 
             if (result > 0) {
-                // Delete existing prerequisites
                 String deletePrereqQuery = "DELETE FROM Necessite WHERE COMPETENCE = ?";
                 try (PreparedStatement prereqPst = con.prepareStatement(deletePrereqQuery)) {
                     prereqPst.setString(1, newIntitule);
                     prereqPst.executeUpdate();
                 }
-                // Recreate prerequisites if any
+
                 if (nouvelleCompetence.getPrerequis() != null && !nouvelleCompetence.getPrerequis().isEmpty()) {
                     createPrerequis(nouvelleCompetence);
                 }
@@ -116,6 +133,12 @@ public class CompetenceDAO extends DAO<Competence> {
         }
     }
 
+    /**
+     * Supprime une compétence de la base.
+     *
+     * @param competence la compétence à supprimer
+     * @return 1 si succès, -1 sinon
+     */
     @Override
     public int delete(Competence competence) {
         String query = "DELETE FROM Competence WHERE INTITULE = ?";
@@ -131,6 +154,11 @@ public class CompetenceDAO extends DAO<Competence> {
         }
     }
 
+    /**
+     * Récupère toutes les compétences et leurs prérequis.
+     *
+     * @return liste des compétences
+     */
     @Override
     public List<Competence> findAll() {
         List<Competence> competences = new LinkedList<>();
@@ -143,7 +171,7 @@ public class CompetenceDAO extends DAO<Competence> {
             while (rs.next()) {
                 String intitule = rs.getString("INTITULE");
                 Competence competence = new Competence(intitule);
-                // Load prerequisites
+
                 String prereqQuery = "SELECT COMPETENCEREQUISE FROM Necessite WHERE COMPETENCE = ?";
                 try (PreparedStatement prereqPst = con.prepareStatement(prereqQuery)) {
                     prereqPst.setString(1, intitule);
@@ -168,6 +196,12 @@ public class CompetenceDAO extends DAO<Competence> {
         return competences;
     }
 
+    /**
+     * Recherche une compétence par son intitulé et charge ses prérequis.
+     *
+     * @param keys tableau avec l’intitulé en première position
+     * @return la compétence ou null si non trouvée
+     */
     @Override
     public Competence findByID(Object... keys) {
         String intitule = (String) keys[0];
@@ -180,7 +214,7 @@ public class CompetenceDAO extends DAO<Competence> {
             try (ResultSet rs = pst.executeQuery()) {
                 if (rs.next()) {
                     Competence competence = new Competence(rs.getString("INTITULE"));
-                    // Load prerequisites
+
                     String prereqQuery = "SELECT COMPETENCEREQUISE FROM Necessite WHERE COMPETENCE = ?";
                     try (PreparedStatement prereqPst = con.prepareStatement(prereqQuery)) {
                         prereqPst.setString(1, intitule);
@@ -206,6 +240,12 @@ public class CompetenceDAO extends DAO<Competence> {
         return null;
     }
 
+    /**
+     * Crée les prérequis d'une compétence dans la table Necessite.
+     *
+     * @param competence la compétence contenant des prérequis
+     * @return nombre de lignes insérées, ou -1 en cas d’erreur
+     */
     public int createPrerequis(Competence competence) {
         String query = "INSERT INTO Necessite(COMPETENCE, COMPETENCEREQUISE) VALUES (?, ?)";
         int totalLignesAffectees = 0;
