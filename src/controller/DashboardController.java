@@ -12,6 +12,10 @@ import view.AffectationsView;
 import view.PlanningView;
 import view.LoginView;
 
+/**
+ * Contrôleur du tableau de bord (Dashboard) pour les secouristes.
+ * Permet de naviguer entre les vues : Affectations, Planning, Disponibilités et Connexion.
+ */
 public class DashboardController {
     
     private Button affectationsButton;
@@ -20,7 +24,16 @@ public class DashboardController {
     private Button deconnexionButton;
     private Label nomUtilisateurLabel;
     private DashboardModel model;
-    
+
+    /**
+     * Constructeur sans nom d'utilisateur défini.
+     *
+     * @param affectationsButton     Bouton pour accéder à la vue des affectations
+     * @param planningButton         Bouton pour accéder à la vue du planning
+     * @param disponibilitesButton   Bouton pour accéder à la vue des disponibilités
+     * @param deconnexionButton      Bouton pour se déconnecter
+     * @param nomUtilisateurLabel    Label affichant le nom de l'utilisateur
+     */
     public DashboardController(Button affectationsButton, Button planningButton, 
                               Button disponibilitesButton, Button deconnexionButton, Label nomUtilisateurLabel) {
         this.affectationsButton = affectationsButton;
@@ -34,14 +47,27 @@ public class DashboardController {
         setupListeners();
         updateButtonStyles();
     }
-    
+
+    /**
+     * Constructeur avec nom d'utilisateur défini.
+     *
+     * @param affectationsButton     Bouton pour accéder à la vue des affectations
+     * @param planningButton         Bouton pour accéder à la vue du planning
+     * @param disponibilitesButton   Bouton pour accéder à la vue des disponibilités
+     * @param deconnexionButton      Bouton pour se déconnecter
+     * @param nomUtilisateurLabel    Label affichant le nom de l'utilisateur
+     * @param nomUtilisateur         Nom de l'utilisateur à afficher
+     */
     public DashboardController(Button affectationsButton, Button planningButton, 
                               Button disponibilitesButton, Button deconnexionButton, Label nomUtilisateurLabel, 
                               String nomUtilisateur) {
         this(affectationsButton, planningButton, disponibilitesButton, deconnexionButton, nomUtilisateurLabel);
         model.setNomUtilisateur(nomUtilisateur);
     }
-    
+
+    /**
+     * Met en place les bindings entre le modèle et les éléments de la vue.
+     */
     private void setupBindings() {
         // Liaison du nom d'utilisateur avec le label
         nomUtilisateurLabel.textProperty().bind(model.nomUtilisateurProperty());
@@ -51,7 +77,10 @@ public class DashboardController {
             updateButtonStyles();
         });
     }
-    
+
+    /**
+     * Associe les événements aux boutons du tableau de bord.
+     */
     private void setupListeners() {
         // Listeners pour les boutons
         affectationsButton.setOnAction(this::handleAffectations);
@@ -59,108 +88,106 @@ public class DashboardController {
         disponibilitesButton.setOnAction(this::handleDisponibilites);
         deconnexionButton.setOnAction(this::handleDeconnexion);
     }
-    
+
+    /**
+     * Gère la navigation vers la vue Affectations.
+     *
+     * @param event Événement de clic
+     */
     private void handleAffectations(ActionEvent event) {
         System.out.println("Navigation vers Affectations");
         model.activerAffectations();
-        
-        // Récupérer la fenêtre actuelle
+
         Stage currentStage = (Stage) affectationsButton.getScene().getWindow();
-        
-        // Créer la nouvelle vue
         AffectationsView affectationsView = new AffectationsView(model.getNomUtilisateur());
-        
-        // Configurer le retour vers le dashboard
+
         affectationsView.getController().setOnRetourCallback(() -> {
-            // Recréer la vue du dashboard
             DashboardView dashboardView = new DashboardView(model.getNomUtilisateur());
             Scene dashboardScene = new Scene(dashboardView.getRoot(), 1024, 600);
             currentStage.setScene(dashboardScene);
         });
-        
-        // Changer la scène
+
         Scene affectationsScene = new Scene(affectationsView.getRoot(), 1024, 600);
         currentStage.setScene(affectationsScene);
     }
-    
+
+    /**
+     * Gère la navigation vers la vue Planning.
+     *
+     * @param event Événement de clic
+     */
     private void handlePlanning(ActionEvent event) {
         System.out.println("Navigation vers Planning");
         model.activerPlanning();
-        
-        // Récupérer la fenêtre actuelle
+
         Stage currentStage = (Stage) planningButton.getScene().getWindow();
-        
-        // Créer la nouvelle vue
         PlanningView planningView = new PlanningView(model.getNomUtilisateur());
-        
-        // Configurer le retour vers le dashboard
+
         planningView.getController().setOnRetourCallback(() -> {
-            // Recréer la vue du dashboard
             DashboardView dashboardView = new DashboardView(model.getNomUtilisateur());
             Scene dashboardScene = new Scene(dashboardView.getRoot(), 1024, 600);
             currentStage.setScene(dashboardScene);
         });
-        
-        // Changer la scène
+
         Scene planningScene = new Scene(planningView.getRoot(), 1024, 600);
         currentStage.setScene(planningScene);
     }
-    
+
+    /**
+     * Gère la navigation vers la vue Disponibilités.
+     *
+     * @param event Événement de clic
+     */
     private void handleDisponibilites(ActionEvent event) {
         System.out.println("Navigation vers Disponibilités");
         model.activerDisponibilites();
-        
-        // Récupérer la fenêtre actuelle
+
         Stage currentStage = (Stage) disponibilitesButton.getScene().getWindow();
-        
-        // Créer la nouvelle vue
         DisponibilitesView disponibilitesView = new DisponibilitesView(model.getNomUtilisateur());
-        
-        // Configurer le retour vers le dashboard
+
         disponibilitesView.getController().setOnRetourCallback(() -> {
-            // Recréer la vue du dashboard
             DashboardView dashboardView = new DashboardView(model.getNomUtilisateur());
             Scene dashboardScene = new Scene(dashboardView.getRoot(), 1024, 600);
             currentStage.setScene(dashboardScene);
         });
-        
-        // Changer la scène
+
         Scene disponibilitesScene = new Scene(disponibilitesView.getRoot(), 1024, 600);
         currentStage.setScene(disponibilitesScene);
     }
-    
+
+    /**
+     * Gère la déconnexion de l'utilisateur.
+     *
+     * @param event Événement de clic
+     */
     private void handleDeconnexion(ActionEvent event) {
         System.out.println("Déconnexion de l'utilisateur");
-        
-        // Récupérer la fenêtre actuelle
+
         Stage currentStage = (Stage) deconnexionButton.getScene().getWindow();
-        
-        // Créer la vue de connexion
         LoginView loginView = new LoginView(currentStage);
-        
-        // Créer une nouvelle scène avec la vue de connexion
         Scene loginScene = new Scene(loginView.getRoot(), 1024, 600);
-        
-        // Essayer d'appliquer le CSS pour le login
+
         try {
             loginScene.getStylesheets().add(getClass().getResource("../style.css").toExternalForm());
         } catch (Exception cssException) {
             System.out.println("Attention: Fichier CSS style.css non trouvé, styles par défaut appliqués");
         }
-        
-        // Changer la scène
+
         currentStage.setScene(loginScene);
         currentStage.setTitle("SecuOptix - Connexion");
-        
+
         System.out.println("Retour à la page de connexion réussi !");
     }
-    
+
+    /**
+     * Met à jour le style des boutons en fonction de la section active.
+     */
     private void updateButtonStyles() {
         // Réinitialiser tous les boutons
         affectationsButton.getStyleClass().removeAll("active-button");
         planningButton.getStyleClass().removeAll("active-button");
         disponibilitesButton.getStyleClass().removeAll("active-button");
-        
+
         // Ajouter la classe active au bouton sélectionné
         switch (model.getSectionActive()) {
             case "affectations":
@@ -180,16 +207,32 @@ public class DashboardController {
                 break;
         }
     }
-    
+
     // Méthodes publiques pour interaction externe
+
+    /**
+     * Définit le nom d'utilisateur dans le modèle.
+     *
+     * @param nomUtilisateur le nom d'utilisateur
+     */
     public void setNomUtilisateur(String nomUtilisateur) {
         model.setNomUtilisateur(nomUtilisateur);
     }
-    
+
+    /**
+     * Retourne la section active dans le modèle.
+     *
+     * @return la section active sous forme de chaîne
+     */
     public String getSectionActive() {
         return model.getSectionActive();
     }
-    
+
+    /**
+     * Retourne le modèle utilisé par le contrôleur.
+     *
+     * @return une instance de DashboardModel
+     */
     public DashboardModel getModel() {
         return model;
     }
