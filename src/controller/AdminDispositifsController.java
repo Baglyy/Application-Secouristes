@@ -20,6 +20,10 @@ import view.AdminDashboardView;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Contrôleur de la vue des dispositifs (DPS).
+ * Permet d'ajouter, supprimer et visualiser des dispositifs, avec carte interactive.
+ */
 public class AdminDispositifsController {
     
     private TextField idTextField;
@@ -42,6 +46,26 @@ public class AdminDispositifsController {
     private boolean mapInitialized = false;
     private List<BesoinInput> besoinsInputs; // List to track needs inputs
     
+    /**
+     * Constructeur du contrôleur, initialise les champs et lie le modèle.
+     *
+     * @param idTextField champ pour l'ID du dispositif
+     * @param horaireDepTextField champ pour l'heure de départ
+     * @param horaireFinTextField champ pour l'heure de fin
+     * @param siteComboBox ComboBox des sites
+     * @param sportComboBox ComboBox des sports
+     * @param jourTextField champ pour le jour
+     * @param moisTextField champ pour le mois
+     * @param anneeTextField champ pour l'année
+     * @param besoinsContainer conteneur des besoins
+     * @param ajouterButton bouton d'ajout
+     * @param supprimerButton bouton de suppression
+     * @param deviceListView ListView des dispositifs
+     * @param nomUtilisateurLabel label nom utilisateur
+     * @param homeIcon icône de retour
+     * @param mapWebView WebView pour la carte
+     * @param nomUtilisateur nom de l'utilisateur connecté
+     */
     public AdminDispositifsController(
             TextField idTextField,
             TextField horaireDepTextField,
@@ -83,6 +107,9 @@ public class AdminDispositifsController {
         setupBesoinsContainer();
     }
     
+    /**
+     * Remplit les ComboBox des sites et sports depuis le modèle.
+     */
     private void populateComboBoxes() {
         // Populate site ComboBox
         siteComboBox.setItems(model.getSites());
@@ -119,12 +146,18 @@ public class AdminDispositifsController {
         });
     }
     
+    /**
+     * Configure le conteneur des besoins pour initialiser l'ajout.
+     */
     private void setupBesoinsContainer() {
         // Set action for the initial "+" button
         Button addButton = (Button) besoinsContainer.getChildren().get(0);
         addButton.setOnAction(e -> addBesoinInput());
     }
     
+    /**
+     * Ajoute dynamiquement un besoin (compétence + nombre).
+     */
     private void addBesoinInput() {
         // Create a dialog to select competence and number
         Stage dialog = new Stage();
@@ -199,6 +232,9 @@ public class AdminDispositifsController {
         dialog.show();
     }
     
+    /**
+     * Lie les éléments UI au modèle et configure la carte interactive.
+     */
     private void setupBindings() {
         nomUtilisateurLabel.textProperty().bind(model.nomUtilisateurProperty());
         deviceListView.setItems(model.getDispositifs());
@@ -214,6 +250,9 @@ public class AdminDispositifsController {
         );
     }
     
+    /**
+     * Lie les listeners (clics, sélections) aux actions correspondantes.
+     */
     private void setupListeners() {
         homeIcon.setOnMouseClicked(event -> handleRetour());
         ajouterButton.setOnAction(this::handleAjouter);
@@ -227,6 +266,9 @@ public class AdminDispositifsController {
         });
     }
     
+    /**
+     * Initialise une carte Leaflet dans le WebView pour afficher les dispositifs.
+     */
     private void initializeInteractiveMap() {
         if (mapInitialized) {
             return;
@@ -302,6 +344,9 @@ public class AdminDispositifsController {
         });
     }
     
+    /**
+     * Met à jour les marqueurs sur la carte selon les dispositifs actuels.
+     */
     private void updateMapMarkers() {
         if (!mapInitialized) {
             return;
@@ -328,6 +373,11 @@ public class AdminDispositifsController {
         }
     }
     
+    /**
+     * Centre la carte sur un dispositif sélectionné.
+     *
+     * @param device vue du dispositif sélectionné
+     */
     private void centerMapOnDevice(AdminDispositifsModel.DispositifView device) {
         if (!mapInitialized) {
             return;
@@ -342,6 +392,12 @@ public class AdminDispositifsController {
         }
     }
     
+    /**
+     * Échappe les caractères sensibles pour JavaScript.
+     *
+     * @param input chaîne d'entrée
+     * @return chaîne échappée
+     */
     private String escapeJavaScript(String input) {
         if (input == null) return "";
         return input.replace("\\", "\\\\")
@@ -351,6 +407,9 @@ public class AdminDispositifsController {
                    .replace("\r", "\\r");
     }
     
+    /**
+     * Retourne à la vue principale du tableau de bord.
+     */
     private void handleRetour() {
         System.out.println("Retour vers le tableau de bord administrateur");
         
@@ -364,6 +423,11 @@ public class AdminDispositifsController {
         }
     }
     
+    /**
+     * Ajoute un dispositif avec validation de champs.
+     *
+     * @param event événement déclencheur
+     */
     private void handleAjouter(ActionEvent event) {
         try {
             String idStr = idTextField.getText().trim();
@@ -500,6 +564,11 @@ public class AdminDispositifsController {
         }
     }
     
+    /**
+     * Supprime le dispositif sélectionné.
+     *
+     * @param event événement déclencheur
+     */
     private void handleSupprimer(ActionEvent event) {
         AdminDispositifsModel.DispositifView selectedDevice = deviceListView.getSelectionModel().getSelectedItem();
         
@@ -523,6 +592,13 @@ public class AdminDispositifsController {
         }
     }
     
+    /**
+     * Affiche une alerte JavaFX.
+     *
+     * @param title titre de la fenêtre
+     * @param message texte du message
+     * @param type type d'alerte
+     */
     private void showAlert(String title, String message, Alert.AlertType type) {
         Platform.runLater(() -> {
             Alert alert = new Alert(type);
@@ -533,14 +609,27 @@ public class AdminDispositifsController {
         });
     }
     
+    /**
+     * Définit le callback à exécuter lors du retour.
+     *
+     * @param callback action à appeler
+     */
     public void setOnRetourCallback(Runnable callback) {
         this.onRetourCallback = callback;
     }
     
+    /**
+     * Retourne le modèle lié à ce contrôleur.
+     *
+     * @return modèle AdminDispositifsModel
+     */
     public AdminDispositifsModel getModel() {
         return model;
     }
     
+    /**
+     * Rafraîchit la carte et les données de dispositifs.
+     */
     public void refreshMap() {
         Platform.runLater(() -> {
             if (!mapInitialized) {
@@ -556,6 +645,9 @@ public class AdminDispositifsController {
         });
     }
     
+    /**
+     * Force la réinitialisation de la taille de la carte.
+     */
     public void invalidateMapSize() {
         Platform.runLater(() -> {
             if (mapInitialized) {
@@ -564,24 +656,40 @@ public class AdminDispositifsController {
         });
     }
     
+    /**
+     * Recharge les données depuis la base.
+     */
     public void refreshData() {
         model.refreshFromDatabase();
     }
     
-    // Helper class to store besoin inputs
+    /**
+     * Classe auxiliaire stockant un besoin (compétence + nombre).
+     */
     public static class BesoinInput {
         private final Competence competence;
         private final int nombre;
         
+        /**
+         * Constructeur.
+         * @param competence compétence requise
+         * @param nombre nombre de secouristes requis
+         */
         public BesoinInput(Competence competence, int nombre) {
             this.competence = competence;
             this.nombre = nombre;
         }
         
+        /**
+         * @return la compétence sélectionnée
+         */
         public Competence getCompetence() {
             return competence;
         }
         
+        /**
+         * @return le nombre demandé
+         */
         public int getNombre() {
             return nombre;
         }
