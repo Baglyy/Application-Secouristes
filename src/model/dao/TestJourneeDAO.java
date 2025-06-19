@@ -2,7 +2,26 @@ package model.dao;
 
 import model.data.Journee;
 
+/**
+ * Classe de test pour le DAO {@link JourneeDAO}.
+ * Elle vérifie le bon fonctionnement des opérations CRUD :
+ * - Création d'une journée
+ * - Recherche par ID
+ * - Récupération de toutes les journées
+ * - Suppression d'une journée
+ */
 public class TestJourneeDAO {
+
+    /**
+     * Point d'entrée de l'application de test.
+     * Effectue les tests suivants dans l'ordre :
+     * 1. Création d'une journée
+     * 2. Recherche par identifiant
+     * 3. Liste de toutes les journées
+     * 4. Suppression d'une journée
+     *
+     * @param args les arguments de la ligne de commande (non utilisés ici)
+     */
     public static void main(String[] args) {
         JourneeDAO dao = new JourneeDAO();
 
