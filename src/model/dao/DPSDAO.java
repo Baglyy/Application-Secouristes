@@ -5,23 +5,37 @@ import java.util.*;
 
 import model.data.*;
 
+/**
+ * DAO pour la gestion des objets {@link DPS} dans la base de données.
+ * Fournit les opérations CRUD ainsi que le chargement des besoins liés à un DPS.
+ */
 public class DPSDAO extends DAO<DPS> {
 
     private JourneeDAO journeeDAO;
     private SiteDAO siteDAO;
     private SportDAO sportDAO;
 
+    /**
+     * Constructeur du DAO DPS.
+     * Initialise les DAO nécessaires à la reconstruction complète des objets DPS.
+     */
     public DPSDAO() {
         this.journeeDAO = new JourneeDAO();
         this.siteDAO = new SiteDAO();
         this.sportDAO = new SportDAO();
     }
 
+    /**
+     * Insère un nouveau DPS dans la base de données.
+     *
+     * @param dps l'objet DPS à insérer
+     * @return nombre de lignes affectées ou -1 en cas d'erreur
+     */
     @Override
     public int create(DPS dps) {
         String query = "INSERT INTO DPS(ID, HORAIRE_DEPART, HORAIRE_FIN, LESITE, LESPORT, JOUR, MOIS, ANNEE) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        try (Connection con = getConnection(); 
-            PreparedStatement pst = con.prepareStatement(query)) {
+        try (Connection con = getConnection();
+             PreparedStatement pst = con.prepareStatement(query)) {
 
             pst.setLong(1, dps.getId());
             pst.setTime(2, dps.getHoraireDep());
@@ -40,11 +54,17 @@ public class DPSDAO extends DAO<DPS> {
         }
     }
 
+    /**
+     * Met à jour un DPS existant dans la base.
+     *
+     * @param dps le DPS à mettre à jour
+     * @return nombre de lignes affectées ou -1 en cas d'erreur
+     */
     @Override
     public int update(DPS dps) {
         String query = "UPDATE DPS SET HORAIRE_DEPART = ?, HORAIRE_FIN = ?, LESITE = ?, LESPORT = ?, JOUR = ?, MOIS = ?, ANNEE = ? WHERE ID = ?";
         try (Connection con = getConnection();
-            PreparedStatement pst = con.prepareStatement(query)) {
+             PreparedStatement pst = con.prepareStatement(query)) {
 
             pst.setTime(1, dps.getHoraireDep());
             pst.setTime(2, dps.getHoraireFin());
@@ -63,11 +83,17 @@ public class DPSDAO extends DAO<DPS> {
         }
     }
 
+    /**
+     * Supprime un DPS de la base de données.
+     *
+     * @param dps le DPS à supprimer
+     * @return nombre de lignes supprimées ou -1 en cas d'erreur
+     */
     @Override
     public int delete(DPS dps) {
         String query = "DELETE FROM DPS WHERE ID = ?";
-        try (Connection con = getConnection(); 
-            PreparedStatement pst = con.prepareStatement(query)) {
+        try (Connection con = getConnection();
+             PreparedStatement pst = con.prepareStatement(query)) {
 
             pst.setLong(1, dps.getId());
             return pst.executeUpdate();
@@ -78,14 +104,19 @@ public class DPSDAO extends DAO<DPS> {
         }
     }
 
+    /**
+     * Récupère tous les DPS enregistrés dans la base de données.
+     *
+     * @return liste de tous les objets DPS
+     */
     @Override
     public List<DPS> findAll() {
-        List<DPS> dpsList = new ArrayList<>(); 
+        List<DPS> dpsList = new ArrayList<>();
         String query = "SELECT * FROM DPS";
 
         try (Connection con = getConnection();
-            Statement st = con.createStatement();
-            ResultSet rs = st.executeQuery(query)) {
+             Statement st = con.createStatement();
+             ResultSet rs = st.executeQuery(query)) {
 
             while (rs.next()) {
                 long id = rs.getLong("ID");
@@ -103,7 +134,7 @@ public class DPSDAO extends DAO<DPS> {
 
                 DPS dps = new DPS(id, horaireDep, horaireFin, site, sport, journee);
                 chargerBesoinsPourDPS(dps, con);
-                dpsList.add(dps);            
+                dpsList.add(dps);
             }
 
         } catch (SQLException ex) {
@@ -113,6 +144,12 @@ public class DPSDAO extends DAO<DPS> {
         return dpsList;
     }
 
+    /**
+     * Recherche un DPS par son identifiant.
+     *
+     * @param keys tableau contenant l'ID du DPS
+     * @return l'objet DPS trouvé ou null si non trouvé
+     */
     @Override
     public DPS findByID(Object... keys) {
         long id = (long) keys[0];
@@ -120,7 +157,7 @@ public class DPSDAO extends DAO<DPS> {
 
         String query = "SELECT * FROM DPS WHERE ID = ?";
         try (Connection con = getConnection();
-            PreparedStatement pst = con.prepareStatement(query)) {
+             PreparedStatement pst = con.prepareStatement(query)) {
 
             pst.setLong(1, id);
             try (ResultSet rs = pst.executeQuery()) {
@@ -150,15 +187,17 @@ public class DPSDAO extends DAO<DPS> {
         return null;
     }
 
+    /**
+     * Charge les besoins associés à un DPS donné depuis la base de données.
+     *
+     * @param dps le DPS concerné
+     * @param con la connexion ouverte à la base de données
+     * @throws SQLException en cas d'erreur SQL
+     */
     private void chargerBesoinsPourDPS(DPS dps, Connection con) throws SQLException {
         if (dps == null) return;
 
-        // La liste des besoins dans DPS est déjà initialisée par le constructeur de DPS
-        // dps.setBesoins(new ArrayList<>()); // Plus nécessaire si le constructeur de DPS le fait
-
-        String queryBesoins = "SELECT b.intituleComp, b.nombre " + // Récupère l'intitulé et le nombre
-                              "FROM Besoin b " +
-                              "WHERE b.idDPS = ?"; // Filtre par l'ID du DPS
+        String queryBesoins = "SELECT b.intituleComp, b.nombre FROM Besoin b WHERE b.idDPS = ?";
 
         try (PreparedStatement pstBesoins = con.prepareStatement(queryBesoins)) {
             pstBesoins.setLong(1, dps.getId());
@@ -167,12 +206,10 @@ public class DPSDAO extends DAO<DPS> {
                     Competence competenceDuBesoin = new Competence(rsBesoins.getString("intituleComp"));
                     int nombreNecessaire = rsBesoins.getInt("nombre");
 
-                    // Votre constructeur Besoin(DPS dps, Competence competence, int nombre)
                     Besoin besoin = new Besoin(dps, competenceDuBesoin, nombreNecessaire);
-                    dps.getBesoins().add(besoin); // Ajoute le besoin à la liste du DPS
+                    dps.getBesoins().add(besoin);
                 }
             }
         }
     }
-
 }
